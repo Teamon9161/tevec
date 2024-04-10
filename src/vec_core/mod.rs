@@ -14,10 +14,24 @@ pub trait VecView1D<T> {
 
     fn len(&self) -> usize;
 
+    /// Get the value at the index
+    /// 
+    /// # Safety
+    /// 
+    /// The index should be less than the length of the array
     unsafe fn uget(&self, index: usize) -> &T;
 
-    // if the value is valid, return it, otherwise return None
+    /// if the value is valid, return it, otherwise return None
+    ///
+    /// # Safety
+    /// 
+    /// The index should be less than the length of the array
     unsafe fn uvget(&self, index: usize) -> Option<&T> where T: IsNone;
+
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     #[inline]
     fn get(&self, index: usize) -> &T {
@@ -89,7 +103,7 @@ pub trait VecView1D<T> {
     where
         F: FnMut(&T) -> U,
     {
-        let iter = (0..self.len()).into_iter().map(|i| {
+        let iter = (0..self.len()).map(|i| {
             let v = unsafe{self.uget(i)};
             f(v)
         });
@@ -111,6 +125,9 @@ pub trait VecView1D<T> {
 
 pub trait VecMut1D<T>: VecView1D<T> {
 
+    /// # Safety
+    /// 
+    /// The index should be less than the length of the array
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T;
 
     #[inline]
