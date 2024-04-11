@@ -1,5 +1,3 @@
-#![feature(let_chains)]
-
 mod datetime;
 mod timedelta;
 mod timeunit;

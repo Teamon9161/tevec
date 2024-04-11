@@ -5,17 +5,21 @@ use std::ops::{Add, Sub};
 impl Add<TimeDelta> for DateTime {
     type Output = DateTime;
     fn add(self, rhs: TimeDelta) -> Self::Output {
-        if let Some(dt) = self.0 && rhs.is_not_nat() {
-            let out = if rhs.months != 0 {
-                if rhs.months > 0 {
-                    dt + Months::new(rhs.months as u32)
+        if let Some(dt) = self.0 {
+            if rhs.is_not_nat() {
+                let out = if rhs.months != 0 {
+                    if rhs.months > 0 {
+                        dt + Months::new(rhs.months as u32)
+                    } else {
+                        dt - Months::new((-rhs.months) as u32)
+                    }
                 } else {
-                    dt - Months::new((-rhs.months) as u32)
-                }
+                    dt
+                };
+                DateTime(Some(out + rhs.inner))
             } else {
-                dt
-            };
-            DateTime(Some(out + rhs.inner))
+                DateTime(None)
+            }
         } else {
             DateTime(None)
         }
@@ -25,17 +29,21 @@ impl Add<TimeDelta> for DateTime {
 impl Sub<TimeDelta> for DateTime {
     type Output = DateTime;
     fn sub(self, rhs: TimeDelta) -> Self::Output {
-        if let Some(dt) = self.0 && rhs.is_not_nat(){
-            let out = if rhs.months != 0 {
-                if rhs.months > 0 {
-                    dt - Months::new(rhs.months as u32)
+        if let Some(dt) = self.0 {
+            if rhs.is_not_nat() {
+                let out = if rhs.months != 0 {
+                    if rhs.months > 0 {
+                        dt - Months::new(rhs.months as u32)
+                    } else {
+                        dt + Months::new((-rhs.months) as u32)
+                    }
                 } else {
-                    dt + Months::new((-rhs.months) as u32)
-                }
+                    dt
+                };
+                DateTime(Some(out + rhs.inner))
             } else {
-                dt
-            };
-            DateTime(Some(out + rhs.inner))
+                DateTime(None)
+            }
         } else {
             DateTime(None)
         }
