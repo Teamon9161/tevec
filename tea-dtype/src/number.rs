@@ -4,9 +4,6 @@ use num_traits::{MulAdd, Num};
 use std::cmp::PartialOrd;
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
-#[cfg(feature = "time")]
-pub use tea_time::{DateTime, TimeDelta, TimeUnit};
-
 pub trait Number:
     Copy
     + Clone
