@@ -1,0 +1,13 @@
+[package]
+name = "tea-time"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+# ndarray = { workspace = true }
+# numpy = { workspace = true }
+# pyo3 = { workspace = true }

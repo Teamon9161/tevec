@@ -1,12 +1,25 @@
-[package]
-name = "tevec"
-version = "0.1.1"
+[workspace]
+resolver = "2"
+members = [
+    "tea-dtype",
+    "tea-time",
+    "tea-vec",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Teamon"]
 edition = "2021"
+repository = "https://github.com/Teamon9161/tevec"
+license = "MIT"
 
-[features]
-default = ["nd_array"]
-nd_array = ["ndarray"]
+[profile.release]
+lto = true
 
-[dependencies]
+[workspace.dependencies]
 num-traits = "0.2.18"
-ndarray = {version="0.15.6", optional = true}
+chrono = "0.4.37"
+
+
+[profile.dev]
+incremental = true

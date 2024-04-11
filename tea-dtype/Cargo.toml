@@ -1,0 +1,17 @@
+[package]
+name = "tea-dtype"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["time"]
+# time = []
+time = ["tea-time"]
+
+[dependencies]
+tea-time = {path = "../tea-time", optional = true}
+num-traits = { workspace = true }

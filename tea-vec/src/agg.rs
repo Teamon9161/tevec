@@ -1,6 +1,6 @@
-use super::data_traits::IsNone;
 use super::vec_core::VecView1D;
-use num_traits::{AsPrimitive, Zero};
+use num_traits::Zero;
+use tea_dtype::{Number, IsNone, Cast};
 
 pub trait Vec1DAgg<T>: VecView1D<T> {
     #[inline]
@@ -24,20 +24,46 @@ pub trait Vec1DAgg<T>: VecView1D<T> {
     #[inline]
     fn mean(&self) -> f64
     where
-        T: Zero + Clone + AsPrimitive<f64>,
+        T: Zero + Clone + Cast<f64>,
     {
         let sum = self.sum();
-        sum.as_() / self.len() as f64
+        sum.cast() / self.len() as f64
     }
 
     #[inline]
     #[allow(clippy::clone_on_copy)]
     fn vmean(&self) -> f64
     where
-        T: Zero + Clone + AsPrimitive<f64> + IsNone,
+        T: Zero + Clone + Cast<f64> + IsNone,
     {
         let (n, sum) = self.vfold_n(T::zero(), |acc, x| acc + x.clone());
-        sum.as_() / n as f64
+        sum.cast() / n as f64
+    }
+
+    #[inline]
+    fn max(&self) -> Option<T> 
+    where
+        T: Number
+    {
+        self.fold(None, |acc, x| {
+            match acc {
+                None => Some(*x),
+                Some(v) => Some(v.max_with(x))
+            }
+        })
+    }
+
+    #[inline]
+    fn min(&self) -> Option<T> 
+    where
+        T: Number
+    {
+        self.fold(None, |acc, x| {
+            match acc {
+                None => Some(*x),
+                Some(v) => Some(v.min_with(x))
+            }
+        })
     }
 }
 
@@ -52,5 +78,12 @@ mod tests {
         let data = vec![1., f64::NAN, 3.];
         assert_eq!(data.vsum(), 4.);
         assert_eq!(data.vmean(), 2.);
+    }
+
+    #[test]
+    fn test_cmp() {
+        let data = vec![1., 3., f64::NAN, 2., 5.];
+        assert_eq!(data.max(), Some(5.));
+        assert_eq!(data.min(), Some(1.));
     }
 }
