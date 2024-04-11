@@ -152,7 +152,6 @@ macro_rules! impl_cast_from_string {
 
 impl_cast_from_string!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize, f32, f64, char, bool);
 
-
 impl Cast<String> for String {
     #[inline]
     fn cast(self) -> String {

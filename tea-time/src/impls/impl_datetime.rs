@@ -1,5 +1,5 @@
-use chrono::{DateTime as CrDateTime, Utc};
 use crate::DateTime;
+use chrono::{DateTime as CrDateTime, Utc};
 use std::ops::Deref;
 
 impl std::fmt::Debug for DateTime {

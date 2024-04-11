@@ -1,6 +1,6 @@
 use super::vec_core::VecView1D;
 use num_traits::Zero;
-use tea_dtype::{Number, IsNone, Cast};
+use tea_dtype::{Cast, IsNone, Number};
 
 pub trait Vec1DAgg<T>: VecView1D<T> {
     #[inline]
@@ -41,28 +41,24 @@ pub trait Vec1DAgg<T>: VecView1D<T> {
     }
 
     #[inline]
-    fn max(&self) -> Option<T> 
+    fn max(&self) -> Option<T>
     where
-        T: Number
+        T: Number,
     {
-        self.fold(None, |acc, x| {
-            match acc {
-                None => Some(*x),
-                Some(v) => Some(v.max_with(x))
-            }
+        self.fold(None, |acc, x| match acc {
+            None => Some(*x),
+            Some(v) => Some(v.max_with(x)),
         })
     }
 
     #[inline]
-    fn min(&self) -> Option<T> 
+    fn min(&self) -> Option<T>
     where
-        T: Number
+        T: Number,
     {
-        self.fold(None, |acc, x| {
-            match acc {
-                None => Some(*x),
-                Some(v) => Some(v.min_with(x))
-            }
+        self.fold(None, |acc, x| match acc {
+            None => Some(*x),
+            Some(v) => Some(v.min_with(x)),
         })
     }
 }

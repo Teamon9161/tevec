@@ -1,8 +1,8 @@
-use num_traits::{Num, MulAdd};
+use super::cast::Cast;
+use super::isnone::IsNone;
+use num_traits::{MulAdd, Num};
 use std::cmp::PartialOrd;
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
-use super::isnone::IsNone;
-use super::cast::Cast;
 
 #[cfg(feature = "time")]
 pub use tea_time::{DateTime, TimeDelta, TimeUnit};
@@ -146,4 +146,3 @@ impl BoolType for bool {
         self
     }
 }
-

@@ -5,7 +5,7 @@ use std::{
     ops::{Add, Div, Mul, Neg, Sub},
 };
 
-use chrono::{Datelike, Utc, DurationRound, Months, DateTime as CrDateTime, NaiveTime, Timelike};
+use chrono::{DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveTime, Timelike, Utc};
 
 use crate::{convert::*, TimeDelta};
 
@@ -95,7 +95,9 @@ impl DateTime {
     #[inline(always)]
     pub fn parse(s: &str, fmt: &str) -> Result<Self, String> {
         Ok(Self(Some(
-            CrDateTime::parse_from_str(s, fmt).map(|v| v.into()).map_err(|e| format!("{e}"))?,
+            CrDateTime::parse_from_str(s, fmt)
+                .map(|v| v.into())
+                .map_err(|e| format!("{e}"))?,
         )))
     }
 
