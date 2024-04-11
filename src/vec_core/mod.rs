@@ -1,32 +1,41 @@
-mod backends_impl;
 mod iter;
 mod iter_valid;
 pub mod trusted;
 
-use std::marker::PhantomData;
-use std::iter::Iterator;
 use crate::prelude::IsNone;
-use iter::{OwnIter, ViewIter, MutIter};
+use iter::{MutIter, OwnIter, ViewIter};
+use std::iter::Iterator;
+use std::marker::PhantomData;
 
-pub use trusted::TrustedLen;
+pub use trusted::{CollectTrustedToVec, TrustedLen};
 
 pub trait VecView1D<T> {
-
     fn len(&self) -> usize;
 
     /// Get the value at the index
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// The index should be less than the length of the array
     unsafe fn uget(&self, index: usize) -> &T;
 
     /// if the value is valid, return it, otherwise return None
     ///
     /// # Safety
-    /// 
+    ///
     /// The index should be less than the length of the array
-    unsafe fn uvget(&self, index: usize) -> Option<&T> where T: IsNone;
+    #[inline]
+    unsafe fn uvget(&self, index: usize) -> Option<&T>
+    where
+        T: IsNone,
+    {
+        let v = self.uget(index);
+        if v.is_none() {
+            None
+        } else {
+            Some(v)
+        }
+    }
 
     #[inline]
     fn is_empty(&self) -> bool {
@@ -43,7 +52,10 @@ pub trait VecView1D<T> {
     }
 
     #[inline]
-    fn vget(&self, index: usize) -> Option<&T> where T: IsNone{
+    fn vget(&self, index: usize) -> Option<&T>
+    where
+        T: IsNone,
+    {
         if index < self.len() {
             unsafe { self.uvget(index) }
         } else {
@@ -58,9 +70,9 @@ pub trait VecView1D<T> {
     {
         let mut acc = init;
         for i in 0..self.len() {
-            let v = unsafe{self.uget(i)};
+            let v = unsafe { self.uget(i) };
             acc = f(acc, v);
-        };
+        }
         acc
     }
 
@@ -72,11 +84,11 @@ pub trait VecView1D<T> {
     {
         let mut acc = init;
         for i in 0..self.len() {
-            let v = unsafe{self.uvget(i)};
+            let v = unsafe { self.uvget(i) };
             if let Some(v) = v {
                 acc = f(acc, v);
             }
-        };
+        }
         acc
     }
 
@@ -89,12 +101,12 @@ pub trait VecView1D<T> {
         let mut acc = init;
         let mut count = 0;
         for i in 0..self.len() {
-            let v = unsafe{self.uvget(i)};
+            let v = unsafe { self.uvget(i) };
             if let Some(v) = v {
                 acc = f(acc, v);
                 count += 1;
             }
-        };
+        }
         (count, acc)
     }
 
@@ -104,16 +116,15 @@ pub trait VecView1D<T> {
         F: FnMut(&T) -> U,
     {
         let iter = (0..self.len()).map(|i| {
-            let v = unsafe{self.uget(i)};
+            let v = unsafe { self.uget(i) };
             f(v)
         });
         Vec1D::collect_from_trusted(iter)
     }
 
     #[inline]
-    fn iter_view(&self) -> ViewIter<T, Self> 
-    where
-    {
+    fn iter_view(&self) -> ViewIter<T, Self>
+where {
         ViewIter {
             idx: 0,
             len: self.len(),
@@ -124,9 +135,8 @@ pub trait VecView1D<T> {
 }
 
 pub trait VecMut1D<T>: VecView1D<T> {
-
     /// # Safety
-    /// 
+    ///
     /// The index should be less than the length of the array
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T;
 
@@ -140,9 +150,8 @@ pub trait VecMut1D<T>: VecView1D<T> {
     }
 
     #[inline]
-    fn iter_mut(&mut self) -> MutIter<T, Self> 
-    where
-    {
+    fn iter_mut(&mut self) -> MutIter<T, Self>
+where {
         MutIter {
             idx: 0,
             len: self.len(),
@@ -153,23 +162,26 @@ pub trait VecMut1D<T>: VecView1D<T> {
 
     fn map_inplace(&mut self, mut f: impl FnMut(&mut T)) {
         for i in 0..self.len() {
-            let v = unsafe{self.uget_mut(i)};
+            let v = unsafe { self.uget_mut(i) };
             f(v);
         }
     }
-} 
+}
 
 pub trait Vec1D<T>: VecMut1D<T> {
-    
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self;
 
     #[inline]
-    fn collect_from_trusted<I: Iterator<Item = T>+TrustedLen>(iter: I) -> Self where Self: Sized {
+    fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self
+    where
+        Self: Sized,
+    {
         Self::collect_from_iter(iter)
     }
 
-    fn into_iter(self) -> OwnIter<T, Self> 
-    where Self: Sized
+    fn into_iter(self) -> OwnIter<T, Self>
+    where
+        Self: Sized,
     {
         OwnIter {
             idx: 0,
@@ -181,7 +193,6 @@ pub trait Vec1D<T>: VecMut1D<T> {
 }
 
 pub trait Vec1DCollect: Iterator {
-
     #[inline]
     fn collect_vec1d<O: Vec1D<Self::Item>>(self) -> O
     where

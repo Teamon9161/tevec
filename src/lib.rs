@@ -1,6 +1,6 @@
-mod vec_core;
+mod agg;
+mod backends_impl;
 mod data_traits;
+mod vec_core;
 
 pub mod prelude;
-
-// pub use vec_core::{Vec1D, VecView1D, VecMut1D};

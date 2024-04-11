@@ -49,7 +49,6 @@ pub trait CollectTrustedToVec: Iterator + TrustedLen {
     }
 }
 
-
 unsafe impl<K, V: Sized> TrustedLen for std::collections::hash_map::IntoIter<K, V> {}
 unsafe impl<K, V: Sized> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}
 unsafe impl<T1, T2> TrustedLen for std::iter::Map<T1, T2> {}

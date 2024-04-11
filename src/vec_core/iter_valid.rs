@@ -1,6 +1,6 @@
+use crate::prelude::IsNone;
 use std::iter::{ExactSizeIterator, FusedIterator, Iterator};
 use std::marker::PhantomData;
-use crate::prelude::IsNone;
 
 use super::VecView1D;
 
@@ -11,7 +11,7 @@ pub struct ViewIter<'a, T, D: VecView1D<T> + ?Sized> {
     pub _element_dtype: PhantomData<T>,
 }
 
-impl <'a, T: IsNone + 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
+impl<'a, T: IsNone + 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
     type Item = Option<&'a T>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -23,7 +23,6 @@ impl <'a, T: IsNone + 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
             None
         }
     }
-
 
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -41,12 +40,11 @@ impl<'a, T: IsNone + 'a, D: VecView1D<T>> ExactSizeIterator for ViewIter<'a, T, 
     fn len(&self) -> usize {
         self.len - self.idx
     }
-
 }
 
 impl<'a, T: IsNone + 'a, D: VecView1D<T>> FusedIterator for ViewIter<'a, T, D> {}
 
-impl <'a, T: IsNone + 'a, D: VecView1D<T>> DoubleEndedIterator for ViewIter<'a, T, D> {
+impl<'a, T: IsNone + 'a, D: VecView1D<T>> DoubleEndedIterator for ViewIter<'a, T, D> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.len > 0 {
             self.len -= 1;

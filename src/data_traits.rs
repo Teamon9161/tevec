@@ -1,4 +1,3 @@
-
 pub trait IsNone {
     fn is_none(&self) -> bool;
     #[inline]
@@ -10,14 +9,14 @@ pub trait IsNone {
 impl IsNone for f32 {
     #[inline]
     fn is_none(&self) -> bool {
-        self.is_nan() || self.is_infinite()
+        self.is_nan() // || self.is_infinite()
     }
 }
 
 impl IsNone for f64 {
     #[inline]
     fn is_none(&self) -> bool {
-        self.is_nan() || self.is_infinite()
+        self.is_nan() // || self.is_infinite()
     }
 }
 

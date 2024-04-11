@@ -1,7 +1,7 @@
 use std::iter::{ExactSizeIterator, FusedIterator, Iterator};
 use std::marker::PhantomData;
 
-use super::{VecView1D, VecMut1D};
+use super::{VecMut1D, VecView1D};
 
 pub struct OwnIter<T, D: VecView1D<T>> {
     pub idx: usize,
@@ -10,7 +10,7 @@ pub struct OwnIter<T, D: VecView1D<T>> {
     pub _element_dtype: PhantomData<T>,
 }
 
-impl <T, D: VecView1D<T>> Iterator for OwnIter<T, D> {
+impl<T, D: VecView1D<T>> Iterator for OwnIter<T, D> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -43,7 +43,7 @@ pub struct ViewIter<'a, T, D: VecView1D<T> + ?Sized> {
     pub _element_dtype: PhantomData<T>,
 }
 
-impl <'a, T: 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
+impl<'a, T: 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -55,7 +55,6 @@ impl <'a, T: 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
             None
         }
     }
-
 
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -76,11 +75,11 @@ pub struct MutIter<'a, T, D: VecMut1D<T> + ?Sized> {
     pub _element_dtype: PhantomData<T>,
 }
 
-impl <'a, T: 'a, D: VecMut1D<T>> Iterator for MutIter<'a, T, D> {
+impl<'a, T: 'a, D: VecMut1D<T>> Iterator for MutIter<'a, T, D> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.idx < self.len {
-            let item = unsafe { &mut *(self.data.uget_mut(self.idx) as *mut T)};
+            let item = unsafe { &mut *(self.data.uget_mut(self.idx) as *mut T) };
             self.idx += 1;
             Some(item)
         } else {
@@ -100,7 +99,7 @@ impl <'a, T: 'a, D: VecMut1D<T>> Iterator for MutIter<'a, T, D> {
     }
 }
 
-impl <T, D: VecView1D<T>> ExactSizeIterator for OwnIter<T, D> {
+impl<T, D: VecView1D<T>> ExactSizeIterator for OwnIter<T, D> {
     #[inline]
     fn len(&self) -> usize {
         self.len - self.idx
@@ -125,7 +124,7 @@ impl<T, D: VecView1D<T>> FusedIterator for OwnIter<T, D> {}
 impl<'a, T: 'a, D: VecView1D<T>> FusedIterator for ViewIter<'a, T, D> {}
 impl<'a, T: 'a, D: VecMut1D<T>> FusedIterator for MutIter<'a, T, D> {}
 
-impl <T, D: VecView1D<T>> DoubleEndedIterator for OwnIter<T, D> {
+impl<T, D: VecView1D<T>> DoubleEndedIterator for OwnIter<T, D> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.len > 0 {
             self.len -= 1;
@@ -136,7 +135,7 @@ impl <T, D: VecView1D<T>> DoubleEndedIterator for OwnIter<T, D> {
     }
 }
 
-impl <'a, T: 'a, D: VecView1D<T>> DoubleEndedIterator for ViewIter<'a, T, D> {
+impl<'a, T: 'a, D: VecView1D<T>> DoubleEndedIterator for ViewIter<'a, T, D> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.len > 0 {
             self.len -= 1;
@@ -147,7 +146,7 @@ impl <'a, T: 'a, D: VecView1D<T>> DoubleEndedIterator for ViewIter<'a, T, D> {
     }
 }
 
-impl <'a, T: 'a, D: VecMut1D<T>> DoubleEndedIterator for MutIter<'a, T, D> {
+impl<'a, T: 'a, D: VecMut1D<T>> DoubleEndedIterator for MutIter<'a, T, D> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.len > 0 {
             self.len -= 1;

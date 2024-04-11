@@ -1,12 +1,10 @@
+use crate::prelude::*;
 use ndarray::{Array1, ArrayBase, Data, DataMut, Ix1};
 
-use super::super::{Vec1D, VecView1D, VecMut1D, TrustedLen, trusted::CollectTrustedToVec};
-use crate::prelude::IsNone;
-
-impl<S, T> VecView1D<T> for ArrayBase<S, Ix1> 
+impl<S, T> VecView1D<T> for ArrayBase<S, Ix1>
 where
     S: Data<Elem = T>,
-{   
+{
     #[inline]
     fn len(&self) -> usize {
         self.len()
@@ -18,9 +16,9 @@ where
     }
 
     #[inline]
-    unsafe fn uvget(&self, index: usize) -> Option<&T> 
+    unsafe fn uvget(&self, index: usize) -> Option<&T>
     where
-        T: IsNone
+        T: IsNone,
     {
         let v = self.uget(index);
         if v.is_none() {
@@ -34,33 +32,35 @@ where
 impl<S, T> VecMut1D<T> for ArrayBase<S, Ix1>
 where
     S: DataMut<Elem = T>,
-{   
+{
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.uget_mut(index)
     }
 }
 
-impl<T> Vec1D<T> for Array1<T>
-{   
+impl<T> Vec1D<T> for Array1<T> {
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         Array1::from_iter(iter)
     }
 
     #[inline]
-    fn collect_from_trusted<I: Iterator<Item = T>+TrustedLen>(iter: I) -> Self 
-    where Self: Sized 
+    fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self
+    where
+        Self: Sized,
     {
         let vec: Vec<T> = iter.collect_trusted_to_vec();
         Array1::from(vec)
     }
 }
 
+impl<T> Vec1DAgg<T> for Array1<T> {}
+
 #[cfg(test)]
 mod tests {
-    use ndarray::Array1;
     use crate::prelude::*;
+    use ndarray::Array1;
 
     #[test]
     fn test_basic() {
