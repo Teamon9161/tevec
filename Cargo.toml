@@ -1,9 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
+    "tea-core",
     "tea-dtype",
     "tea-time",
-    "tea-vec",
+    "tea-rolling",
 ]
 
 [workspace.package]

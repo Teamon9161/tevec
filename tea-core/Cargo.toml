@@ -1,5 +1,5 @@
 [package]
-name = "tea-vec"
+name = "tea-core"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

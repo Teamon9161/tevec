@@ -123,14 +123,82 @@ pub trait VecView1D<T> {
     }
 
     #[inline]
-    fn iter_view(&self) -> ViewIter<T, Self>
-where {
+    fn iter_view(&self) -> ViewIter<T, Self> {
         ViewIter {
             idx: 0,
             len: self.len(),
             data: self,
             _element_dtype: PhantomData,
         }
+    }
+
+    fn rolling_apply<U, F, O>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<&T>, &T) -> U,
+        O: Vec1D<U>,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return O::empty();
+        }
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len - window + 1).map(Some));
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v_remove = start.map(|v| unsafe { self.uget(v) });
+                let v = unsafe { self.uget(end) };
+                f(v_remove, v)
+            })
+            .collect_trusted()
+    }
+
+    // fn rolling_apply_opt<U, F, O>(&self, window: usize, mut f: F) -> O
+    // where
+    //     U: IsNone,
+    //     F: FnMut(Option<&T>, &T) -> Option<U>,
+    //     O: Vec1D<U>,
+    // {
+    //     let len = self.len();
+    //     let window = window.min(len);
+    //     if window == 0 {
+    //         return O::empty();
+    //     }
+    //     let start_iter = std::iter::repeat(None).take(window-1)
+    //         .chain((0..len - window + 1).map(Some));
+    //     start_iter.zip(0..len).map(|(start, end)| {
+    //         let v_remove = start.map(|v| unsafe{ self.uget(v) });
+    //         let v = unsafe { self.uget(end) };
+    //         f(v_remove, v)
+    //     }).collect_vec1d_opt()
+    // }
+
+    /// Apply a rolling function to the array
+    fn rolling_vapply_opt<U, F, O>(&self, window: usize, mut f: F) -> O
+    where
+        T: IsNone,
+        U: IsNone,
+        F: FnMut(Option<Option<&T>>, Option<&T>) -> Option<U>,
+        O: Vec1D<U>,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return O::empty();
+        }
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len - window + 1).map(Some));
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v_remove = start.map(|v| unsafe { self.uvget(v) });
+                let v = unsafe { self.uvget(end) };
+                f(v_remove, v)
+            })
+            .collect_vec1d_opt()
     }
 }
 
@@ -172,6 +240,16 @@ pub trait Vec1D<T>: VecMut1D<T> {
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self;
 
     #[inline]
+    fn collect_from_iter_opt<I: Iterator<Item = Option<T>>>(iter: I) -> Self
+    where
+        T: IsNone,
+        Self: Sized,
+    {
+        let iter = iter.map(|v| v.unwrap_or(T::none()));
+        Vec1D::collect_from_iter(iter)
+    }
+
+    #[inline]
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self
     where
         Self: Sized,
@@ -179,7 +257,7 @@ pub trait Vec1D<T>: VecMut1D<T> {
         Self::collect_from_iter(iter)
     }
 
-    fn into_iter(self) -> OwnIter<T, Self>
+    fn iter_own(self) -> OwnIter<T, Self>
     where
         Self: Sized,
     {
@@ -189,6 +267,14 @@ pub trait Vec1D<T>: VecMut1D<T> {
             data: self,
             _element_dtype: PhantomData,
         }
+    }
+
+    #[inline]
+    fn empty() -> Self
+    where
+        Self: Sized,
+    {
+        Self::collect_from_iter(std::iter::empty())
     }
 }
 
@@ -210,4 +296,15 @@ pub trait Vec1DCollect: Iterator {
     }
 }
 
+pub trait Vec1DOptCollect<T: IsNone>: Iterator<Item = Option<T>> {
+    #[inline]
+    fn collect_vec1d_opt<O: Vec1D<T>>(self) -> O
+    where
+        Self: Sized,
+    {
+        <O as Vec1D<T>>::collect_from_iter_opt(self)
+    }
+}
+
 impl<T: Iterator + Sized> Vec1DCollect for T {}
+impl<I: Iterator<Item = Option<T>>, T: IsNone> Vec1DOptCollect<T> for I {}

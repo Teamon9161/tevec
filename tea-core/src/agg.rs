@@ -1,8 +1,49 @@
 use super::vec_core::VecView1D;
 use num_traits::Zero;
-use tea_dtype::{Cast, IsNone, Number};
+use tea_dtype::{BoolType, Cast, IsNone, Number};
 
-pub trait Vec1DAgg<T>: VecView1D<T> {
+pub trait VecView1DAgg<T>: VecView1D<T> {
+    #[inline]
+    /// count the number of valid elements in the vector.
+    fn count(&self) -> usize
+    where
+        T: IsNone,
+    {
+        self.vfold_n((), |(), _| {}).0
+    }
+
+    #[inline]
+    fn count_none(&self) -> usize
+    where
+        T: IsNone,
+    {
+        self.len() - self.count()
+    }
+
+    #[inline]
+    fn count_value(&self, value: T) -> usize
+    where
+        T: PartialEq + IsNone,
+    {
+        self.vfold(0, |acc, x| if x == &value { acc + 1 } else { acc })
+    }
+
+    #[inline]
+    fn any(&self) -> bool
+    where
+        T: BoolType + Copy,
+    {
+        self.fold(false, |acc, x| acc || x.bool_())
+    }
+
+    #[inline]
+    fn all(&self) -> bool
+    where
+        T: BoolType + Copy,
+    {
+        self.fold(true, |acc, x| acc && x.bool_())
+    }
+
     #[inline]
     /// Returns the sum of all elements in the vector.
     fn sum(&self) -> T
@@ -82,4 +123,27 @@ mod tests {
         assert_eq!(data.max(), Some(5.));
         assert_eq!(data.min(), Some(1.));
     }
+
+    #[test]
+    fn test_count() {
+        let data = vec![1., 2., f64::NAN, 2., f64::NAN, f64::NAN];
+        assert_eq!(data.count(), 3);
+        assert_eq!(data.count_none(), 3);
+        assert_eq!(data.count_value(1.), 1);
+        assert_eq!(data.count_value(2.), 2);
+    }
+
+    #[test]
+    fn test_boll() {
+        let data = vec![true, false, false, false];
+        assert_eq!(data.any(), true);
+        let data = vec![false, false, false, false];
+        assert_eq!(data.any(), false);
+        let data = vec![true, true, true, true];
+        assert_eq!(data.all(), true);
+        let data = vec![true, false, true, true];
+        assert_eq!(data.all(), false);
+    }
 }
+
+impl<Type: VecView1D<T>, T> VecView1DAgg<T> for Type {}

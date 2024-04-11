@@ -67,23 +67,6 @@ impl<T> Vec1D<T> for Vec<T> {
     }
 }
 
-macro_rules! auto_impl_traits {
-    (
-        $T: ident,
-        $(
-            $trait: ident => $($type: ty),*;
-        )*
-    ) => {
-        $(
-            $(impl<$T> $trait<$T> for $type {})*
-        )*
-    };
-}
-
-auto_impl_traits!(T,
-    Vec1DAgg => Vec<T>, [T], &[T], [&T], &Vec<T>, &mut Vec<T>;
-);
-
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
@@ -103,6 +86,14 @@ mod tests {
         let data: Vec<_> = (0..5).collect_vec1d();
         assert_eq!(data, vec![0, 1, 2, 3, 4]);
         let data: Vec<_> = (0..5).collect_trusted();
-        assert_eq!(data, vec![0, 1, 2, 3, 4])
+        assert_eq!(data, vec![0, 1, 2, 3, 4]);
+        let v: Vec<i32> = vec![];
+        let data: Vec<i32> = Vec1D::empty();
+        assert_eq!(data, v);
+        let data: Vec<f64> = vec![Some(1.), None, Some(2.)]
+            .into_iter()
+            .collect_vec1d_opt();
+        assert!(data[1].is_nan());
+        assert_eq!(data[2], 2.)
     }
 }

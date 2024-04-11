@@ -55,7 +55,7 @@ impl<T> Vec1D<T> for Array1<T> {
     }
 }
 
-impl<T> Vec1DAgg<T> for Array1<T> {}
+// impl<T> Vec1DAgg<T> for Array1<T> {}
 
 #[cfg(test)]
 mod tests {
@@ -86,7 +86,7 @@ mod tests {
         VecMut1D::iter_mut(&mut data).for_each(|x| *x += 1);
         assert_eq!(data.get(4), Some(&6));
         let data = Array1::from(vec![1, 2, 3, 4, 5]);
-        let mut iter = Vec1D::into_iter(data);
+        let mut iter = Vec1D::iter_own(data);
         assert_eq!(iter.next(), Some(1));
         assert!(iter.fold(0, |acc, x| acc + x) == 14);
     }

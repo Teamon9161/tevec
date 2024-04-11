@@ -133,13 +133,3 @@ impl_number!(
     u64, U64;
     usize, Usize
 );
-
-pub trait BoolType {
-    fn bool_(self) -> bool;
-}
-
-impl BoolType for bool {
-    fn bool_(self) -> bool {
-        self
-    }
-}
