@@ -196,29 +196,34 @@ pub trait Vec1DRollingFeature<T>: VecView1D<T> {
         })
     }
 
-    fn ts_std<O: Vec1D<f64>>(&self, window: usize) -> O
+    fn ts_std<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
         let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
         let mut sum2 = 0.;
         let mut n = 0;
-        self.rolling_apply(window, |v_rm, v| {
+        self.rolling_apply_opt(window, |v_rm, v| {
             n += 1;
             let v = v.f64();
             sum += v;
             sum2 += v * v;
 
-            let n_f64 = n.f64();
-            let mut var = sum2 / n_f64;
-            let mean = sum / n_f64;
-            var -= mean.powi(2);
-            // variance should be greater than 0
-            let res = if var > EPS {
-                (var * n_f64 / (n - 1).f64()).sqrt()
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mean = sum / n_f64;
+                var -= mean.powi(2);
+                // variance should be greater than 0
+                if var > EPS {
+                    Some((var * n_f64 / (n - 1).f64()).sqrt())
+                } else {
+                    Some(0.)
+                }
             } else {
-                0.
+                None
             };
             if let Some(v) = v_rm {
                 let v = v.f64();
@@ -230,12 +235,12 @@ pub trait Vec1DRollingFeature<T>: VecView1D<T> {
         })
     }
 
-    fn ts_vstd<O: Vec1D<f64>>(&self, window: usize, min_periods: usize) -> O
+    fn ts_vstd<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
         let window = window.min(self.len());
-        let min_periods = min_periods.min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
         let mut sum2 = 0.;
         let mut n = 0;
@@ -269,6 +274,296 @@ pub trait Vec1DRollingFeature<T>: VecView1D<T> {
             res
         })
     }
+
+    fn ts_var<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    where
+        T: Number,
+    {
+        let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
+        let mut sum = 0.;
+        let mut sum2 = 0.;
+        let mut n = 0;
+        self.rolling_apply_opt(window, |v_rm, v| {
+            n += 1;
+            let v = v.f64();
+            sum += v;
+            sum2 += v * v;
+
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mean = sum / n_f64;
+                var -= mean.powi(2);
+                // variance should be greater than 0
+                if var > EPS {
+                    Some(var * n_f64 / (n - 1).f64())
+                } else {
+                    Some(0.)
+                }
+            } else {
+                None
+            };
+            if let Some(v) = v_rm {
+                let v = v.f64();
+                n -= 1;
+                sum -= v;
+                sum2 -= v * v
+            }
+            res
+        })
+    }
+
+    fn ts_vvar<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    where
+        T: Number,
+    {
+        let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
+        let mut sum = 0.;
+        let mut sum2 = 0.;
+        let mut n = 0;
+        self.rolling_vapply_opt(window, |v_rm, v| {
+            if let Some(v) = v {
+                n += 1;
+                let v = v.f64();
+                sum += v;
+                sum2 += v * v
+            }
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mean = sum / n_f64;
+                var -= mean.powi(2);
+                // variance should be greater than 0
+                if var > EPS {
+                    Some(var * n_f64 / (n - 1).f64())
+                } else {
+                    Some(0.)
+                }
+            } else {
+                None
+            };
+            if let Some(Some(v)) = v_rm {
+                let v = v.f64();
+                n -= 1;
+                sum -= v;
+                sum2 -= v * v
+            }
+            res
+        })
+    }
+
+    fn ts_skew<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    where
+        T: Number,
+    {
+        let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(3);
+        let mut sum = 0.;
+        let mut sum2 = 0.;
+        let mut sum3 = 0.;
+        let mut n = 0;
+        self.rolling_apply_opt(window, |v_rm, v| {
+            n += 1;
+            let v = v.f64();
+            sum += v;
+            let v2 = v * v;
+            sum2 += v2;
+            sum3 += v2 * v;
+
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mut mean = sum / n_f64;
+                var -= mean.powi(2);
+                if var <= EPS {
+                    Some(0.)
+                } else {
+                    let std = var.sqrt(); // std
+                    let res = sum3 / n_f64; // Ex^3
+                    mean /= std; // mean / std
+                    let adjust = (n * (n - 1)).f64().sqrt() / (n - 2).f64();
+                    Some(adjust * (res / std.powi(3) - 3. * mean - mean.powi(3)))
+                }
+            } else {
+                None
+            };
+            if let Some(v) = v_rm {
+                let v = v.f64();
+                n -= 1;
+                sum -= v;
+                let v2 = v * v;
+                sum2 -= v2;
+                sum3 -= v2 * v;
+            }
+            res
+        })
+    }
+
+    fn ts_vskew<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    where
+        T: Number,
+    {
+        let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(3);
+        let mut sum = 0.;
+        let mut sum2 = 0.;
+        let mut sum3 = 0.;
+        let mut n = 0;
+        self.rolling_vapply_opt(window, |v_rm, v| {
+            if let Some(v) = v {
+                n += 1;
+                let v = v.f64();
+                sum += v;
+                let v2 = v * v;
+                sum2 += v2;
+                sum3 += v2 * v;
+            }
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mut mean = sum / n_f64;
+                var -= mean.powi(2);
+                if var <= EPS {
+                    // 标准差为0， 则偏度为0
+                    Some(0.)
+                } else {
+                    let std = var.sqrt(); // std
+                    let res = sum3 / n_f64; // Ex^3
+                    mean /= std; // mean / std
+                    let adjust = (n * (n - 1)).f64().sqrt() / (n - 2).f64();
+                    Some(adjust * (res / std.powi(3) - 3. * mean - mean.powi(3)))
+                }
+            } else {
+                None
+            };
+            if let Some(Some(v)) = v_rm {
+                let v = v.f64();
+                n -= 1;
+                sum -= v;
+                let v2 = v * v;
+                sum2 -= v2;
+                sum3 -= v2 * v;
+            }
+            res
+        })
+    }
+
+    fn ts_kurt<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    where
+        T: Number,
+    {
+        let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(4);
+        let mut sum = 0.;
+        let mut sum2 = 0.;
+        let mut sum3 = 0.;
+        let mut sum4 = 0.;
+        let mut n: usize = 0;
+        self.rolling_apply_opt(window, |v_rm, v| {
+            n += 1;
+            let v = v.f64();
+            sum += v;
+            let v2 = v * v;
+            sum2 += v2;
+            sum3 += v2 * v;
+            sum4 += v2 * v2;
+
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mean = sum / n_f64;
+                var -= mean.powi(2);
+                if var <= EPS {
+                    Some(0.)
+                } else {
+                    let n_f64 = n.f64();
+                    let var2 = var * var; // var^2
+                    let ex4 = sum4 / n_f64; // Ex^4
+                    let ex3 = sum3 / n_f64; // Ex^3
+                    let mean2_var = mean * mean / var; // (mean / std)^2
+                    let out =
+                        (ex4 - 4. * mean * ex3) / var2 + 6. * mean2_var + 3. * mean2_var.powi(2);
+                    Some(
+                        1. / ((n - 2) * (n - 3)).f64()
+                            * ((n.pow(2) - 1).f64() * out - (3 * (n - 1).pow(2)).f64()),
+                    )
+                }
+            } else {
+                None
+            };
+
+            if let Some(v) = v_rm {
+                let v = v.f64();
+                n -= 1;
+                sum -= v;
+                let v2 = v * v;
+                sum2 -= v2;
+                sum3 -= v2 * v;
+                sum4 -= v2 * v2;
+            }
+            res
+        })
+    }
+
+    fn ts_vkurt<O: Vec1D<f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    where
+        T: Number,
+    {
+        let window = window.min(self.len());
+        let min_periods = min_periods.unwrap_or(window / 2).min(window).max(4);
+        let mut sum = 0.;
+        let mut sum2 = 0.;
+        let mut sum3 = 0.;
+        let mut sum4 = 0.;
+        let mut n = 0;
+        self.rolling_vapply_opt(window, |v_rm, v| {
+            if let Some(v) = v {
+                n += 1;
+                let v = v.f64();
+                sum += v;
+                let v2 = v * v;
+                sum2 += v2;
+                sum3 += v2 * v;
+                sum4 += v2 * v2;
+            }
+            let res = if n >= min_periods {
+                let n_f64 = n.f64();
+                let mut var = sum2 / n_f64;
+                let mean = sum / n_f64;
+                var -= mean.powi(2);
+                if var <= EPS {
+                    // 标准差为0， 则峰度为0
+                    Some(0.)
+                } else {
+                    let n_f64 = n.f64();
+                    let var2 = var * var; // var^2
+                    let ex4 = sum4 / n_f64; // Ex^4
+                    let ex3 = sum3 / n_f64; // Ex^3
+                    let mean2_var = mean * mean / var; // (mean / std)^2
+                    let out =
+                        (ex4 - 4. * mean * ex3) / var2 + 6. * mean2_var + 3. * mean2_var.powi(2);
+                    Some(
+                        1. / ((n - 2) * (n - 3)).f64()
+                            * ((n.pow(2) - 1).f64() * out - (3 * (n - 1).pow(2)).f64()),
+                    )
+                }
+            } else {
+                None
+            };
+            if let Some(Some(v)) = v_rm {
+                let v = v.f64();
+                n -= 1;
+                sum -= v;
+                let v2 = v * v;
+                sum2 -= v2;
+                sum3 -= v2 * v;
+                sum4 -= v2 * v2;
+            }
+            res
+        })
+    }
 }
 
 impl<Ty: VecView1D<T>, T> Vec1DRollingFeature<T> for Ty {}
@@ -276,6 +571,7 @@ impl<Ty: VecView1D<T>, T> Vec1DRollingFeature<T> for Ty {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tea_core::testing::assert_vec1d_equal_numeric;
     #[test]
     fn test_ts_sum_mean() {
         let data = vec![1, 2, 3, 4, 5];
@@ -308,10 +604,21 @@ mod tests {
     }
 
     #[test]
-    fn test_ts_std() {
+    fn test_ts_var() {
         let data = vec![1, 2, 3, 4, 5];
-        let out1: Vec<_> = data.ts_std(3);
-        let out2: Vec<_> = data.ts_vstd(3, 1);
-        assert_eq!(out1, out2);
+        let out1: Vec<_> = data.ts_std(3, None);
+        let out2: Vec<_> = data.ts_vstd(3, None);
+        assert_vec1d_equal_numeric(out1, out2, None);
+        let out1: Vec<_> = data.ts_var(3, None);
+        let out2: Vec<_> = data.ts_vvar(3, None);
+        assert_vec1d_equal_numeric(out1, out2, None);
+    }
+
+    #[test]
+    fn test_ts_skew() {
+        let data = vec![1, 4, 5, 6, 7];
+        let out1: Vec<_> = data.ts_skew(3, None);
+        let out2: Vec<_> = data.ts_vskew(3, None);
+        assert_vec1d_equal_numeric(out1, out2, None);
     }
 }

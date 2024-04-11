@@ -155,25 +155,29 @@ pub trait VecView1D<T> {
             .collect_trusted()
     }
 
-    // fn rolling_apply_opt<U, F, O>(&self, window: usize, mut f: F) -> O
-    // where
-    //     U: IsNone,
-    //     F: FnMut(Option<&T>, &T) -> Option<U>,
-    //     O: Vec1D<U>,
-    // {
-    //     let len = self.len();
-    //     let window = window.min(len);
-    //     if window == 0 {
-    //         return O::empty();
-    //     }
-    //     let start_iter = std::iter::repeat(None).take(window-1)
-    //         .chain((0..len - window + 1).map(Some));
-    //     start_iter.zip(0..len).map(|(start, end)| {
-    //         let v_remove = start.map(|v| unsafe{ self.uget(v) });
-    //         let v = unsafe { self.uget(end) };
-    //         f(v_remove, v)
-    //     }).collect_vec1d_opt()
-    // }
+    fn rolling_apply_opt<U, F, O>(&self, window: usize, mut f: F) -> O
+    where
+        U: IsNone,
+        F: FnMut(Option<&T>, &T) -> Option<U>,
+        O: Vec1D<U>,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return O::empty();
+        }
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len - window + 1).map(Some));
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v_remove = start.map(|v| unsafe { self.uget(v) });
+                let v = unsafe { self.uget(end) };
+                f(v_remove, v)
+            })
+            .collect_vec1d_opt()
+    }
 
     /// Apply a rolling function to the array
     fn rolling_vapply_opt<U, F, O>(&self, window: usize, mut f: F) -> O
