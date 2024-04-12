@@ -1,11 +1,12 @@
 use std::iter::IntoIterator;
+pub use std::iter::TrustedLen;
 
-/// The remain length of the iterator can be trusted
-///
-/// # Safety
-///
-/// the size hint of the iterator should be correct
-pub unsafe trait TrustedLen {}
+// /// The remain length of the iterator can be trusted
+// ///
+// /// # Safety
+// ///
+// /// the size hint of the iterator should be correct
+// pub unsafe trait TrustedLen {}
 
 pub trait CollectTrusted<T> {
     fn collect_from_trusted<I>(i: I) -> Self
@@ -49,18 +50,16 @@ pub trait CollectTrustedToVec: Iterator + TrustedLen {
     }
 }
 
-unsafe impl<K, V: Sized> TrustedLen for std::collections::hash_map::IntoIter<K, V> {}
-unsafe impl<K, V: Sized> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}
-unsafe impl<T1, T2> TrustedLen for std::iter::Map<T1, T2> {}
-unsafe impl<'a, T1: Sized, T2: Sized> TrustedLen for std::collections::hash_map::Keys<'a, T1, T2> {}
+// unsafe impl<K, V: Sized> TrustedLen for std::collections::hash_map::IntoIter<K, V> {}
+// unsafe impl<K, V: Sized> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}
+// unsafe impl<T1, T2> TrustedLen for std::iter::Map<T1, T2> {}
+// unsafe impl<'a, T1: Sized, T2: Sized> TrustedLen for std::collections::hash_map::Keys<'a, T1, T2> {}
 
-// // impl par iter
-// unsafe impl <T: Sized + Send + Sync> TrustedLen for rayon::slice::Iter<'_, T> {}
-// unsafe impl<T1: rayon::iter::ParallelIterator, T2> TrustedLen for rayon::iter::Map<T1, T2> {}
+// // // impl par iter
+// // unsafe impl <T: Sized + Send + Sync> TrustedLen for rayon::slice::Iter<'_, T> {}
 
-unsafe impl<T: TrustedLen> TrustedLen for std::iter::Cloned<T> {}
-unsafe impl<T> TrustedLen for std::iter::Take<std::iter::Repeat<T>> {}
-unsafe impl<T> TrustedLen for std::ops::Range<T> {}
-unsafe impl<T1: TrustedLen, T2: TrustedLen> TrustedLen for std::iter::Chain<T1, T2> {}
+// unsafe impl<T: TrustedLen> TrustedLen for std::iter::Cloned<T> {}
+// unsafe impl<T> TrustedLen for std::iter::Take<std::iter::Repeat<T>> {}
+// unsafe impl<T> TrustedLen for std::ops::Range<T> {}
 
 impl<T: Iterator + TrustedLen + Sized> CollectTrustedToVec for T {}

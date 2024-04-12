@@ -1,5 +1,7 @@
-pub use super::agg::VecView1DAgg;
+// pub use super::agg::VecView1DAgg;
 pub use crate::vec_core::{
-    CollectTrustedToVec, TrustedLen, Vec1D, Vec1DCollect, Vec1DOptCollect, VecMut1D, VecView1D,
+    CollectTrustedToVec, TrustedLen, 
+    Vec1, Vec1Mut, Vec1View,
+    // Vec1DCollect, Vec1DOptCollect
 };
 pub use tea_dtype::{BoolType, IsNone, Number};

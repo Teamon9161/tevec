@@ -2,9 +2,10 @@
 resolver = "2"
 members = [
     "tea-core",
-    "tea-dtype",
-    "tea-time",
-    "tea-rolling",
+    # "tea-dtype",
+    # "tea-time",
+    # "tea-rolling",
+    # "tea-test",
 ]
 
 [workspace.package]

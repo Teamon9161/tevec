@@ -7,11 +7,14 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-default = ["nd_array"]
+# default = ["nd_array"]
+default = []
 nd_array = ["ndarray"]
+pl = ["polars"]
 
 [dependencies]
 num-traits = {workspace = true}
 tea-dtype = {path="../tea-dtype", default_features = false}
 serde = "1.0"
-ndarray = {version="0.15.6", optional = true}
+ndarray = {version = "0.15.6", optional = true}
+polars = {version = "0.38.3", optional = true, default_features = false}

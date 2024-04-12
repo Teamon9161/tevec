@@ -1,4 +1,6 @@
-mod agg;
+#![feature(trusted_len)]
+
+// mod agg;
 mod backends_impl;
 mod vec_core;
 

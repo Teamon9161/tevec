@@ -10,3 +10,4 @@ license.workspace = true
 
 [dependencies]
 tea-core = { path = "../tea-core" }
+num-traits = { workspace = true }

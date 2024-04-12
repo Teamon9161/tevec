@@ -1,8 +1,24 @@
 #[cfg(feature = "time")]
 use tea_time::{DateTime, TimeDelta};
 
+use super::isnone::IsNone;
+
 pub trait Cast<T> {
     fn cast(self) -> T;
+}
+
+impl<T: IsNone> Cast<T> for Option<T> {
+    #[inline]
+    fn cast(self) -> T {
+        self.unwrap_or(T::none())
+    }
+}
+
+impl<T> Cast<T> for T {
+    #[inline(always)]
+    fn cast(self) -> T {
+        self
+    }
 }
 
 macro_rules! impl_numeric_cast {
@@ -13,12 +29,11 @@ macro_rules! impl_numeric_cast {
         }
     };
 
-    (@ $T: ty => { $( $U: ty $(: $O: ty)? ),* } ) => {$(
+    (@ $T: ty => { $( $U: ty ),* } ) => {$(
         impl_numeric_cast!(@ $T => impl $U);
-        $(impl_numeric_cast!(@to_option $T => impl $U: $O);)?
     )*};
 
-    (@common_impl $T: ty => { $( $U: ty $(: $O: ty)? ),* } ) => {
+    (@common_impl $T: ty => { $( $U: ty ),* } ) => {
         impl Cast<String> for $T {
             #[inline] fn cast(self) -> String { self.to_string() }
         }
@@ -45,28 +60,51 @@ macro_rules! impl_numeric_cast {
         }
     };
 
-    ($T: ty => { $( $U: ty $(: $O: ty)? ),* } ) => {
-        impl_numeric_cast!(@common_impl $T => { $( $U $(: $O)? ),* });
+    ($T: ty => { $( $U: ty ),* } ) => {
+        impl_numeric_cast!(@common_impl $T => { $( $U ),* });
         impl_numeric_cast!(@ $T => { $( $U),* });
-        impl_numeric_cast!(@ $T => { u8, u16, u32, u64, usize});
-        impl_numeric_cast!(@ $T => { i8, i16, i32, i64, isize });
+        // impl_numeric_cast!(@ $T => { u8, u16, u32, u64, usize});
+        // impl_numeric_cast!(@ $T => { i8, i16, i32, i64, isize });
+    };
+
+    (nocommon $T: ty => { $( $U: ty ),* } ) => {
+        impl_numeric_cast!(@ $T => { $( $U),* });
     };
 }
 
-impl_numeric_cast!(u8 => { char, f32, f64});
-impl_numeric_cast!(i8 => { f32, f64 });
-impl_numeric_cast!(u16 => { f32, f64 });
-impl_numeric_cast!(i16 => { f32, f64 });
-impl_numeric_cast!(u32 => { f32, f64 });
-impl_numeric_cast!(i32 => { f32, f64 });
-impl_numeric_cast!(u64 => { f32, f64 });
-impl_numeric_cast!(i64 => { f32, f64 });
-impl_numeric_cast!(usize => { f32, f64 });
-impl_numeric_cast!(isize => { f32, f64 });
-impl_numeric_cast!(f32 => { f32, f64 });
-impl_numeric_cast!(f64 => { f32, f64 });
-impl_numeric_cast!(char => { char });
-impl_numeric_cast!(bool => {});
+
+impl_numeric_cast!(u64 => { f32, f64, i32, i64, usize, isize });
+impl_numeric_cast!(i64 => { f32, f64, i32, u64, usize, isize });
+impl_numeric_cast!(i32 => { f32, f64, i64, u64, usize, isize });
+impl_numeric_cast!(f32 => { f64, i32, i64, u64, usize, isize  });
+impl_numeric_cast!(f64 => { f32, i32, i64, u64, usize, isize  });
+impl_numeric_cast!(usize => { f32, f64, i32, i64, u64, isize });
+impl_numeric_cast!(isize => { f32, f64, i32, i64, u64, usize });
+// impl_numeric_cast!(char => { char });
+impl_numeric_cast!(nocommon bool => {i32, i64, usize, isize});
+
+impl Cast<String> for bool {
+    #[inline]
+    fn cast(self) -> String {
+        self.to_string()
+    }
+
+}
+
+// impl_numeric_cast!(u8 => { char, f32, f64});
+// impl_numeric_cast!(i8 => { f32, f64 });
+// impl_numeric_cast!(u16 => { f32, f64 });
+// impl_numeric_cast!(i16 => { f32, f64 });
+// impl_numeric_cast!(u32 => { f32, f64 });
+// impl_numeric_cast!(i32 => { f32, f64 });
+// impl_numeric_cast!(u64 => { f32, f64 });
+// impl_numeric_cast!(i64 => { f32, f64 });
+// impl_numeric_cast!(usize => { f32, f64 });
+// impl_numeric_cast!(isize => { f32, f64 });
+// impl_numeric_cast!(f32 => { f32, f64 });
+// impl_numeric_cast!(f64 => { f32, f64 });
+// impl_numeric_cast!(char => { char });
+// impl_numeric_cast!(bool => {});
 
 macro_rules! impl_bool_cast {
     ($($T: ty),*) => {
@@ -95,21 +133,21 @@ macro_rules! impl_time_cast {
     };
 }
 
-#[cfg(feature = "time")]
-impl Cast<DateTime> for DateTime {
-    #[inline]
-    fn cast(self) -> DateTime {
-        self
-    }
-}
+// #[cfg(feature = "time")]
+// impl Cast<DateTime> for DateTime {
+//     #[inline]
+//     fn cast(self) -> DateTime {
+//         self
+//     }
+// }
 
-#[cfg(feature = "time")]
-impl Cast<TimeDelta> for TimeDelta {
-    #[inline]
-    fn cast(self) -> TimeDelta {
-        self
-    }
-}
+// #[cfg(feature = "time")]
+// impl Cast<TimeDelta> for TimeDelta {
+//     #[inline]
+//     fn cast(self) -> TimeDelta {
+//         self
+//     }
+// }
 
 #[cfg(feature = "time")]
 impl Cast<i64> for DateTime {
@@ -134,7 +172,7 @@ impl Cast<i64> for TimeDelta {
 
 impl_bool_cast!(f32, f64);
 #[cfg(feature = "time")]
-impl_time_cast!(f32, f64, i32, u8, u32, u64, usize, isize, bool);
+impl_time_cast!(f32, f64, i32, u64, usize, isize, bool);
 
 macro_rules! impl_cast_from_string {
     ($($T: ty),*) => {
@@ -152,12 +190,12 @@ macro_rules! impl_cast_from_string {
 
 impl_cast_from_string!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize, f32, f64, char, bool);
 
-impl Cast<String> for String {
-    #[inline]
-    fn cast(self) -> String {
-        self
-    }
-}
+// impl Cast<String> for String {
+//     #[inline]
+//     fn cast(self) -> String {
+//         self
+//     }
+// }
 
 impl Cast<String> for &str {
     #[inline]
@@ -166,12 +204,12 @@ impl Cast<String> for &str {
     }
 }
 
-impl<'a> Cast<&'a str> for &'a str {
-    #[inline]
-    fn cast(self) -> &'a str {
-        self
-    }
-}
+// impl<'a> Cast<&'a str> for &'a str {
+//     #[inline]
+//     fn cast(self) -> &'a str {
+//         self
+//     }
+// }
 
 #[cfg(feature = "time")]
 impl Cast<String> for DateTime {

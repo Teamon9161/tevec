@@ -1,4 +1,4 @@
-use super::vec_core::VecView1D;
+use super::vec_core::Vec1View;
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IsNone, Number};
 
