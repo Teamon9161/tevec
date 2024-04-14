@@ -1,158 +1,63 @@
-use std::iter::{ExactSizeIterator, FusedIterator, Iterator};
-use std::marker::PhantomData;
+use super::{Element, Vec1View};
+use tea_dtype::{Cast, IsNone};
 
-use super::{VecMut1D, VecView1D};
-
-pub struct OwnIter<T, D: VecView1D<T>> {
-    pub idx: usize,
-    pub len: usize,
-    pub data: D,
-    pub _element_dtype: PhantomData<T>,
+pub trait ToIter {
+    type Item;
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = Self::Item>
+    where
+        Self::Item: 'a;
 }
 
-impl<T, D: VecView1D<T>> Iterator for OwnIter<T, D> {
-    type Item = T;
+pub trait IntoIter<T> {
+    fn into_iterator(self) -> impl Iterator<Item = T>;
+}
 
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.idx < self.len {
-            // safety: data is owned by the iterator, so it is safe to read from it
-            let item = unsafe { std::ptr::read(self.data.uget(self.idx) as *const T) };
-            self.idx += 1;
-            Some(item)
-        } else {
-            None
-        }
-    }
+pub struct OptIter<'a, V: Vec1View> {
+    pub view: &'a V,
+    // pub type_: std::marker::PhantomData<T>,
+}
 
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let remain = self.len - self.idx;
-        (remain, Some(remain))
-    }
-
-    #[inline]
-    fn count(self) -> usize {
-        self.len - self.idx
+impl<V: Vec1View> ToIter for OptIter<'_, V>
+where
+    V::Item: IsNone,
+{
+    type Item = <V::Item as IsNone>::Opt;
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = Self::Item>
+    where
+        Self::Item: 'a,
+    {
+        self.view.to_iterator().map(|v| v.cast())
     }
 }
 
-pub struct ViewIter<'a, T, D: VecView1D<T> + ?Sized> {
-    pub idx: usize,
-    pub len: usize,
-    pub data: &'a D,
-    pub _element_dtype: PhantomData<T>,
-}
+impl<'a, V: Vec1View> IntoIterator for &OptIter<'a, V>
+where
+    V::Item: IsNone,
+{
+    type Item = <V::Item as IsNone>::Opt;
+    type IntoIter = impl Iterator<Item = Self::Item>;
 
-impl<'a, T: 'a, D: VecView1D<T>> Iterator for ViewIter<'a, T, D> {
-    type Item = &'a T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.idx < self.len {
-            let item = unsafe { self.data.uget(self.idx) };
-            self.idx += 1;
-            Some(item)
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let remain = self.len - self.idx;
-        (remain, Some(remain))
-    }
-
-    #[inline]
-    fn count(self) -> usize {
-        self.len - self.idx
+    fn into_iter(self) -> Self::IntoIter {
+        self.to_iterator()
     }
 }
 
-pub struct MutIter<'a, T, D: VecMut1D<T> + ?Sized> {
-    pub idx: usize,
-    pub len: usize,
-    pub data: &'a mut D,
-    pub _element_dtype: PhantomData<T>,
-}
+// impl <T: IsNone+Clone, V: Vec1View<T>> BaseVecType for OptIter<'_, T, V> {
+//     type Type = <V as BaseVecType>::Type;
+// }
 
-impl<'a, T: 'a, D: VecMut1D<T>> Iterator for MutIter<'a, T, D> {
-    type Item = &'a mut T;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.idx < self.len {
-            let item = unsafe { &mut *(self.data.uget_mut(self.idx) as *mut T) };
-            self.idx += 1;
-            Some(item)
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let remain = self.len - self.idx;
-        (remain, Some(remain))
-    }
-
-    #[inline]
-    fn count(self) -> usize {
-        self.len - self.idx
-    }
-}
-
-impl<T, D: VecView1D<T>> ExactSizeIterator for OwnIter<T, D> {
+impl<T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for OptIter<'_, V>
+where
+    T::Opt: Clone,
+{
+    type Vec<U: Element> = V::Vec<U>;
     #[inline]
     fn len(&self) -> usize {
-        self.len - self.idx
+        self.view.len()
     }
-}
 
-impl<'a, T: 'a, D: VecView1D<T>> ExactSizeIterator for ViewIter<'a, T, D> {
     #[inline]
-    fn len(&self) -> usize {
-        self.len - self.idx
-    }
-}
-
-impl<'a, T: 'a, D: VecMut1D<T>> ExactSizeIterator for MutIter<'a, T, D> {
-    #[inline]
-    fn len(&self) -> usize {
-        self.len - self.idx
-    }
-}
-
-impl<T, D: VecView1D<T>> FusedIterator for OwnIter<T, D> {}
-impl<'a, T: 'a, D: VecView1D<T>> FusedIterator for ViewIter<'a, T, D> {}
-impl<'a, T: 'a, D: VecMut1D<T>> FusedIterator for MutIter<'a, T, D> {}
-
-impl<T, D: VecView1D<T>> DoubleEndedIterator for OwnIter<T, D> {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        if self.len > 0 {
-            self.len -= 1;
-            Some(unsafe { std::ptr::read(self.data.uget(self.len) as *const T) })
-        } else {
-            None
-        }
-    }
-}
-
-impl<'a, T: 'a, D: VecView1D<T>> DoubleEndedIterator for ViewIter<'a, T, D> {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        if self.len > 0 {
-            self.len -= 1;
-            Some(unsafe { self.data.uget(self.len) })
-        } else {
-            None
-        }
-    }
-}
-
-impl<'a, T: 'a, D: VecMut1D<T>> DoubleEndedIterator for MutIter<'a, T, D> {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        if self.len > 0 {
-            self.len -= 1;
-            Some(unsafe { &mut *(self.data.uget_mut(self.len) as *mut T) })
-        } else {
-            None
-        }
+    unsafe fn uget(&self, index: usize) -> T::Opt {
+        self.view.uget(index).cast()
     }
 }

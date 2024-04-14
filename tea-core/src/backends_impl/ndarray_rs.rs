@@ -1,61 +1,49 @@
-use crate::prelude::*;
+use crate::{prelude::*, vec_core::Element};
 use ndarray::{Array1, ArrayBase, Data, DataMut, Ix1};
 
-impl<S, T> VecView1D<T> for ArrayBase<S, Ix1>
-where
-    S: Data<Elem = T>,
-{
+impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
+    type Item = T;
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
+    where
+        T: 'a,
+    {
+        self.iter().cloned()
+    }
+}
+
+impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
+    type Vec<U: Element> = Array1<U>;
     #[inline]
     fn len(&self) -> usize {
         self.len()
     }
 
     #[inline]
-    unsafe fn uget(&self, index: usize) -> &T {
-        self.uget(index)
-    }
-
-    #[inline]
-    unsafe fn uvget(&self, index: usize) -> Option<&T>
-    where
-        T: IsNone,
-    {
-        let v = self.uget(index);
-        if v.is_none() {
-            None
-        } else {
-            Some(v)
-        }
+    unsafe fn uget(&self, index: usize) -> T {
+        self.uget(index).clone()
     }
 }
 
-impl<S, T> VecMut1D<T> for ArrayBase<S, Ix1>
-where
-    S: DataMut<Elem = T>,
-{
+impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> {
     #[inline]
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
+    unsafe fn uget_mut(&'a mut self, index: usize) -> &'a mut T {
         self.uget_mut(index)
     }
 }
 
-impl<T> Vec1D<T> for Array1<T> {
+impl<T: Element> Vec1 for Array1<T> {
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         Array1::from_iter(iter)
     }
 
     #[inline]
-    fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self
-    where
-        Self: Sized,
-    {
-        let vec: Vec<T> = iter.collect_trusted_to_vec();
-        Array1::from(vec)
+    fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
+        let vec = iter.collect_trusted::<Vec<T>>();
+        Array1::from_vec(vec)
     }
 }
-
-// impl<T> Vec1DAgg<T> for Array1<T> {}
 
 #[cfg(test)]
 mod tests {
@@ -66,43 +54,16 @@ mod tests {
     fn test_basic() {
         let data = Array1::from(vec![1, 2, 3, 4, 5]);
         let view = data.view();
-        assert_eq!(VecView1D::len(&data), 5);
-        assert_eq!(VecView1D::get(&data, 0), &1);
-        let sum = VecView1D::iter_view(&view).fold(0, |acc, x| acc + *x);
-        assert_eq!(sum, 15);
+        assert_eq!(Vec1View::len(&data), 5);
+        assert_eq!(Vec1View::get(&view, 0), 1);
     }
 
     #[test]
-    fn test_iter() {
+    fn test_get_mut() {
         let mut data = Array1::from(vec![1, 2, 3, 4, 5]);
-        let view = data.view();
-        let mut view_iter = VecView1D::iter_view(&view);
-        assert_eq!(view_iter.next_back(), Some(&5));
-        assert_eq!(view_iter.next_back(), Some(&4));
-        assert_eq!(view_iter.next_back(), Some(&3));
-        assert_eq!(view_iter.next_back(), Some(&2));
-        assert_eq!(view_iter.next_back(), Some(&1));
-        assert_eq!(view_iter.next_back(), None);
-        VecMut1D::iter_mut(&mut data).for_each(|x| *x += 1);
-        assert_eq!(data.get(4), Some(&6));
-        let data = Array1::from(vec![1, 2, 3, 4, 5]);
-        let mut iter = Vec1D::iter_own(data);
-        assert_eq!(iter.next(), Some(1));
-        assert!(iter.fold(0, |acc, x| acc + x) == 14);
-    }
-
-    #[test]
-    fn test_collect() {
-        let data: Array1<_> = (0..5).collect_vec1d();
-        assert_eq!(data, Array1::from(vec![0, 1, 2, 3, 4]));
-        let data: Array1<_> = (0..5).collect_trusted();
-        assert_eq!(data, Array1::from(vec![0, 1, 2, 3, 4]));
-    }
-
-    #[test]
-    fn test_map() {
-        let data = Array1::from(vec![1, 2, 3, 4, 5]);
-        let new_data: Array1<_> = VecView1D::map(&data, |x| x + 1);
-        assert_eq!(new_data, Array1::from(vec![2, 3, 4, 5, 6]));
+        *Vec1Mut::get_mut(&mut data, 0).unwrap() = 10;
+        assert_eq!(data.get(0), Some(&10));
+        let mut view = data.view_mut();
+        assert_eq!(Vec1Mut::get_mut(&mut view, 1), Some(&mut 2));
     }
 }

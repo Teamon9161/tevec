@@ -14,6 +14,17 @@ impl<T: IsNone> Cast<T> for Option<T> {
     }
 }
 
+impl<T: IsNone> Cast<Option<T>> for T {
+    #[inline]
+    fn cast(self) -> Option<T> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+}
+
 impl<T> Cast<T> for T {
     #[inline(always)]
     fn cast(self) -> T {
@@ -72,7 +83,6 @@ macro_rules! impl_numeric_cast {
     };
 }
 
-
 impl_numeric_cast!(u64 => { f32, f64, i32, i64, usize, isize });
 impl_numeric_cast!(i64 => { f32, f64, i32, u64, usize, isize });
 impl_numeric_cast!(i32 => { f32, f64, i64, u64, usize, isize });
@@ -88,7 +98,6 @@ impl Cast<String> for bool {
     fn cast(self) -> String {
         self.to_string()
     }
-
 }
 
 // impl_numeric_cast!(u8 => { char, f32, f64});

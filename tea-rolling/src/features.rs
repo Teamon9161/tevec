@@ -1,18 +1,18 @@
-use tea_core::prelude::*;
+use super::{RollingBasic, RollingValidBasic, EPS};
 use num_traits::Zero;
-use super::{EPS, RollingBasic, RollingValidBasic};
+use tea_core::prelude::*;
 
-pub trait RollingValidFeature<T: Clone>: RollingValidBasic<T> 
-where 
-    // Self::Item: Clone,
-    Self::IntoIter: Clone,
+pub trait RollingValidFeature<T: IsNone + Element>: RollingValidBasic<T>
+where
+    Option<T>: Element,
+    Self::Vec<Option<T>>: Vec1<Item = Option<T>>,
+    Self::Vec<Option<f64>>: Vec1<Item = Option<f64>>,
 {
-    fn ts_vsum(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<T>>
+    fn ts_vsum(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<T>>
     where
         T: Number + Zero,
     {
-        // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = T::zero();
         let mut n = 0;
         self.rolling_vapply(window, move |v_rm, v| {
@@ -29,12 +29,12 @@ where
         })
     }
 
-    fn ts_vmean(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vmean(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut n = 0;
         self.rolling_vapply(window, move |v_rm, v| {
@@ -55,12 +55,12 @@ where
         })
     }
 
-    fn ts_vewm(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vewm(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         // 错位相减核心公式：
         // q_x(t) = 1 * new_element - alpha(q_x(t-1 without 1st element)) - 1st element * oma ^ (n-1)
         let mut q_x = 0.; // 权重的分子部分 * 元素，使用错位相减法来计算
@@ -86,13 +86,12 @@ where
         })
     }
 
-    
-    fn ts_vwma(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vwma(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut sum_xt = 0.;
         let mut n = 0;
@@ -118,7 +117,7 @@ where
         })
     }
 
-    fn ts_vstd(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vstd(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
@@ -158,7 +157,7 @@ where
         })
     }
 
-    fn ts_vvar(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vvar(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
@@ -198,7 +197,7 @@ where
         })
     }
 
-    fn ts_vskew(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vskew(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
@@ -247,7 +246,7 @@ where
         })
     }
 
-    fn ts_vkurt(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Option<f64>>
+    fn ts_vkurt(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
     where
         T: Number,
     {
@@ -306,23 +305,23 @@ where
     }
 }
 
-pub trait RollingFeature<T: Clone>: RollingBasic<T>
-where 
-    Self::IntoIter: Clone,
-    // Self::Item: Clone,
+pub trait RollingFeature<T: Element>: RollingBasic<T>
+where
+    Self::Vec<T>: Vec1<Item = T>,
+    Self::Vec<f64>: Vec1<Item = f64>,
 {
-    fn ts_sum(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = Self::Item>
+    fn ts_sum(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, T>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
-        let mut sum = Self::Item::zero();
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
+        let mut sum = T::zero();
         let mut n = 0;
         self.rolling_apply(window, move |v_rm, v| {
             n += 1;
             sum += v;
-            let res = if n >= min_periods { sum } else { Self::Item::none() };
+            let res = if n >= min_periods { sum } else { T::none() };
             if let Some(v_rm) = v_rm {
                 n -= 1;
                 sum -= v_rm;
@@ -331,12 +330,12 @@ where
         })
     }
 
-    fn ts_mean(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_mean(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut n = 0;
         self.rolling_apply(window, move |v_rm, v| {
@@ -355,12 +354,12 @@ where
         })
     }
 
-    fn ts_ewm(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_ewm(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         // 错位相减核心公式：
         // q_x(t) = 1 * new_element - alpha(q_x(t-1 without 1st element)) - 1st element * oma ^ (n-1)
         let mut q_x = 0.; // 权重的分子部分 * 元素，使用错位相减法来计算
@@ -384,18 +383,16 @@ where
         })
     }
 
-    
-    fn ts_wma(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_wma(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
         // let window = window.min(self.len());
-        let min_periods = min_periods.unwrap_or(window/2).min(window);
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut sum_xt = 0.;
         let mut n = 0;
         self.rolling_apply(window, move |v_rm, v| {
-
             n += 1;
             let v = v.f64();
             sum_xt += n.f64() * v; // 错位相减法, 忽略nan带来的系数和window不一致问题
@@ -416,7 +413,7 @@ where
         })
     }
 
-    fn ts_std(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_std(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
@@ -455,7 +452,7 @@ where
         })
     }
 
-    fn ts_var(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_var(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
@@ -494,7 +491,7 @@ where
         })
     }
 
-    fn ts_skew(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_skew(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
@@ -542,7 +539,7 @@ where
         })
     }
 
-    fn ts_kurt(self, window: usize, min_periods: Option<usize>) -> impl Iterator<Item = f64>
+    fn ts_kurt(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
     where
         T: Number,
     {
@@ -554,7 +551,6 @@ where
         let mut sum4 = 0.;
         let mut n = 0;
         self.rolling_apply(window, move |v_rm, v| {
-
             n += 1;
             let v = v.f64();
             sum += v;
@@ -579,8 +575,8 @@ where
                     let mean2_var = mean * mean / var; // (mean / std)^2
                     let out =
                         (ex4 - 4. * mean * ex3) / var2 + 6. * mean2_var + 3. * mean2_var.powi(2);
-                        1. / ((n - 2) * (n - 3)).f64()
-                            * ((n.pow(2) - 1).f64() * out - (3 * (n - 1).pow(2)).f64())
+                    1. / ((n - 2) * (n - 3)).f64()
+                        * ((n.pow(2) - 1).f64() * out - (3 * (n - 1).pow(2)).f64())
                 }
             } else {
                 f64::NAN
@@ -599,18 +595,19 @@ where
     }
 }
 
-
-impl<T: Clone, I: IntoIterator<Item=Option<T>>> RollingValidFeature<T> for I 
-where 
-    // I::Item: Clone ,
-    I::IntoIter: Clone,
-{}
-impl<T: Clone, I: IntoIterator<Item=T>> RollingFeature<T> for I 
-where 
-    // I::Item: Clone,
-    I::IntoIter: Clone,
-{}
-
+impl<T: IsNone + Element, I: RollingValidBasic<T>> RollingValidFeature<T> for I
+where
+    Option<T>: Element,
+    Self::Vec<Option<T>>: Vec1<Item = Option<T>>,
+    Self::Vec<Option<f64>>: Vec1<Item = Option<f64>>,
+{
+}
+impl<T: Element, I: RollingBasic<T>> RollingFeature<T> for I
+where
+    Self::Vec<T>: Vec1<Item = T>,
+    Self::Vec<f64>: Vec1<Item = f64>,
+{
+}
 
 #[cfg(test)]
 mod tests {
@@ -620,16 +617,36 @@ mod tests {
     fn test_ts_sum() {
         // test empty iter
         let data: Vec<i32> = vec![];
-        let sum = data.iter().cloned().ts_sum(3, Some(1)).collect::<Vec<_>>();
+        let sum = data.ts_sum(3, Some(1));
         assert!(sum.is_empty());
 
+        // test sum
         let data = vec![1, 2, 3, 4, 5];
-        let sum: Vec<_> = data.ts_sum(3, Some(1)).collect();
+        let sum = data.ts_sum(3, Some(1));
         assert_eq!(sum, vec![1, 3, 6, 9, 12]);
+        // test valid sum
+        let sum2 = data.to_opt().ts_vsum(3, Some(3));
+        assert_eq!(sum2, vec![None, None, Some(6), Some(9), Some(12)]);
 
         let data = vec![Some(1.), Some(2.), None, Some(4.), Some(5.)];
-        let sum: Vec<Option<f64>> = data.ts_vsum(3, Some(1)).collect();
+        let sum = data.ts_vsum(3, Some(1));
         assert_eq!(sum, vec![Some(1.), Some(3.), Some(3.), Some(6.), Some(9.)]);
     }
 
+    #[test]
+    fn test_ts_mean() {
+        let data = vec![1, 2, 3, 4, 5];
+        let mean = data.ts_mean(3, Some(1));
+        assert_vec1d_equal_numeric(mean, vec![1., 1.5, 2., 3., 4.], None);
+        let data = vec![1., f64::NAN, 3., 4., 5.];
+        let out = data.ts_mean(2, Some(1));
+        assert_vec1d_equal_numeric(out, vec![1., f64::NAN, f64::NAN, f64::NAN, f64::NAN], None);
+        let out = data.to_opt().ts_vmean(2, Some(1));
+        assert_eq!(
+            out,
+            vec![Some(1.), Some(1.), Some(3.), Some(3.5), Some(4.5)]
+        );
+        let out = data.to_opt().ts_vmean(2, Some(2));
+        assert_vec1d_opt_equal_numeric(out, vec![None, None, None, Some(3.5), Some(4.5)], None)
+    }
 }

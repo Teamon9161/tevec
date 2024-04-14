@@ -1,12 +1,17 @@
-// mod iter;
-// mod iter_valid;
+mod element;
+mod iter;
 mod trusted;
 
-pub use trusted::{CollectTrustedToVec, TrustedLen};
 use crate::prelude::IsNone;
+pub use element::Element;
+pub use iter::{IntoIter, OptIter, ToIter};
+pub use trusted::{CollectTrustedToVec, TrustedLen};
 
-pub trait Vec1View<T>: IntoIterator<Item=T>
-{   
+pub type VecOutType<Tr, U> = <<Tr as Vec1View>::Vec<U> as Vec1View>::Vec<U>;
+
+pub trait Vec1View: ToIter {
+    type Vec<U: Element>;
+
     fn len(&self) -> usize;
 
     /// Get the value at the index
@@ -14,17 +19,36 @@ pub trait Vec1View<T>: IntoIterator<Item=T>
     /// # Safety
     ///
     /// The index should be less than the length of the array
-    unsafe fn uget(&self, index: usize) -> T;
-    
+    unsafe fn uget(&self, index: usize) -> Self::Item;
+
+    #[inline]
+    fn to_iter<'a>(&'a self) -> impl Iterator<Item = Self::Item>
+    where
+        Self::Item: 'a,
+    {
+        self.to_iterator()
+    }
+
+    fn to_opt(&self) -> OptIter<Self>
+    where
+        Self::Item: IsNone,
+        Self: Sized,
+    {
+        OptIter {
+            view: self,
+            // type_: std::marker::PhantomData,
+        }
+    }
+
     /// if the value is valid, return it, otherwise return None
     ///
     /// # Safety
     ///
     /// The index should be less than the length of the array
     #[inline]
-    unsafe fn uvget(&self, index: usize) -> Option<T>
+    unsafe fn uvget(&self, index: usize) -> Option<Self::Item>
     where
-        T: IsNone,
+        Self::Item: IsNone,
     {
         let v = self.uget(index);
         if v.is_none() {
@@ -40,7 +64,7 @@ pub trait Vec1View<T>: IntoIterator<Item=T>
     }
 
     #[inline]
-    fn get(&self, index: usize) -> T {
+    fn get(&self, index: usize) -> Self::Item {
         if index < self.len() {
             unsafe { self.uget(index) }
         } else {
@@ -49,9 +73,9 @@ pub trait Vec1View<T>: IntoIterator<Item=T>
     }
 
     #[inline]
-    fn vget(&self, index: usize) -> Option<T>
+    fn vget(&self, index: usize) -> Option<Self::Item>
     where
-        T: IsNone,
+        Self::Item: IsNone,
     {
         if index < self.len() {
             unsafe { self.uvget(index) }
@@ -61,31 +85,23 @@ pub trait Vec1View<T>: IntoIterator<Item=T>
     }
 
     #[inline]
-    fn vfold<U, F>(self, init: U, mut f: F) -> U
+    fn vfold<U, F>(&self, init: U, mut f: F) -> U
     where
-        Self: Sized,
-        F: FnMut(U, T) -> U,
-        T: IsNone,
-    {   
-        self.into_iter().fold(init, |acc, v| {
-            if v.not_none() {
-                f(acc, v)
-            } else {
-                acc
-            }
-        })
+        F: FnMut(U, Self::Item) -> U,
+        Self::Item: IsNone,
+    {
+        self.to_iterator()
+            .fold(init, |acc, v| if v.not_none() { f(acc, v) } else { acc })
     }
 
-    
     #[inline]
-    fn vfold_n<U, F>(self, init: U, mut f: F) -> (usize, U)
+    fn vfold_n<U, F>(&self, init: U, mut f: F) -> (usize, U)
     where
-        Self: Sized,
-        F: FnMut(U, T) -> U,
-        T: IsNone,
-    {   
+        F: FnMut(U, Self::Item) -> U,
+        Self::Item: IsNone,
+    {
         let mut n = 0;
-        let acc = self.into_iter().fold(init, |acc, v| {
+        let acc = self.to_iterator().fold(init, |acc, v| {
             if v.not_none() {
                 n += 1;
                 f(acc, v)
@@ -97,24 +113,86 @@ pub trait Vec1View<T>: IntoIterator<Item=T>
     }
 }
 
-
-pub trait Vec1Mut<T>:
-{   
+pub trait Vec1Mut<'a>: Vec1View {
+    // type OutType;
     /// # Safety
     ///
     /// The index should be less than the length of the array
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut T;
+    unsafe fn uget_mut(&'a mut self, index: usize) -> &'a mut Self::Item;
 
-    // #[inline]
-    // fn get_mut(&mut self, index: usize) -> Option<&mut T> {
-    //     if index < self.len() {
-    //         Some(unsafe { self.uget_mut(index) })
-    //     } else {
-    //         None
-    //         // panic!("Index out of bounds")
-    //     }
-    // }
+    #[inline]
+    fn get_mut(&'a mut self, index: usize) -> Option<&'a mut Self::Item> {
+        if index < self.len() {
+            Some(unsafe { self.uget_mut(index) })
+        } else {
+            None
+            // panic!("Index out of bounds")
+        }
+    }
 }
 
 /// a vector owns its data is not necessarily mutable
-pub trait Vec1<T>: Vec1View<T> {}
+pub trait Vec1: Vec1View + Sized
+where
+    Self::Item: Element,
+{
+    fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self::Vec<Self::Item>;
+
+    #[inline]
+    fn collect_from_opt_iter<I: Iterator<Item = Option<Self::Item>>>(
+        iter: I,
+    ) -> Self::Vec<Self::Item>
+    where
+        Self::Item: IsNone,
+    {
+        let iter = iter.map(|v| v.unwrap_or(Self::Item::none()));
+        Self::collect_from_iter(iter)
+    }
+
+    #[inline]
+    fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(
+        iter: I,
+    ) -> Self::Vec<Self::Item> {
+        Self::collect_from_iter(iter)
+    }
+
+    #[inline]
+    fn empty() -> Self::Vec<Self::Item> {
+        Self::collect_from_iter(std::iter::empty())
+    }
+}
+
+pub trait Vec1Collect: IntoIterator
+where
+    Self::Item: Element,
+{
+    #[inline]
+    fn collect_vec1<O: Vec1<Item = Self::Item>>(self) -> O::Vec<Self::Item>
+    where
+        Self: Sized,
+    {
+        <O as Vec1>::collect_from_iter(self.into_iter())
+    }
+
+    #[inline]
+    fn collect_trusted<O: Vec1<Item = Self::Item>>(self) -> O::Vec<Self::Item>
+    where
+        Self: Sized,
+        Self::IntoIter: TrustedLen,
+    {
+        <O as Vec1>::collect_from_trusted(self.into_iter())
+    }
+}
+
+pub trait Vec1DOptCollect<T: IsNone + Element>: IntoIterator<Item = Option<T>> {
+    #[inline]
+    fn collect_vec1_opt<O: Vec1<Item = T>>(self) -> O::Vec<T>
+    where
+        Self: Sized,
+    {
+        <O as Vec1>::collect_from_opt_iter(self.into_iter())
+    }
+}
+
+impl<T: IntoIterator + Sized> Vec1Collect for T where T::Item: Element {}
+impl<I: IntoIterator<Item = Option<T>>, T: IsNone + Element> Vec1DOptCollect<T> for I {}

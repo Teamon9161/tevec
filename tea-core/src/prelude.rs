@@ -1,7 +1,9 @@
-// pub use super::agg::VecView1DAgg;
+pub use super::agg::{Vec1ViewAgg, Vec1ViewAggValid};
 pub use crate::vec_core::{
-    CollectTrustedToVec, TrustedLen, 
-    Vec1, Vec1Mut, Vec1View,
-    // Vec1DCollect, Vec1DOptCollect
+    CollectTrustedToVec, Element, IntoIter, ToIter, TrustedLen, Vec1, Vec1Collect, Vec1DOptCollect,
+    Vec1Mut, Vec1View, VecOutType,
 };
-pub use tea_dtype::{BoolType, IsNone, Number};
+pub use tea_dtype::{BoolType, IsNone, Number, Opt};
+
+#[cfg(feature = "time")]
+pub use tea_dtype::{DateTime, TimeDelta};

@@ -7,10 +7,12 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-# default = ["nd_array"]
-default = []
+default = ["time"]
+# default = ["nd_array", "time", "pl"]
+
 nd_array = ["ndarray"]
 pl = ["polars"]
+time = ["tea-dtype/time"]
 
 [dependencies]
 num-traits = {workspace = true}

@@ -1,7 +1,29 @@
-use crate::prelude::*;
+use crate::{prelude::*, vec_core::Element};
 
-impl<T: Clone> Vec1View<T> for Vec<T>
-{
+impl<T: Clone> ToIter for Vec<T> {
+    type Item = T;
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
+    where
+        T: 'a,
+    {
+        self.iter().cloned()
+    }
+}
+
+impl<T: Clone> ToIter for &[T] {
+    type Item = T;
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
+    where
+        T: 'a,
+    {
+        self.iter().cloned()
+    }
+}
+
+impl<T: Clone> Vec1View for Vec<T> {
+    type Vec<U: Element> = Vec<U>;
     #[inline]
     fn len(&self) -> usize {
         self.len()
@@ -13,130 +35,77 @@ impl<T: Clone> Vec1View<T> for Vec<T>
     }
 }
 
-impl<'a, T> Vec1View<&'a T> for &'a Vec<T>
-{
+impl<T: Clone> Vec1View for &[T] {
+    type Vec<U: Element> = Vec<U>;
     #[inline]
     fn len(&self) -> usize {
-        (**self).len()
+        (*self).len()
     }
 
     #[inline]
-    unsafe fn uget(&self, index: usize) -> &'a T {
-        self.get_unchecked(index)
+    unsafe fn uget(&self, index: usize) -> T {
+        self.get_unchecked(index).clone()
     }
 }
 
-impl<'a, T> Vec1Mut<T> for &'a mut Vec<T>
-{
-
+impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     #[inline]
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
+    unsafe fn uget_mut(&'a mut self, index: usize) -> &'a mut T {
         self.get_unchecked_mut(index)
     }
 }
 
-// macro_rules! impl_Vec1View_for_vec {
-//     ($($type: ty),*) => {
-//         $(
-//             impl<T> Vec1View<T> for $type
-//             {
-//                 #[inline]
-//                 fn len(&self) -> usize {
-//                     self.len()
-//                 }
+impl<T: Element> Vec1 for Vec<T> {
+    #[inline]
+    fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
+        iter.collect()
+    }
 
-//                 #[inline]
-//                 unsafe fn uget(&self, index: usize) -> T {
-//                     self.get_unchecked(index).clone()
-//                 }
-//             }
+    #[inline]
+    fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
+        iter.collect_trusted_to_vec()
+    }
 
-//             impl<'a, T> Vec1View<&'a T> for &'a $type
-//             {
-//                 #[inline]
-//                 fn len(&self) -> usize {
-//                     (**self).len()
-//                 }
-
-//                 #[inline]
-//                 unsafe fn uget(&self, index: usize) -> &'a T {
-//                     self.get_unchecked(index)
-//                 }
-//             }
-//         )*
-//     };
-//     // (ref $($type: ty),*) => {
-//     //     $(
-//     //         impl<'a, T> Vec1View<&'a T> for &'a $type
-//     //         {
-//     //             #[inline]
-//     //             fn len(&self) -> usize {
-//     //                 (**self).len()
-//     //             }
-
-//     //             #[inline]
-//     //             unsafe fn uget(&self, index: usize) -> &'a T {
-//     //                 self.get_unchecked(index)
-//     //             }
-//     //         }
-//     //     )*
-//     // };
-// }
-
-// macro_rules! impl_vecmut1d_for_vec {
-//     ($($type: ty),*) => {
-//         $(
-//             impl<T> Vec1Mut<T> for $type
-//             {
-//                 #[inline]
-//                 unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
-//                     self.get_unchecked_mut(index)
-//                 }
-//             }
-
-//             impl<'a, T> Vec1Mut<&'a mut T> for &mut $type {
-//                 #[inline]
-//                 unsafe fn uget_mut(&mut self, index: usize) -> &'a mut T {
-//                     self.get_unchecked_mut(index)
-//                 }
-//             }
-//         )*
-//     };
-// }
-// impl_Vec1View_for_vec!(Vec<T>);
-// // impl_Vec1View_for_vec!(ref [T], Vec::<T>);
-// // impl_Vec1View_for_vec!(ref &[T], &mut [T], &Vec<T>, &mut Vec<T>);
-// impl_vecmut1d_for_vec!(Vec<T>);
-
-impl<T: Clone> Vec1<T> for Vec<T> {}
+    #[inline]
+    fn empty() -> Self {
+        Vec::new()
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
 
     #[test]
-    fn test_basic() {
+    fn test_get() {
         let data = vec![1, 2, 3, 4, 5];
         let view = &data;
         assert_eq!(Vec1View::len(&data), 5);
         assert_eq!(view.get(0), 1);
-        // let sum = Vec1View::iter_view(&view).fold(0, |acc, x| acc + *x);
-        // assert_eq!(sum, 15);
+        let slice = view.as_slice();
+        assert_eq!(unsafe { slice.uget(2) }, 3);
     }
 
-    // #[test]
-    // fn test_collect() {
-    //     let data: Vec<_> = (0..5).collect_vec1d();
-    //     assert_eq!(data, vec![0, 1, 2, 3, 4]);
-    //     let data: Vec<_> = (0..5).collect_trusted();
-    //     assert_eq!(data, vec![0, 1, 2, 3, 4]);
-    //     let v: Vec<i32> = vec![];
-    //     let data: Vec<i32> = Vec1::empty();
-    //     assert_eq!(data, v);
-    //     let data: Vec<f64> = vec![Some(1.), None, Some(2.)]
-    //         .into_iter()
-    //         .collect_vec1d_opt();
-    //     assert!(data[1].is_nan());
-    //     assert_eq!(data[2], 2.)
-    // }
+    #[test]
+    fn test_get_mut() {
+        let mut data = vec![1, 2, 3];
+        *unsafe { Vec1Mut::uget_mut(&mut data, 1) } = 4;
+        assert_eq!(data[1], 4);
+        let mut_ref = &mut data;
+        *unsafe { Vec1Mut::uget_mut(mut_ref, 1) } = 4;
+    }
+
+    #[test]
+    fn test_collect() {
+        let data = (0..5).collect_vec1::<Vec<_>>();
+        assert_eq!(data, vec![0, 1, 2, 3, 4]);
+        let data = (0..5).collect_trusted::<Vec<_>>();
+        assert_eq!(data, vec![0, 1, 2, 3, 4]);
+        let v: Vec<i32> = vec![];
+        let data: Vec<i32> = Vec::empty();
+        assert_eq!(data, v);
+        let data = vec![Some(1.), None, Some(2.)].collect_vec1_opt::<Vec<f64>>();
+        assert!(data[1].is_nan());
+        assert_eq!(data[2], 2.)
+    }
 }
