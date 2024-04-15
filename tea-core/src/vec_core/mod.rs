@@ -7,7 +7,7 @@ pub use element::Element;
 pub use iter::{IntoIter, OptIter, ToIter};
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
-pub type VecOutType<Tr, U> = <<Tr as Vec1View>::Vec<U> as Vec1View>::Vec<U>;
+pub type VecOutType<Tr, U> = <Tr as Vec1View>::Vec<U>;
 
 pub trait Vec1View: ToIter {
     type Vec<U: Element>;
@@ -137,27 +137,20 @@ pub trait Vec1: Vec1View + Sized
 where
     Self::Item: Element,
 {
-    fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self::Vec<Self::Item>;
+    fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self;
 
     #[inline]
-    fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(
-        iter: I,
-    ) -> Self::Vec<Self::Item> {
+    fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {
         Self::collect_from_iter(iter)
     }
 
     #[inline]
-    fn collect_with_len<I: Iterator<Item = Self::Item>>(
-        iter: I,
-        len: usize,
-    ) -> Self::Vec<Self::Item> {
+    fn collect_with_len<I: Iterator<Item = Self::Item>>(iter: I, len: usize) -> Self {
         Self::collect_from_trusted(iter.to_trust(len))
     }
 
     #[inline]
-    fn collect_from_opt_iter<I: Iterator<Item = Option<Self::Item>>>(
-        iter: I,
-    ) -> Self::Vec<Self::Item>
+    fn collect_from_opt_iter<I: Iterator<Item = Option<Self::Item>>>(iter: I) -> Self
     where
         Self::Item: IsNone,
     {
@@ -168,7 +161,7 @@ where
     #[inline]
     fn collect_opt_from_trusted<I: Iterator<Item = Option<Self::Item>> + TrustedLen>(
         iter: I,
-    ) -> Self::Vec<Self::Item>
+    ) -> Self
     where
         Self::Item: IsNone,
     {
@@ -176,10 +169,7 @@ where
     }
 
     #[inline]
-    fn collect_opt_with_len<I: Iterator<Item = Option<Self::Item>>>(
-        iter: I,
-        len: usize,
-    ) -> Self::Vec<Self::Item>
+    fn collect_opt_with_len<I: Iterator<Item = Option<Self::Item>>>(iter: I, len: usize) -> Self
     where
         Self::Item: IsNone,
     {
@@ -187,7 +177,7 @@ where
     }
 
     #[inline]
-    fn empty() -> Self::Vec<Self::Item> {
+    fn empty() -> Self {
         Self::collect_from_iter(std::iter::empty())
     }
 }
@@ -197,7 +187,7 @@ where
     Self::Item: Element,
 {
     #[inline]
-    fn collect_vec1<O: Vec1<Item = Self::Item>>(self) -> O::Vec<Self::Item>
+    fn collect_vec1<O: Vec1<Item = Self::Item>>(self) -> O
     where
         Self: Sized,
     {
@@ -205,7 +195,7 @@ where
     }
 
     #[inline]
-    fn collect_trusted_vec1<O: Vec1<Item = Self::Item>>(self) -> O::Vec<Self::Item>
+    fn collect_trusted_vec1<O: Vec1<Item = Self::Item>>(self) -> O
     where
         Self: Sized,
         Self::IntoIter: TrustedLen,
@@ -214,7 +204,7 @@ where
     }
 
     #[inline]
-    fn collect_vec1_with_len<O: Vec1<Item = Self::Item>>(self, len: usize) -> O::Vec<Self::Item>
+    fn collect_vec1_with_len<O: Vec1<Item = Self::Item>>(self, len: usize) -> O
     where
         Self: Sized,
     {
@@ -224,7 +214,7 @@ where
 
 pub trait Vec1DOptCollect<T: IsNone + Element>: IntoIterator<Item = Option<T>> {
     #[inline]
-    fn collect_vec1_opt<O: Vec1<Item = T>>(self) -> O::Vec<T>
+    fn collect_vec1_opt<O: Vec1<Item = T>>(self) -> O
     where
         Self: Sized,
     {
@@ -232,7 +222,7 @@ pub trait Vec1DOptCollect<T: IsNone + Element>: IntoIterator<Item = Option<T>> {
     }
 
     #[inline]
-    fn collect_trusted_vec1_opt<O: Vec1<Item = T>>(self) -> O::Vec<T>
+    fn collect_trusted_vec1_opt<O: Vec1<Item = T>>(self) -> O
     where
         Self: Sized,
         Self::IntoIter: TrustedLen,
@@ -241,7 +231,7 @@ pub trait Vec1DOptCollect<T: IsNone + Element>: IntoIterator<Item = Option<T>> {
     }
 
     #[inline]
-    fn collect_vec1_opt_with_len<O: Vec1<Item = T>>(self, len: usize) -> O::Vec<T>
+    fn collect_vec1_opt_with_len<O: Vec1<Item = T>>(self, len: usize) -> O
     where
         Self: Sized,
     {

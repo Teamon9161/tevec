@@ -19,7 +19,7 @@ where
         self.to_iterator()
             .zip(remove_value_iter)
             .map(move |(v, v_remove)| f(v_remove, v))
-            .collect_vec1::<Self::Vec<U>>()
+            .collect_vec1()
     }
 }
 
@@ -40,7 +40,7 @@ where
         self.to_iterator()
             .zip(remove_value_iter)
             .map(move |(v, v_remove)| f(v_remove.map(|v| v.v()), v))
-            .collect_vec1::<Self::Vec<U>>()
+            .collect_vec1()
     }
 }
 
