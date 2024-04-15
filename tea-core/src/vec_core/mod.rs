@@ -175,7 +175,7 @@ where
     }
 
     #[inline]
-    fn collect_trusted<O: Vec1<Item = Self::Item>>(self) -> O::Vec<Self::Item>
+    fn collect_trusted_vec1<O: Vec1<Item = Self::Item>>(self) -> O::Vec<Self::Item>
     where
         Self: Sized,
         Self::IntoIter: TrustedLen,

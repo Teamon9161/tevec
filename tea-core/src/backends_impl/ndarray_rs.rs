@@ -40,7 +40,7 @@ impl<T: Element> Vec1 for Array1<T> {
 
     #[inline]
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
-        let vec = iter.collect_trusted::<Vec<T>>();
+        let vec = iter.collect_trusted_to_vec::<Vec<T>>();
         Array1::from_vec(vec)
     }
 }

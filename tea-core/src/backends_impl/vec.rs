@@ -99,7 +99,7 @@ mod tests {
     fn test_collect() {
         let data = (0..5).collect_vec1::<Vec<_>>();
         assert_eq!(data, vec![0, 1, 2, 3, 4]);
-        let data = (0..5).collect_trusted::<Vec<_>>();
+        let data = (0..5).collect_trusted_vec1::<Vec<_>>();
         assert_eq!(data, vec![0, 1, 2, 3, 4]);
         let v: Vec<i32> = vec![];
         let data: Vec<i32> = Vec::empty();
