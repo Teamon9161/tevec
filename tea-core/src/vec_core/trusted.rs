@@ -140,7 +140,7 @@ where
     }
 }
 
-#[cfg(feature="pl")]
+#[cfg(feature = "pl")]
 unsafe impl<I: Iterator<Item = J>, J> PlTrustedLen for TrustIter<I, J> {}
 unsafe impl<I: Iterator<Item = J>, J> TrustedLen for TrustIter<I, J> {}
 
