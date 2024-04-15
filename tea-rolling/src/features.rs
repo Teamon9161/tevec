@@ -8,7 +8,7 @@ where
     Self::Vec<Option<T>>: Vec1<Item = Option<T>>,
     Self::Vec<Option<f64>>: Vec1<Item = Option<f64>>,
 {
-    fn ts_vsum(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<T>>
+    fn ts_vsum(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<T>>
     where
         T: Number + Zero,
     {
@@ -29,7 +29,7 @@ where
         })
     }
 
-    fn ts_vmean(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vmean(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -55,7 +55,7 @@ where
         })
     }
 
-    fn ts_vewm(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vewm(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -86,7 +86,7 @@ where
         })
     }
 
-    fn ts_vwma(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vwma(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -117,7 +117,7 @@ where
         })
     }
 
-    fn ts_vstd(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vstd(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -157,7 +157,7 @@ where
         })
     }
 
-    fn ts_vvar(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vvar(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -197,7 +197,7 @@ where
         })
     }
 
-    fn ts_vskew(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vskew(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -246,7 +246,7 @@ where
         })
     }
 
-    fn ts_vkurt(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, Option<f64>>
+    fn ts_vkurt(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
     where
         T: Number,
     {
@@ -310,7 +310,7 @@ where
     Self::Vec<T>: Vec1<Item = T>,
     Self::Vec<f64>: Vec1<Item = f64>,
 {
-    fn ts_sum(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, T>
+    fn ts_sum(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<T>
     where
         T: Number,
     {
@@ -330,7 +330,7 @@ where
         })
     }
 
-    fn ts_mean(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_mean(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {
@@ -354,7 +354,7 @@ where
         })
     }
 
-    fn ts_ewm(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_ewm(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {
@@ -383,7 +383,7 @@ where
         })
     }
 
-    fn ts_wma(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_wma(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {
@@ -413,7 +413,7 @@ where
         })
     }
 
-    fn ts_std(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_std(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {
@@ -452,7 +452,7 @@ where
         })
     }
 
-    fn ts_var(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_var(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {
@@ -491,7 +491,7 @@ where
         })
     }
 
-    fn ts_skew(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_skew(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {
@@ -539,7 +539,7 @@ where
         })
     }
 
-    fn ts_kurt(&self, window: usize, min_periods: Option<usize>) -> VecOutType<Self, f64>
+    fn ts_kurt(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
     where
         T: Number,
     {

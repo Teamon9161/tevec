@@ -5,8 +5,7 @@ pub trait RollingBasic<T>: Vec1View<Item = T>
 where
     T: Element,
 {
-    fn rolling_apply<'a, F, U: Element>(&'a self, window: usize, mut f: F) -> VecOutType<Self, U>
-    //vec_out_type!(U)//<Self::Vec<U> as Vec1View<U>>::Vec<U> //Iterator<Item = U>
+    fn rolling_apply<'a, F, U: Element>(&'a self, window: usize, mut f: F) -> Self::Vec<U>
     where
         T: 'a,
         F: FnMut(Option<T>, T) -> U,
@@ -27,7 +26,7 @@ pub trait RollingValidBasic<T>: Vec1View<Item = Option<T>>
 where
     T: IsNone + Element,
 {
-    fn rolling_vapply<'a, F, U: Element>(&'a self, window: usize, mut f: F) -> VecOutType<Self, U>
+    fn rolling_vapply<'a, F, U: Element>(&'a self, window: usize, mut f: F) -> Self::Vec<U>
     where
         T: 'a,
         F: FnMut(Option<Option<T>>, Option<T>) -> U,

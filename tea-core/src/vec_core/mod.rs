@@ -7,8 +7,6 @@ pub use element::Element;
 pub use iter::{IntoIter, OptIter, ToIter};
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
-pub type VecOutType<Tr, U> = <Tr as Vec1View>::Vec<U>;
-
 pub trait Vec1View: ToIter {
     type Vec<U: Element>;
 
