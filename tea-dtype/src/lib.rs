@@ -1,10 +1,12 @@
+#![feature(return_position_impl_trait_in_trait)]
+
 mod bool_type;
 mod cast;
 mod isnone;
 mod number;
 
 pub use bool_type::BoolType;
-pub use cast::Cast;
+pub use cast::{Cast, IterCast, OptIterCast};
 pub use isnone::{IsNone, Opt};
 pub use number::Number;
 

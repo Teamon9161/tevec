@@ -100,21 +100,6 @@ impl Cast<String> for bool {
     }
 }
 
-// impl_numeric_cast!(u8 => { char, f32, f64});
-// impl_numeric_cast!(i8 => { f32, f64 });
-// impl_numeric_cast!(u16 => { f32, f64 });
-// impl_numeric_cast!(i16 => { f32, f64 });
-// impl_numeric_cast!(u32 => { f32, f64 });
-// impl_numeric_cast!(i32 => { f32, f64 });
-// impl_numeric_cast!(u64 => { f32, f64 });
-// impl_numeric_cast!(i64 => { f32, f64 });
-// impl_numeric_cast!(usize => { f32, f64 });
-// impl_numeric_cast!(isize => { f32, f64 });
-// impl_numeric_cast!(f32 => { f32, f64 });
-// impl_numeric_cast!(f64 => { f32, f64 });
-// impl_numeric_cast!(char => { char });
-// impl_numeric_cast!(bool => {});
-
 macro_rules! impl_bool_cast {
     ($($T: ty),*) => {
         $(
@@ -141,22 +126,6 @@ macro_rules! impl_time_cast {
 
     };
 }
-
-// #[cfg(feature = "time")]
-// impl Cast<DateTime> for DateTime {
-//     #[inline]
-//     fn cast(self) -> DateTime {
-//         self
-//     }
-// }
-
-// #[cfg(feature = "time")]
-// impl Cast<TimeDelta> for TimeDelta {
-//     #[inline]
-//     fn cast(self) -> TimeDelta {
-//         self
-//     }
-// }
 
 #[cfg(feature = "time")]
 impl Cast<i64> for DateTime {
@@ -199,26 +168,12 @@ macro_rules! impl_cast_from_string {
 
 impl_cast_from_string!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize, f32, f64, char, bool);
 
-// impl Cast<String> for String {
-//     #[inline]
-//     fn cast(self) -> String {
-//         self
-//     }
-// }
-
 impl Cast<String> for &str {
     #[inline]
     fn cast(self) -> String {
         self.to_string()
     }
 }
-
-// impl<'a> Cast<&'a str> for &'a str {
-//     #[inline]
-//     fn cast(self) -> &'a str {
-//         self
-//     }
-// }
 
 #[cfg(feature = "time")]
 impl Cast<String> for DateTime {
@@ -303,5 +258,51 @@ impl Cast<TimeDelta> for String {
     #[inline(always)]
     fn cast(self) -> TimeDelta {
         TimeDelta::parse(&self)
+    }
+}
+
+pub trait IterCast: IntoIterator {
+    #[inline]
+    fn cast_iter<T>(self) -> impl Iterator<Item = T>
+    where
+        Self: Sized,
+        Self::Item: Cast<T>,
+    {
+        self.into_iter().map(|item| item.cast())
+    }
+}
+
+pub trait OptIterCast<T>: IntoIterator<Item = Option<T>> {
+    #[inline]
+    fn cast_opt_iter<U>(self) -> impl Iterator<Item = Option<U>>
+    where
+        Self: Sized,
+        T: Cast<U>,
+    {
+        self.into_iter().map(|item| item.map(|v| v.cast()))
+    }
+}
+
+impl<I: IntoIterator> IterCast for I {}
+impl<I: IntoIterator<Item = Option<T>>, T> OptIterCast<T> for I {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_iter_cast() {
+        let v = vec![1, 2, 3, 4, 5];
+        let v: Vec<f32> = v.into_iter().cast_iter().collect();
+        assert_eq!(v, vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+    }
+
+    #[test]
+    fn test_opt_iter_cast() {
+        let v = vec![Some(1), Some(2), Some(3), Some(4), Some(5)];
+        let v: Vec<Option<f32>> = v.into_iter().cast_opt_iter().collect();
+        assert_eq!(
+            v,
+            vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)]
+        );
     }
 }
