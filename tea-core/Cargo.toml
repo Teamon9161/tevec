@@ -7,11 +7,11 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-default = ["time"]
-# default = ["nd_array", "time", "pl"]
+# default = ["time"]
+default = ["nd_array", "time", "pl"]
 
 nd_array = ["ndarray"]
-pl = ["polars"]
+pl = ["polars", "polars-arrow"]
 time = ["tea-dtype/time"]
 
 [dependencies]
@@ -20,3 +20,4 @@ tea-dtype = {path="../tea-dtype", default_features = false}
 serde = "1.0"
 ndarray = {version = "0.15.6", optional = true}
 polars = {version = "0.38.3", optional = true, default_features = false}
+polars-arrow = {version = "0.38.3", optional = true}

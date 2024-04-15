@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use polars::prelude::*;
+use polars_arrow::legacy::utils::CustomIterTools;
 
 macro_rules! impl_for_primitive {
     ($($type:ty),*) => {
@@ -69,6 +70,11 @@ macro_rules! impl_for_primitive {
                 #[inline]
                 fn collect_from_iter<I: Iterator<Item = Option<<$type as PolarsNumericType>::Native>>>(iter: I) -> Self {
                     iter.collect()
+                }
+
+                #[inline]
+                fn collect_from_trusted<I: Iterator<Item = Option<<$type as PolarsNumericType>::Native>>+TrustedLen>(iter: I) -> Self {
+                    iter.collect_trusted()
                 }
             }
 
