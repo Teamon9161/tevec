@@ -34,6 +34,36 @@ macro_rules! impl_for_primitive {
                 }
             }
 
+            impl ToIter for &ChunkedArray<$type> {
+                type Item = Option<<$type as PolarsNumericType>::Native>;
+                #[inline]
+                fn to_iterator<'a>(&'a self) -> impl Iterator<Item=Self::Item>
+                where Self::Item: 'a
+                {
+                    self.into_iter()
+                }
+            }
+
+            impl Vec1View for &ChunkedArray<$type>
+            {
+                type Vec<U: Element> = ChunkedArray<U::Map>;
+                #[inline]
+                fn len(&self) -> usize {
+                    (*self).len()
+                }
+
+                #[inline]
+                unsafe fn uget(&self, index: usize) -> Option<<$type as PolarsNumericType>::Native> {
+                    self.get_unchecked(index)
+                }
+
+                #[inline]
+                unsafe fn uvget(&self, index: usize) -> Option<Option<<$type as PolarsNumericType>::Native>>
+                {
+                    Some(self.uget(index))
+                }
+            }
+
 
             impl Vec1 for ChunkedArray<$type> {
                 #[inline]
