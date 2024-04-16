@@ -108,6 +108,33 @@ macro_rules! impl_for_primitive {
                 }
             }
 
+            impl ToIter for &ChunkedArray<$type> {
+                type Item = Option<$real>;
+                #[inline]
+                fn to_iterator<'a>(&'a self) -> impl Iterator<Item=Option<$real>> where Option<$real>: 'a{
+                    self.into_iter()
+                }
+            }
+
+            impl Vec1View for &ChunkedArray<$type>
+            {
+                #[inline]
+                fn len(&self) -> usize {
+                    (*self).len()
+                }
+
+                #[inline]
+                unsafe fn uget(&self, index: usize) -> Option<$real> {
+                    self.get_unchecked(index)
+                }
+
+                #[inline]
+                unsafe fn uvget(&self, index: usize) -> Option<Option<$real>>
+                {
+                    Some(self.uget(index))
+                }
+            }
+
             impl Vec1 for ChunkedArray<$type> {
                 #[inline]
                 fn collect_from_iter<I: Iterator<Item = Option<$real>>>(iter: I) -> Self {
