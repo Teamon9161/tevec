@@ -11,10 +11,18 @@ pub trait UninitVec<'a, T: Copy>: Vec1 + Vec1Mut<'a> {
     /// # Safety
     ///
     /// The caller should ensure that the index is less than the length of the array
-    unsafe fn uset(&'a mut self, _idx: usize, _v: T) {
+    unsafe fn uset(&mut self, _idx: usize, _v: T) {
         unimplemented!(
             "uset not implemented for {:?}",
             std::any::type_name::<Self>()
         );
+    }
+
+    #[inline]
+    fn set(&mut self, idx: usize, v: T) {
+        assert!(idx < self.len());
+        unsafe {
+            self.uset(idx, v);
+        }
     }
 }

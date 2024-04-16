@@ -156,7 +156,7 @@ pub trait Vec1Mut<'a>: Vec1View {
 pub trait Vec1: Vec1View + Sized {
     fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self;
 
-    fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item>
+    fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item, Vec = Self>
     where
         Self::Item: Copy + 'a;
 

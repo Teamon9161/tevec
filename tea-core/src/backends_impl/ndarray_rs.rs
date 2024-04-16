@@ -28,7 +28,7 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
 
 impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> {
     #[inline]
-    unsafe fn uget_mut(&'a mut self, index: usize) -> &'a mut T {
+    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.uget_mut(index)
     }
 }
@@ -40,7 +40,7 @@ impl<T: Clone> Vec1 for Array1<T> {
     }
 
     #[inline]
-    fn uninit<'a>(len: usize) -> impl UninitVec<'a, T>
+    fn uninit<'a>(len: usize) -> impl UninitVec<'a, T, Vec = Self>
     where
         T: Copy + 'a,
     {

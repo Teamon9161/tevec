@@ -85,7 +85,7 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 
     #[inline]
-    fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item>
+    fn uninit<'a>(len: usize) -> impl UninitVec<'a, T, Vec = Self>
     where
         T: Copy + 'a,
     {
@@ -117,7 +117,7 @@ impl<'a, T: 'a + Copy> UninitVec<'a, T> for Vec<MaybeUninit<T>> {
     }
 
     #[inline]
-    unsafe fn uset(&'a mut self, idx: usize, v: T) {
+    unsafe fn uset(&mut self, idx: usize, v: T) {
         let ele = self.uget_mut(idx);
         ele.write(v);
     }
@@ -168,5 +168,14 @@ mod tests {
         let data = vec![Some(1), Some(2), None];
         let out: Vec<_> = data.opt_iter_cast::<f64>().collect_vec1();
         assert_eq!(out, vec![Some(1.), Some(2.), None])
+    }
+
+    #[test]
+    fn test_uninit() {
+        let mut data = Vec::<i32>::uninit(2);
+        unsafe { data.uset(0, 1) };
+        data.set(1, 2);
+        let data: Vec<_> = unsafe { data.assume_init() };
+        assert_eq!(data, vec![1, 2]);
     }
 }

@@ -66,7 +66,7 @@ macro_rules! impl_for_primitive {
             impl<'a> Vec1Mut<'a> for ChunkedArray<$type>
             {
                 #[inline]
-                unsafe fn uget_mut(&'a mut self, _index: usize) -> &mut Option<<$type as PolarsNumericType>::Native> {
+                unsafe fn uget_mut(&mut self, _index: usize) -> &mut Option<<$type as PolarsNumericType>::Native> {
                     unimplemented!()
                 }
             }
@@ -79,7 +79,7 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<<$type as PolarsNumericType>::Native>>
+                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<<$type as PolarsNumericType>::Native>, Vec=Self>
                 where Option<<$type as PolarsNumericType>::Native>: Copy
                 {
                     ChunkedArray::<$type>::full_null("", len)
@@ -100,7 +100,7 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                unsafe fn uset(&'a mut self, _idx: usize, _v: Option<<$type as PolarsNumericType>::Native>) {
+                unsafe fn uset(&mut self, _idx: usize, _v: Option<<$type as PolarsNumericType>::Native>) {
                     unimplemented!("polars backend do not support set in given index");
                 }
             }
@@ -179,7 +179,7 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<$real>> where Option<$real>: Copy {
+                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<$real>, Vec=Self> where Option<$real>: Copy {
                     ChunkedArray::<$type>::full_null("", len)
                 }
             }
@@ -193,7 +193,7 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                unsafe fn uset(&'a mut self, _idx: usize, _v: Option<$real>) {
+                unsafe fn uset(&mut self, _idx: usize, _v: Option<$real>) {
                     unimplemented!("polars backend do not support set in given index");
                 }
             }
