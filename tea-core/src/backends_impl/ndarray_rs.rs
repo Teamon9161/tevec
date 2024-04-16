@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use crate::prelude::*;
 use ndarray::{Array1, ArrayBase, Data, DataMut, Ix1};
 
@@ -38,9 +40,24 @@ impl<T: Clone> Vec1 for Array1<T> {
     }
 
     #[inline]
+    fn uninit<'a>(len: usize) -> impl UninitVec<'a, T>
+    where
+        T: Copy + 'a,
+    {
+        Array1::uninit(len)
+    }
+
+    #[inline]
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
         let vec = iter.collect_trusted_to_vec();
         Array1::from_vec(vec)
+    }
+}
+
+impl<'a, T: 'a + Copy> UninitVec<'a, T> for Array1<MaybeUninit<T>> {
+    type Vec = Array1<T>;
+    unsafe fn assume_init(self) -> Self::Vec {
+        self.assume_init()
     }
 }
 

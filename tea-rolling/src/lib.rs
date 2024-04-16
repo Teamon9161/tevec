@@ -2,6 +2,7 @@
 #![feature(associated_type_defaults)]
 mod base;
 mod features;
+// mod cmp;
 
 pub const EPS: f64 = 1e-14;
 pub use base::{RollingBasic, RollingValidBasic};

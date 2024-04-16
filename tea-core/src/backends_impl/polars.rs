@@ -63,6 +63,14 @@ macro_rules! impl_for_primitive {
                 }
             }
 
+            impl<'a> Vec1Mut<'a> for ChunkedArray<$type>
+            {
+                #[inline]
+                unsafe fn uget_mut(&'a mut self, _index: usize) -> &mut Option<<$type as PolarsNumericType>::Native> {
+                    unimplemented!()
+                }
+            }
+
 
             impl Vec1 for ChunkedArray<$type> {
                 #[inline]
@@ -71,8 +79,29 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
+                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<<$type as PolarsNumericType>::Native>>
+                where Option<<$type as PolarsNumericType>::Native>: Copy
+                {
+                    ChunkedArray::<$type>::full_null("", len)
+                }
+
+                #[inline]
                 fn collect_from_trusted<I: Iterator<Item = Option<<$type as PolarsNumericType>::Native>>+TrustedLen>(iter: I) -> Self {
                     iter.collect_trusted()
+                }
+            }
+
+            impl<'a> UninitVec<'a, Option<<$type as PolarsNumericType>::Native>> for ChunkedArray<$type>
+            {
+                type Vec = ChunkedArray<$type>;
+                #[inline(always)]
+                unsafe fn assume_init(self) -> Self::Vec {
+                    self
+                }
+
+                #[inline]
+                unsafe fn uset(&'a mut self, _idx: usize, _v: Option<<$type as PolarsNumericType>::Native>) {
+                    unimplemented!("polars backend do not support set in given index");
                 }
             }
 
@@ -135,10 +164,37 @@ macro_rules! impl_for_primitive {
                 }
             }
 
+            impl<'a> Vec1Mut<'a> for ChunkedArray<$type>
+            {
+                #[inline]
+                unsafe fn uget_mut(&'a mut self, _index: usize) -> &mut Option<$real> {
+                    unimplemented!();
+                }
+            }
+
             impl Vec1 for ChunkedArray<$type> {
                 #[inline]
                 fn collect_from_iter<I: Iterator<Item = Option<$real>>>(iter: I) -> Self {
                     iter.collect()
+                }
+
+                #[inline]
+                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<$real>> where Option<$real>: Copy {
+                    ChunkedArray::<$type>::full_null("", len)
+                }
+            }
+
+            impl<'a> UninitVec<'a, Option<$real>> for ChunkedArray<$type>
+            {
+                type Vec = ChunkedArray<$type>;
+                #[inline(always)]
+                unsafe fn assume_init(self) -> Self::Vec {
+                    self
+                }
+
+                #[inline]
+                unsafe fn uset(&'a mut self, _idx: usize, _v: Option<$real>) {
+                    unimplemented!("polars backend do not support set in given index");
                 }
             }
         )*

@@ -1,6 +1,19 @@
+use std::mem::MaybeUninit;
+
 use crate::prelude::*;
 
 impl<T: Clone> ToIter for Vec<T> {
+    type Item = T;
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
+    where
+        T: 'a,
+    {
+        self.iter().cloned()
+    }
+}
+
+impl<T: Clone> ToIter for &Vec<T> {
     type Item = T;
     #[inline]
     fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
@@ -23,7 +36,6 @@ impl<T: Clone> ToIter for &[T] {
 }
 
 impl<T: Clone> Vec1View for Vec<T> {
-    // type Vec<U: Element> = Vec<U>;
     #[inline]
     fn len(&self) -> usize {
         self.len()
@@ -35,8 +47,19 @@ impl<T: Clone> Vec1View for Vec<T> {
     }
 }
 
+impl<T: Clone> Vec1View for &Vec<T> {
+    #[inline]
+    fn len(&self) -> usize {
+        (*self).len()
+    }
+
+    #[inline]
+    unsafe fn uget(&self, index: usize) -> T {
+        self.get_unchecked(index).clone()
+    }
+}
+
 impl<T: Clone> Vec1View for &[T] {
-    // type Vec<U: Element> = Vec<U>;
     #[inline]
     fn len(&self) -> usize {
         (*self).len()
@@ -62,6 +85,18 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 
     #[inline]
+    fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item>
+    where
+        T: Copy + 'a,
+    {
+        let mut v = Vec::with_capacity(len);
+        unsafe {
+            v.set_len(len);
+        }
+        v
+    }
+
+    #[inline]
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
         iter.collect_trusted_to_vec()
     }
@@ -69,6 +104,22 @@ impl<T: Clone> Vec1 for Vec<T> {
     #[inline]
     fn empty() -> Self {
         Vec::new()
+    }
+}
+
+impl<'a, T: 'a + Copy> UninitVec<'a, T> for Vec<MaybeUninit<T>> {
+    type Vec = Vec<T>;
+
+    #[inline]
+    unsafe fn assume_init(self) -> Self::Vec {
+        let (ptr, len, cap) = self.into_raw_parts();
+        Vec::from_raw_parts(ptr as *mut T, len, cap)
+    }
+
+    #[inline]
+    unsafe fn uset(&'a mut self, idx: usize, v: T) {
+        let ele = self.uget_mut(idx);
+        ele.write(v);
     }
 }
 

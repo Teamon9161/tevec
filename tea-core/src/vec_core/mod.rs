@@ -1,5 +1,8 @@
 mod iter;
 mod trusted;
+mod uninit;
+
+pub use uninit::UninitVec;
 
 use crate::prelude::IsNone;
 pub use iter::{IntoIter, OptIter, ToIter};
@@ -150,11 +153,12 @@ pub trait Vec1Mut<'a>: Vec1View {
 }
 
 /// a vector owns its data is not necessarily mutable
-pub trait Vec1: Vec1View + Sized
-where
-    Self::Item: Clone,
-{
+pub trait Vec1: Vec1View + Sized {
     fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self;
+
+    fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item>
+    where
+        Self::Item: Copy + 'a;
 
     #[inline]
     fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {
