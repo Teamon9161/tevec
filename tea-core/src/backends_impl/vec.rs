@@ -108,4 +108,14 @@ mod tests {
         assert!(data[1].is_nan());
         assert_eq!(data[2], 2.)
     }
+
+    #[test]
+    fn test_iter_cast() {
+        let data = vec![1, 2, 3, 4, 5];
+        let out: Vec<_> = data.iter_cast::<f64>().collect_trusted_vec1();
+        assert_eq!(out, vec![1., 2., 3., 4., 5.]);
+        let data = vec![Some(1), Some(2), None];
+        let out: Vec<_> = data.opt_iter_cast::<f64>().collect_vec1();
+        assert_eq!(out, vec![Some(1.), Some(2.), None])
+    }
 }

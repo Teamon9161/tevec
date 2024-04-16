@@ -1,13 +1,28 @@
 use super::cast::Cast;
 
 pub trait Opt {
+    type Value;
     fn v(self) -> Self;
+
+    fn map_to<U, F>(self, f: F) -> Option<U>
+    where
+        F: FnMut(Self::Value) -> U;
 }
 
 impl<T> Opt for Option<T> {
+    type Value = T;
+
     #[inline(always)]
     fn v(self) -> Self {
         self
+    }
+
+    #[inline]
+    fn map_to<U, F>(self, f: F) -> Option<U>
+    where
+        F: FnMut(Self::Value) -> U,
+    {
+        self.map(f)
     }
 }
 
@@ -15,7 +30,6 @@ pub trait IsNone
 where
     Self: Sized,
     Self: Cast<Self::Opt>,
-    Self::Opt: Cast<Self> + Opt,
 {
     type Opt;
 

@@ -3,6 +3,7 @@ mod trusted;
 
 use crate::prelude::IsNone;
 pub use iter::{IntoIter, OptIter, ToIter};
+use tea_dtype::{Cast, Opt};
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
 pub trait Vec1View: ToIter {
@@ -19,13 +20,33 @@ pub trait Vec1View: ToIter {
 
     #[inline]
     fn to_iter<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>, Self::Item>
-    //impl Iterator<Item = Self::Item>
     where
         Self::Item: 'a,
     {
         TrustIter::new(self.to_iterator(), self.len())
     }
 
+    #[inline]
+    fn iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = U>, U>
+    where
+        Self::Item: Cast<U>,
+    {
+        TrustIter::new(self.to_iterator().map(|v| v.cast()), self.len())
+    }
+
+    #[inline]
+    fn opt_iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = Option<U>>, Option<U>>
+    where
+        Self::Item: Opt,
+        <Self::Item as Opt>::Value: Cast<U>,
+    {
+        TrustIter::new(
+            self.to_iterator().map(|v| v.map_to(Cast::<U>::cast)),
+            self.len(),
+        )
+    }
+
+    #[inline]
     fn to_opt(&self) -> OptIter<Self>
     where
         Self::Item: IsNone,
@@ -87,7 +108,7 @@ pub trait Vec1View: ToIter {
         F: FnMut(U, Self::Item) -> U,
         Self::Item: IsNone,
     {
-        self.to_iterator()
+        self.to_iter()
             .fold(init, |acc, v| if v.not_none() { f(acc, v) } else { acc })
     }
 
@@ -98,7 +119,7 @@ pub trait Vec1View: ToIter {
         Self::Item: IsNone,
     {
         let mut n = 0;
-        let acc = self.to_iterator().fold(init, |acc, v| {
+        let acc = self.to_iter().fold(init, |acc, v| {
             if v.not_none() {
                 n += 1;
                 f(acc, v)

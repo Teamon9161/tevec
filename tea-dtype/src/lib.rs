@@ -6,7 +6,7 @@ mod isnone;
 mod number;
 
 pub use bool_type::BoolType;
-pub use cast::{Cast, IterCast, OptIterCast};
+pub use cast::Cast;
 pub use isnone::{IsNone, Opt};
 pub use number::Number;
 
