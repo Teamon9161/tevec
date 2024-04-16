@@ -14,7 +14,7 @@ where
         let remove_value_iter = std::iter::repeat(None)
             .take(window - 1)
             .chain(self.to_iterator().map(|v| Some(v)));
-        self.to_iterator()
+        self.to_iter()
             .zip(remove_value_iter)
             .map(move |(v, v_remove)| f(v_remove, v))
             .collect_vec1()
@@ -34,9 +34,26 @@ where
         let remove_value_iter = std::iter::repeat::<Option<Option<T>>>(None)
             .take(window - 1)
             .chain(self.to_iterator().map(Some));
-        self.to_iterator()
+        self.to_iter()
             .zip(remove_value_iter)
-            .map(move |(v, v_remove)| f(v_remove.map(|v| v.v()), v))
+            .map(move |(v, v_remove)| f(v_remove, v))
+            .collect_vec1()
+    }
+
+    fn rolling_vapply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        O::Item: Clone,
+        // start, end, value
+        F: FnMut(Option<usize>, usize, Option<T>) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..self.len() - window + 1).map(Some));
+        self.to_iter()
+            .zip(start_iter)
+            .enumerate()
+            .map(move |(end, (v, start))| f(start, end, v))
             .collect_vec1()
     }
 }
