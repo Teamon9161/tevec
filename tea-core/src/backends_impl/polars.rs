@@ -17,7 +17,6 @@ macro_rules! impl_for_primitive {
 
             impl Vec1View for ChunkedArray<$type>
             {
-                type Vec<U: Element> = ChunkedArray<U::Map>;
                 #[inline]
                 fn len(&self) -> usize {
                     (*self).len()
@@ -47,7 +46,6 @@ macro_rules! impl_for_primitive {
 
             impl Vec1View for &ChunkedArray<$type>
             {
-                type Vec<U: Element> = ChunkedArray<U::Map>;
                 #[inline]
                 fn len(&self) -> usize {
                     (*self).len()
@@ -93,7 +91,6 @@ macro_rules! impl_for_primitive {
 
             impl Vec1View for ChunkedArray<$type>
             {
-                type Vec<U: Element> = ChunkedArray<U::Map>;
                 #[inline]
                 fn len(&self) -> usize {
                     (*self).len()
@@ -134,7 +131,6 @@ impl_for_primitive!(BooleanType: bool);
 
 // impl<'a> Vec1View for ChunkedArray<StringType>
 // {
-//     type Vec<U: Element> = ChunkedArray<U>;
 //     #[inline]
 //     fn len(&self) -> usize {
 //         (*self).len()

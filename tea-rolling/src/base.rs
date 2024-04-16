@@ -3,13 +3,12 @@ use tea_core::prelude::*;
 
 pub trait RollingBasic<T>: Vec1View<Item = T>
 where
-    T: Element,
+    T: Clone,
 {
-    fn rolling_apply<'a, F, U: Element>(&'a self, window: usize, mut f: F) -> Self::Vec<U>
+    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
     where
-        T: 'a,
-        F: FnMut(Option<T>, T) -> U,
-        Self::Vec<U>: Vec1<Item = U>,
+        O::Item: Clone,
+        F: FnMut(Option<T>, T) -> O::Item,
     {
         assert!(window > 0, "window must be greater than 0");
         let remove_value_iter = std::iter::repeat(None)
@@ -24,13 +23,12 @@ where
 
 pub trait RollingValidBasic<T>: Vec1View<Item = Option<T>>
 where
-    T: IsNone + Element,
+    T: IsNone + Clone,
 {
-    fn rolling_vapply<'a, F, U: Element>(&'a self, window: usize, mut f: F) -> Self::Vec<U>
+    fn rolling_vapply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
     where
-        T: 'a,
-        F: FnMut(Option<Option<T>>, Option<T>) -> U,
-        Self::Vec<U>: Vec1<Item = U>,
+        O::Item: Clone,
+        F: FnMut(Option<Option<T>>, Option<T>) -> O::Item,
     {
         assert!(window > 0, "window must be greater than 0");
         let remove_value_iter = std::iter::repeat::<Option<Option<T>>>(None)
@@ -43,6 +41,6 @@ where
     }
 }
 
-impl<T: Element, I: Vec1View<Item = T>> RollingBasic<T> for I {}
+impl<T: Clone, I: Vec1View<Item = T>> RollingBasic<T> for I {}
 
-impl<T: IsNone + Element, I: Vec1View<Item = Option<T>>> RollingValidBasic<T> for I {}
+impl<T: IsNone + Clone, I: Vec1View<Item = Option<T>>> RollingValidBasic<T> for I {}

@@ -1,4 +1,4 @@
-use crate::{prelude::*, vec_core::Element};
+use crate::prelude::*;
 use ndarray::{Array1, ArrayBase, Data, DataMut, Ix1};
 
 impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
@@ -13,7 +13,6 @@ impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
 }
 
 impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
-    type Vec<U: Element> = Array1<U>;
     #[inline]
     fn len(&self) -> usize {
         self.len()
@@ -32,7 +31,7 @@ impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> 
     }
 }
 
-impl<T: Element> Vec1 for Array1<T> {
+impl<T: Clone> Vec1 for Array1<T> {
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         Array1::from_iter(iter)

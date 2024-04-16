@@ -1,14 +1,12 @@
-mod element;
 mod iter;
 mod trusted;
 
 use crate::prelude::IsNone;
-pub use element::Element;
 pub use iter::{IntoIter, OptIter, ToIter};
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
 pub trait Vec1View: ToIter {
-    type Vec<U: Element>;
+    // type Vec<U: Element>;
 
     fn len(&self) -> usize;
 
@@ -133,7 +131,7 @@ pub trait Vec1Mut<'a>: Vec1View {
 /// a vector owns its data is not necessarily mutable
 pub trait Vec1: Vec1View + Sized
 where
-    Self::Item: Element,
+    Self::Item: Clone,
 {
     fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self;
 
@@ -182,14 +180,14 @@ where
 
 pub trait Vec1Collect: IntoIterator
 where
-    Self::Item: Element,
+    Self::Item: Clone,
 {
     #[inline]
     fn collect_vec1<O: Vec1<Item = Self::Item>>(self) -> O
     where
         Self: Sized,
     {
-        <O as Vec1>::collect_from_iter(self.into_iter())
+        O::collect_from_iter(self.into_iter())
     }
 
     #[inline]
@@ -210,7 +208,7 @@ where
     }
 }
 
-pub trait Vec1DOptCollect<T: IsNone + Element>: IntoIterator<Item = Option<T>> {
+pub trait Vec1DOptCollect<T: IsNone + Clone>: IntoIterator<Item = Option<T>> {
     #[inline]
     fn collect_vec1_opt<O: Vec1<Item = T>>(self) -> O
     where
@@ -237,5 +235,5 @@ pub trait Vec1DOptCollect<T: IsNone + Element>: IntoIterator<Item = Option<T>> {
     }
 }
 
-impl<T: IntoIterator + Sized> Vec1Collect for T where T::Item: Element {}
-impl<I: IntoIterator<Item = Option<T>>, T: IsNone + Element> Vec1DOptCollect<T> for I {}
+impl<T: IntoIterator + Sized> Vec1Collect for T where T::Item: Clone {}
+impl<I: IntoIterator<Item = Option<T>>, T: IsNone + Clone> Vec1DOptCollect<T> for I {}

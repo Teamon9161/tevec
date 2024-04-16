@@ -1,4 +1,4 @@
-use crate::{prelude::*, vec_core::Element};
+use crate::prelude::*;
 
 impl<T: Clone> ToIter for Vec<T> {
     type Item = T;
@@ -23,7 +23,7 @@ impl<T: Clone> ToIter for &[T] {
 }
 
 impl<T: Clone> Vec1View for Vec<T> {
-    type Vec<U: Element> = Vec<U>;
+    // type Vec<U: Element> = Vec<U>;
     #[inline]
     fn len(&self) -> usize {
         self.len()
@@ -36,7 +36,7 @@ impl<T: Clone> Vec1View for Vec<T> {
 }
 
 impl<T: Clone> Vec1View for &[T] {
-    type Vec<U: Element> = Vec<U>;
+    // type Vec<U: Element> = Vec<U>;
     #[inline]
     fn len(&self) -> usize {
         (*self).len()
@@ -55,7 +55,7 @@ impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     }
 }
 
-impl<T: Element> Vec1 for Vec<T> {
+impl<T: Clone> Vec1 for Vec<T> {
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         iter.collect()

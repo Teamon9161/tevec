@@ -1,4 +1,4 @@
-use super::{Element, Vec1View};
+use super::Vec1View;
 use tea_dtype::{Cast, IsNone};
 
 pub trait ToIter {
@@ -14,7 +14,6 @@ pub trait IntoIter<T> {
 
 pub struct OptIter<'a, V: Vec1View> {
     pub view: &'a V,
-    // pub type_: std::marker::PhantomData<T>,
 }
 
 impl<V: Vec1View> ToIter for OptIter<'_, V>
@@ -42,15 +41,10 @@ where
     }
 }
 
-// impl <T: IsNone+Clone, V: Vec1View<T>> BaseVecType for OptIter<'_, T, V> {
-//     type Type = <V as BaseVecType>::Type;
-// }
-
 impl<T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for OptIter<'_, V>
 where
     T::Opt: Clone,
 {
-    type Vec<U: Element> = V::Vec<U>;
     #[inline]
     fn len(&self) -> usize {
         self.view.len()

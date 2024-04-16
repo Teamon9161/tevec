@@ -2,13 +2,8 @@ use super::{RollingBasic, RollingValidBasic, EPS};
 use num_traits::Zero;
 use tea_core::prelude::*;
 
-pub trait RollingValidFeature<T: IsNone + Element>: RollingValidBasic<T>
-where
-    Option<T>: Element,
-    Self::Vec<Option<T>>: Vec1<Item = Option<T>>,
-    Self::Vec<Option<f64>>: Vec1<Item = Option<f64>>,
-{
-    fn ts_vsum(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<T>>
+pub trait RollingValidFeature<T: IsNone + Clone>: RollingValidBasic<T> {
+    fn ts_vsum<O: Vec1<Item = Option<T>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number + Zero,
     {
@@ -29,7 +24,7 @@ where
         })
     }
 
-    fn ts_vmean(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vmean<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -55,7 +50,7 @@ where
         })
     }
 
-    fn ts_vewm(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vewm<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -86,7 +81,7 @@ where
         })
     }
 
-    fn ts_vwma(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vwma<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -117,7 +112,7 @@ where
         })
     }
 
-    fn ts_vstd(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vstd<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -157,7 +152,7 @@ where
         })
     }
 
-    fn ts_vvar(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vvar<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -197,7 +192,7 @@ where
         })
     }
 
-    fn ts_vskew(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vskew<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -246,7 +241,7 @@ where
         })
     }
 
-    fn ts_vkurt(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<Option<f64>>
+    fn ts_vkurt<O: Vec1<Item = Option<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -305,12 +300,8 @@ where
     }
 }
 
-pub trait RollingFeature<T: Element>: RollingBasic<T>
-where
-    Self::Vec<T>: Vec1<Item = T>,
-    Self::Vec<f64>: Vec1<Item = f64>,
-{
-    fn ts_sum(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<T>
+pub trait RollingFeature<T: Clone>: RollingBasic<T> {
+    fn ts_sum<O: Vec1<Item = T>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -330,7 +321,7 @@ where
         })
     }
 
-    fn ts_mean(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_mean<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -354,7 +345,7 @@ where
         })
     }
 
-    fn ts_ewm(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_ewm<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -383,7 +374,7 @@ where
         })
     }
 
-    fn ts_wma(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_wma<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -413,7 +404,7 @@ where
         })
     }
 
-    fn ts_std(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_std<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -452,7 +443,7 @@ where
         })
     }
 
-    fn ts_var(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_var<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -491,7 +482,7 @@ where
         })
     }
 
-    fn ts_skew(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_skew<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -539,7 +530,7 @@ where
         })
     }
 
-    fn ts_kurt(&self, window: usize, min_periods: Option<usize>) -> Self::Vec<f64>
+    fn ts_kurt<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
     {
@@ -595,19 +586,8 @@ where
     }
 }
 
-impl<T: IsNone + Element, I: RollingValidBasic<T>> RollingValidFeature<T> for I
-where
-    Option<T>: Element,
-    Self::Vec<Option<T>>: Vec1<Item = Option<T>>,
-    Self::Vec<Option<f64>>: Vec1<Item = Option<f64>>,
-{
-}
-impl<T: Element, I: RollingBasic<T>> RollingFeature<T> for I
-where
-    Self::Vec<T>: Vec1<Item = T>,
-    Self::Vec<f64>: Vec1<Item = f64>,
-{
-}
+impl<T: IsNone + Clone, I: RollingValidBasic<T>> RollingValidFeature<T> for I {}
+impl<T: Clone, I: RollingBasic<T>> RollingFeature<T> for I {}
 
 #[cfg(test)]
 mod tests {
@@ -617,36 +597,36 @@ mod tests {
     fn test_ts_sum() {
         // test empty iter
         let data: Vec<i32> = vec![];
-        let sum = data.ts_sum(3, Some(1));
+        let sum: Vec<_> = data.ts_sum(3, Some(1));
         assert!(sum.is_empty());
 
         // test sum
         let data = vec![1, 2, 3, 4, 5];
-        let sum = data.ts_sum(3, Some(1));
+        let sum: Vec<_> = data.ts_sum(3, Some(1));
         assert_eq!(sum, vec![1, 3, 6, 9, 12]);
         // test valid sum
-        let sum2 = data.to_opt().ts_vsum(3, Some(3));
+        let sum2: Vec<_> = data.to_opt().ts_vsum(3, Some(3));
         assert_eq!(sum2, vec![None, None, Some(6), Some(9), Some(12)]);
 
         let data = vec![Some(1.), Some(2.), None, Some(4.), Some(5.)];
-        let sum = data.ts_vsum(3, Some(1));
+        let sum: Vec<_> = data.ts_vsum(3, Some(1));
         assert_eq!(sum, vec![Some(1.), Some(3.), Some(3.), Some(6.), Some(9.)]);
     }
 
     #[test]
     fn test_ts_mean() {
         let data = vec![1, 2, 3, 4, 5];
-        let mean = data.ts_mean(3, Some(1));
+        let mean: Vec<_> = data.ts_mean(3, Some(1));
         assert_vec1d_equal_numeric(mean, vec![1., 1.5, 2., 3., 4.], None);
         let data = vec![1., f64::NAN, 3., 4., 5.];
-        let out = data.ts_mean(2, Some(1));
+        let out: Vec<_> = data.ts_mean(2, Some(1));
         assert_vec1d_equal_numeric(out, vec![1., f64::NAN, f64::NAN, f64::NAN, f64::NAN], None);
-        let out = data.to_opt().ts_vmean(2, Some(1));
+        let out: Vec<_> = data.to_opt().ts_vmean(2, Some(1));
         assert_eq!(
             out,
             vec![Some(1.), Some(1.), Some(3.), Some(3.5), Some(4.5)]
         );
-        let out = data.to_opt().ts_vmean(2, Some(2));
+        let out: Vec<_> = data.to_opt().ts_vmean(2, Some(2));
         assert_vec1d_opt_equal_numeric(out, vec![None, None, None, Some(3.5), Some(4.5)], None)
     }
 }
