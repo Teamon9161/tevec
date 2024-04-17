@@ -1,4 +1,4 @@
-use super::{RollingBasic, RollingValidBasic, EPS};
+use super::{RollingBasic, RollingValidBasic};
 use num_traits::Zero;
 use tea_core::prelude::*;
 

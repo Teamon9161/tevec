@@ -1,0 +1,20 @@
+[package]
+name = "tears"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[features]
+default = []
+time = ["tea-dtype/time", "tea-core/time"]
+pl = ["tea-core/pl"]
+nd_array = ["tea-core/nd_array"]
+rolling = ["tea-rolling"]
+
+
+[dependencies]
+tea-dtype = { path = "../tea-dtype", default-features = false }
+tea-core = { path = "../tea-core", default-features = false }
+tea-rolling = { path = "../tea-rolling", default-features = false , optional=true}

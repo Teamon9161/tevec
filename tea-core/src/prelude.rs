@@ -7,3 +7,5 @@ pub use tea_dtype::{BoolType, Cast, IsNone, Number, Opt};
 
 #[cfg(feature = "time")]
 pub use tea_dtype::{DateTime, TimeDelta};
+
+pub const EPS: f64 = 1e-14;
