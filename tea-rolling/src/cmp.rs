@@ -40,7 +40,7 @@ pub trait RollingValidCmp<T: IsNone + Clone>: RollingValidBasic<T> {
                     (min, min_idx) = (v, Some(end));
                 }
                 let out = if n >= min_periods {
-                    min_idx.map(|min_idx | (min_idx - start.unwrap_or(0) + 1).f64())
+                    min_idx.map(|min_idx| (min_idx - start.unwrap_or(0) + 1).f64())
                 } else {
                     None
                 };
