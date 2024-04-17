@@ -168,6 +168,8 @@ impl<Type: Vec1View<Item = Option<T>>, T> Vec1ViewAggValid<T> for Type {}
 
 #[cfg(test)]
 mod tests {
+    use crate::prelude::Vec1Collect;
+
     // use crate::prelude::*;
     use super::*;
     #[test]
@@ -190,7 +192,7 @@ mod tests {
         assert_eq!(data.min(), Some(1.));
         assert_eq!(data.to_opt().vmax(), Some(5.));
         assert_eq!(data.to_opt().vmin(), Some(1.));
-        let data: Vec<_> = data.to_opt().into_iter().collect();
+        let data: Vec<_> = data.to_opt().collect_trusted_vec1();
         assert_eq!(data.vmax(), Some(5.));
         assert_eq!(data.vmin(), Some(1.));
     }

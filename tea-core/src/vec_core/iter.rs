@@ -1,4 +1,4 @@
-use super::Vec1View;
+use super::{TrustIter, Vec1View};
 use tea_dtype::{Cast, IsNone};
 
 pub trait ToIter {
@@ -29,19 +29,20 @@ where
     }
 }
 
-impl<'a, V: Vec1View> IntoIterator for &OptIter<'a, V>
+impl<V: Vec1View> ToIter for &OptIter<'_, V>
 where
     V::Item: IsNone,
 {
     type Item = <V::Item as IsNone>::Opt;
-    type IntoIter = impl Iterator<Item = Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.to_iterator()
+    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = Self::Item>
+    where
+        Self::Item: 'a,
+    {
+        self.view.to_iter().map(|v| v.cast())
     }
 }
 
-impl<T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for OptIter<'_, V>
+impl<'a, T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V>
 where
     T::Opt: Clone,
 {
@@ -53,5 +54,34 @@ where
     #[inline]
     unsafe fn uget(&self, index: usize) -> T::Opt {
         self.view.uget(index).cast()
+    }
+}
+
+impl<'a, T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for &OptIter<'a, V>
+where
+    T::Opt: Clone,
+{
+    #[inline]
+    fn len(&self) -> usize {
+        self.view.len()
+    }
+
+    #[inline]
+    unsafe fn uget(&self, index: usize) -> T::Opt {
+        self.view.uget(index).cast()
+    }
+}
+
+impl<'a, V: Vec1View> IntoIterator for &OptIter<'a, V>
+where
+    V::Item: IsNone + Clone,
+    <V::Item as IsNone>::Opt: Clone,
+{
+    type Item = <V::Item as IsNone>::Opt;
+    type IntoIter = TrustIter<impl Iterator<Item = Self::Item>, Self::Item>;
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.to_iter()
+        // Vec1View::to_iter(self)
     }
 }
