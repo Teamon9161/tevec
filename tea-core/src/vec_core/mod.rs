@@ -10,10 +10,6 @@ use tea_dtype::{Cast, Opt};
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
 pub trait Vec1View: ToIter {
-    // type Vec<U: Element>;
-
-    fn len(&self) -> usize;
-
     /// Get the value at the index
     ///
     /// # Safety
@@ -22,7 +18,7 @@ pub trait Vec1View: ToIter {
     unsafe fn uget(&self, index: usize) -> Self::Item;
 
     #[inline]
-    fn to_iter<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>, Self::Item>
+    fn to_iter<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
         Self::Item: 'a,
     {
@@ -30,15 +26,16 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = U>, U>
+    fn iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = U>>
     where
         Self::Item: Cast<U>,
     {
         TrustIter::new(self.to_iterator().map(|v| v.cast()), self.len())
+        // self.to_iterator().map(|v| v.cast())
     }
 
     #[inline]
-    fn opt_iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = Option<U>>, Option<U>>
+    fn opt_iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = Option<U>>>
     where
         Self::Item: Opt,
         <Self::Item as Opt>::Value: Cast<U>,
@@ -77,11 +74,6 @@ pub trait Vec1View: ToIter {
         } else {
             Some(v)
         }
-    }
-
-    #[inline]
-    fn is_empty(&self) -> bool {
-        self.len() == 0
     }
 
     #[inline]

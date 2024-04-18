@@ -4,43 +4,55 @@ use crate::prelude::*;
 
 impl<T: Clone> ToIter for Vec<T> {
     type Item = T;
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
-    where
-        T: 'a,
-    {
-        self.iter().cloned()
-    }
-}
 
-impl<T: Clone> ToIter for &Vec<T> {
-    type Item = T;
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
-    where
-        T: 'a,
-    {
-        self.iter().cloned()
-    }
-}
-
-impl<T: Clone> ToIter for &[T] {
-    type Item = T;
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
-    where
-        T: 'a,
-    {
-        self.iter().cloned()
-    }
-}
-
-impl<T: Clone> Vec1View for Vec<T> {
     #[inline]
     fn len(&self) -> usize {
         self.len()
     }
 
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    where
+        T: 'a,
+    {
+        TrustIter::new(self.iter().cloned(), self.len())
+    }
+}
+
+impl<T: Clone> ToIter for &Vec<T> {
+    type Item = T;
+
+    #[inline]
+    fn len(&self) -> usize {
+        (*self).len()
+    }
+
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    where
+        T: 'a,
+    {
+        TrustIter::new(self.iter().cloned(), self.len())
+    }
+}
+
+impl<T: Clone> ToIter for &[T] {
+    type Item = T;
+
+    fn len(&self) -> usize {
+        (*self).len()
+    }
+
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    where
+        T: 'a,
+    {
+        TrustIter::new(self.iter().cloned(), self.len())
+    }
+}
+
+impl<T: Clone> Vec1View for Vec<T> {
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         self.get_unchecked(index).clone()
@@ -49,22 +61,12 @@ impl<T: Clone> Vec1View for Vec<T> {
 
 impl<T: Clone> Vec1View for &Vec<T> {
     #[inline]
-    fn len(&self) -> usize {
-        (*self).len()
-    }
-
-    #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         self.get_unchecked(index).clone()
     }
 }
 
 impl<T: Clone> Vec1View for &[T] {
-    #[inline]
-    fn len(&self) -> usize {
-        (*self).len()
-    }
-
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         self.get_unchecked(index).clone()
@@ -131,7 +133,7 @@ mod tests {
     fn test_get() {
         let data = vec![1, 2, 3, 4, 5];
         let view = &data;
-        assert_eq!(Vec1View::len(&data), 5);
+        assert_eq!(ToIter::len(&data), 5);
         assert_eq!(view.get(0), 1);
         let slice = view.as_slice();
         assert_eq!(unsafe { slice.uget(2) }, 3);

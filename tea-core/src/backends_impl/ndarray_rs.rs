@@ -5,21 +5,22 @@ use ndarray::{Array1, ArrayBase, Data, DataMut, Ix1};
 
 impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
     type Item = T;
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> impl Iterator<Item = T>
-    where
-        T: 'a,
-    {
-        self.iter().cloned()
-    }
-}
 
-impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
     #[inline]
     fn len(&self) -> usize {
         self.len()
     }
 
+    #[inline]
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    where
+        T: 'a,
+    {
+        TrustIter::new(self.iter().cloned(), self.len())
+    }
+}
+
+impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         self.uget(index).clone()
@@ -70,7 +71,7 @@ mod tests {
     fn test_basic() {
         let data = Array1::from(vec![1, 2, 3, 4, 5]);
         let view = data.view();
-        assert_eq!(Vec1View::len(&data), 5);
+        assert_eq!(ToIter::len(&data), 5);
         assert_eq!(Vec1View::get(&view, 0), 1);
     }
 

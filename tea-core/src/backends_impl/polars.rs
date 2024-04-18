@@ -7,20 +7,22 @@ macro_rules! impl_for_primitive {
         $(
             impl ToIter for ChunkedArray<$type> {
                 type Item = Option<<$type as PolarsNumericType>::Native>;
+
                 #[inline]
-                fn to_iterator<'a>(&'a self) -> impl Iterator<Item=Self::Item>
+                fn len(&self) -> usize {
+                    self.len()
+                }
+
+                #[inline]
+                fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item=Self::Item>>
                 where Self::Item: 'a
                 {
-                    self.into_iter()
+                    TrustIter::new(self.into_iter(), self.len())
                 }
             }
 
             impl Vec1View for ChunkedArray<$type>
             {
-                #[inline]
-                fn len(&self) -> usize {
-                    (*self).len()
-                }
 
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> Option<<$type as PolarsNumericType>::Native> {
@@ -36,20 +38,22 @@ macro_rules! impl_for_primitive {
 
             impl ToIter for &ChunkedArray<$type> {
                 type Item = Option<<$type as PolarsNumericType>::Native>;
+
                 #[inline]
-                fn to_iterator<'a>(&'a self) -> impl Iterator<Item=Self::Item>
+                fn len(&self) -> usize {
+                    (*self).len()
+                }
+
+                #[inline]
+                fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item=Self::Item>>
                 where Self::Item: 'a
                 {
-                    self.into_iter()
+                    TrustIter::new(self.into_iter(), self.len())
                 }
             }
 
             impl Vec1View for &ChunkedArray<$type>
             {
-                #[inline]
-                fn len(&self) -> usize {
-                    (*self).len()
-                }
 
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> Option<<$type as PolarsNumericType>::Native> {
@@ -112,18 +116,20 @@ macro_rules! impl_for_primitive {
         $(
             impl ToIter for ChunkedArray<$type> {
                 type Item = Option<$real>;
+
                 #[inline]
-                fn to_iterator<'a>(&'a self) -> impl Iterator<Item=Option<$real>> where Option<$real>: 'a{
-                    self.into_iter()
+                fn len(&self) -> usize {
+                    (*self).len()
+                }
+
+                #[inline]
+                fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item=Option<$real>>> where Option<$real>: 'a{
+                    TrustIter::new(self.into_iter(), self.len())
                 }
             }
 
             impl Vec1View for ChunkedArray<$type>
             {
-                #[inline]
-                fn len(&self) -> usize {
-                    (*self).len()
-                }
 
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> Option<$real> {
@@ -139,18 +145,21 @@ macro_rules! impl_for_primitive {
 
             impl ToIter for &ChunkedArray<$type> {
                 type Item = Option<$real>;
+
                 #[inline]
-                fn to_iterator<'a>(&'a self) -> impl Iterator<Item=Option<$real>> where Option<$real>: 'a{
-                    self.into_iter()
+                fn len(&self) -> usize {
+                    (*self).len()
+                }
+
+
+                #[inline]
+                fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item=Option<$real>>> where Option<$real>: 'a{
+                    TrustIter::new(self.into_iter(), self.len())
                 }
             }
 
             impl Vec1View for &ChunkedArray<$type>
             {
-                #[inline]
-                fn len(&self) -> usize {
-                    (*self).len()
-                }
 
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> Option<$real> {

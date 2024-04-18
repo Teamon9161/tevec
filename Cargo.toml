@@ -5,6 +5,7 @@ members = [
     "tea-core",
     "tea-dtype",
     # "tea-time",
+    "tea-map",
     "tea-rolling",
 ]
 

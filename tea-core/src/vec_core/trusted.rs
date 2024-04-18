@@ -102,14 +102,14 @@ where
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}
 
 #[derive(Clone)]
-pub struct TrustIter<I: Iterator<Item = J>, J> {
+pub struct TrustIter<I: Iterator> {
     iter: I,
     len: usize,
 }
 
-impl<I, J> TrustIter<I, J>
+impl<I> TrustIter<I>
 where
-    I: Iterator<Item = J>,
+    I: Iterator,
 {
     #[inline]
     pub fn new(iter: I, len: usize) -> Self {
@@ -117,11 +117,11 @@ where
     }
 }
 
-impl<I, J> Iterator for TrustIter<I, J>
+impl<I> Iterator for TrustIter<I>
 where
-    I: Iterator<Item = J>,
+    I: Iterator,
 {
-    type Item = J;
+    type Item = I::Item;
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
@@ -133,11 +133,11 @@ where
     }
 }
 
-impl<I, J> ExactSizeIterator for TrustIter<I, J> where I: Iterator<Item = J> {}
+impl<I> ExactSizeIterator for TrustIter<I> where I: Iterator {}
 
-impl<I, J> DoubleEndedIterator for TrustIter<I, J>
+impl<I> DoubleEndedIterator for TrustIter<I>
 where
-    I: Iterator<Item = J> + DoubleEndedIterator,
+    I: Iterator + DoubleEndedIterator,
 {
     #[inline]
     fn next_back(&mut self) -> Option<Self::Item> {
@@ -146,15 +146,15 @@ where
 }
 
 #[cfg(feature = "pl")]
-unsafe impl<I: Iterator<Item = J>, J> PlTrustedLen for TrustIter<I, J> {}
-unsafe impl<I: Iterator<Item = J>, J> TrustedLen for TrustIter<I, J> {}
+unsafe impl<I: Iterator> PlTrustedLen for TrustIter<I> {}
+unsafe impl<I: Iterator> TrustedLen for TrustIter<I> {}
 
 pub trait ToTrustIter: IntoIterator {
-    fn to_trust(self, len: usize) -> TrustIter<Self::IntoIter, Self::Item>;
+    fn to_trust(self, len: usize) -> TrustIter<Self::IntoIter>;
 }
 
 impl<I: IntoIterator> ToTrustIter for I {
-    fn to_trust(self, len: usize) -> TrustIter<Self::IntoIter, Self::Item> {
+    fn to_trust(self, len: usize) -> TrustIter<Self::IntoIter> {
         TrustIter::new(self.into_iter(), len)
     }
 }
