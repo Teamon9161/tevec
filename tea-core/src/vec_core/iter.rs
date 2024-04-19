@@ -1,9 +1,5 @@
-use super::{TrustIter, Vec1View};
+use super::{TrustIter, TrustedLen, Vec1View};
 use tea_dtype::{Cast, IsNone};
-
-pub trait Length {
-    fn len(&self) -> usize;
-}
 
 pub trait ToIter {
     type Item;
@@ -20,16 +16,36 @@ pub trait ToIter {
     }
 
     #[inline]
-    fn map<U, F>(&self, f: F) -> std::iter::Map<TrustIter<impl Iterator<Item = Self::Item>>, F>
+    fn map<U, F>(&self, f: F) -> TrustIter<impl Iterator<Item = U>>
     where
         F: FnMut(Self::Item) -> U,
     {
-        self.to_iterator().map(f)
+        TrustIter::new(self.to_iterator().map(f), self.len())
     }
 }
 
-pub trait IntoIter<T> {
-    fn into_iterator(self) -> impl Iterator<Item = T>;
+pub trait IntoIter: IntoIterator {
+    fn len(&self) -> usize;
+
+    fn into_iterator(self) -> TrustIter<impl Iterator<Item = Self::Item>>;
+
+    #[inline(always)]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+impl<I: IntoIterator + TrustedLen> IntoIter for I {
+    #[inline]
+    fn len(&self) -> usize {
+        self.size_hint().1.unwrap()
+    }
+
+    #[inline]
+    fn into_iterator(self) -> TrustIter<impl Iterator<Item = Self::Item>> {
+        let len = self.len();
+        TrustIter::new(self.into_iter(), len)
+    }
 }
 
 pub struct OptIter<'a, V: Vec1View> {
@@ -80,11 +96,6 @@ impl<'a, T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V>
 where
     T::Opt: Clone,
 {
-    // #[inline]
-    // fn len(&self) -> usize {
-    //     self.len()
-    // }
-
     #[inline]
     unsafe fn uget(&self, index: usize) -> T::Opt {
         self.view.uget(index).cast()
@@ -95,11 +106,6 @@ impl<'a, T: IsNone + Clone, V: Vec1View<Item = T>> Vec1View for &OptIter<'a, V>
 where
     T::Opt: Clone,
 {
-    // #[inline]
-    // fn len(&self) -> usize {
-    //     self.view.len()
-    // }
-
     #[inline]
     unsafe fn uget(&self, index: usize) -> T::Opt {
         self.view.uget(index).cast()
@@ -116,6 +122,5 @@ where
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.to_iter()
-        // Vec1View::to_iter(self)
     }
 }
