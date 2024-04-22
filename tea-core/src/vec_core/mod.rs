@@ -31,7 +31,6 @@ pub trait Vec1View: ToIter {
         Self::Item: Cast<U>,
     {
         TrustIter::new(self.to_iterator().map(|v| v.cast()), self.len())
-        // self.to_iterator().map(|v| v.cast())
     }
 
     #[inline]
@@ -139,7 +138,6 @@ pub trait Vec1Mut<'a>: Vec1View {
             Some(unsafe { self.uget_mut(index) })
         } else {
             None
-            // panic!("Index out of bounds")
         }
     }
 }
