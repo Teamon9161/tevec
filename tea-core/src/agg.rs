@@ -1,32 +1,37 @@
-use super::vec_core::Vec1View;
+use crate::prelude::IterBasic;
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IsNone, Number};
 
-pub trait Vec1ViewAggValid<T>: Vec1View<Item = Option<T>> {
+type ValidInner<T> = <<T as IntoIterator>::Item as IsNone>::Inner;
+
+pub trait Vec1ViewAggValid: IntoIterator + Sized
+where
+    Self::Item: IsNone,
+{
     #[inline]
     /// count the number of valid elements in the vector.
-    fn count(&self) -> usize
-    where
-        T: IsNone,
-    {
+    fn count(self) -> usize {
         self.vfold_n((), |(), _| {}).0
     }
 
     #[inline]
-    fn count_none(&self) -> usize
-    where
-        T: IsNone,
-    {
-        self.len() - self.count()
+    fn count_none(self) -> usize {
+        let mut n = 0;
+        self.into_iter().for_each(|v| {
+            if v.is_none() {
+                n += 1;
+            }
+        });
+        n
     }
 
     #[inline]
-    fn vcount_value(&self, value: T) -> usize
+    fn vcount_value(self, value: ValidInner<Self>) -> usize
     where
-        T: PartialEq + IsNone,
+        ValidInner<Self>: PartialEq,
     {
         self.vfold(0, |acc, x| {
-            if let Some(x) = x {
+            if let Some(x) = x.to_opt() {
                 if x == value {
                     acc + 1
                 } else {
@@ -39,55 +44,64 @@ pub trait Vec1ViewAggValid<T>: Vec1View<Item = Option<T>> {
     }
 
     #[inline]
-    fn vany(&self) -> bool
+    fn vany(self) -> bool
     where
-        T: BoolType + Copy + IsNone,
+        ValidInner<Self>: BoolType + Copy,
     {
         self.vfold(false, |acc, x| acc || x.unwrap().bool_())
     }
 
     #[inline]
-    fn vall(&self) -> bool
+    fn vall(self) -> bool
     where
-        T: BoolType + Copy + IsNone,
+        ValidInner<Self>: BoolType + Copy,
     {
         self.vfold(true, |acc, x| acc && x.unwrap().bool_())
     }
 
     #[inline]
     /// Returns the sum of all valid elements in the vector.
-    fn vsum(&self) -> T
+    fn vsum(self) -> Option<ValidInner<Self>>
     where
-        T: Zero,
+        ValidInner<Self>: Zero,
     {
-        self.vfold(T::zero(), |acc, x| acc + x.unwrap())
+        let (n, sum) = self.vfold_n(ValidInner::<Self>::zero(), |acc, x| acc + x);
+        if n >= 1 {
+            Some(sum)
+        } else {
+            None
+        }
     }
 
     #[inline]
     #[allow(clippy::clone_on_copy)]
-    fn vmean(&self) -> f64
+    fn vmean(self) -> Option<f64>
     where
-        T: Zero + Number + IsNone,
+        ValidInner<Self>: Zero + Number,
     {
-        let (n, sum) = self.vfold_n(T::zero(), |acc, x| acc + x.unwrap());
-        sum.f64() / n as f64
+        let (n, sum) = self.vfold_n(ValidInner::<Self>::zero(), |acc, x| acc + x);
+        if n >= 1 {
+            (sum.f64() / n as f64).to_opt()
+        } else {
+            None
+        }
     }
 
     #[inline]
-    fn vmax(&self) -> Option<T>
+    fn vmax(self) -> Option<ValidInner<Self>>
     where
-        T: Number,
+        ValidInner<Self>: Number,
     {
-        self.vfold(None, |acc, x| match acc {
+        self.vfold(None, |acc, x| match acc.to_opt() {
             None => Some(x.unwrap()),
             Some(v) => Some(v.max_with(&x.unwrap())),
         })
     }
 
     #[inline]
-    fn vmin(&self) -> Option<T>
+    fn vmin(self) -> Option<ValidInner<Self>>
     where
-        T: Number,
+        ValidInner<Self>: Number,
     {
         self.vfold(None, |acc, x| match acc {
             None => Some(x.unwrap()),
@@ -96,104 +110,122 @@ pub trait Vec1ViewAggValid<T>: Vec1View<Item = Option<T>> {
     }
 }
 
-pub trait Vec1ViewAgg<T>: Vec1View<Item = T> {
+pub trait Vec1ViewAgg: IntoIterator + Sized {
     #[inline]
-    fn count_value(&self, value: T) -> usize
+    fn count_value(self, value: Self::Item) -> usize
     where
-        T: PartialEq + IsNone,
+        Self::Item: PartialEq,
     {
-        self.vfold(0, |acc, x| if x == value { acc + 1 } else { acc })
+        self.into_iter()
+            .fold(0, |acc, x| if x == value { acc + 1 } else { acc })
     }
 
     #[inline]
-    fn any(&self) -> bool
+    fn any(self) -> bool
     where
-        T: BoolType + Copy,
+        Self::Item: BoolType + Copy,
     {
-        self.to_iter().any(|x| x.bool_())
+        Iterator::any(&mut self.into_iter(), |x| x.bool_())
     }
 
     #[inline]
-    fn all(&self) -> bool
+    fn all(self) -> bool
     where
-        T: BoolType + Copy,
+        Self::Item: BoolType + Copy,
     {
-        self.to_iter().all(|x| x.bool_())
+        Iterator::all(&mut self.into_iter(), |x| x.bool_())
+    }
+    #[inline]
+    /// Returns the sum of all elements in the vector.
+    fn n_sum(self) -> (usize, Option<Self::Item>)
+    where
+        Self::Item: Zero,
+    {
+        let mut n = 0;
+        let sum = self.into_iter().fold(Self::Item::zero(), |acc, x| {
+            n += 1;
+            acc + x
+        });
+        if n >= 1 {
+            (n, Some(sum))
+        } else {
+            (n, None)
+        }
     }
 
     #[inline]
     /// Returns the sum of all elements in the vector.
-    fn sum(&self) -> T
+    fn sum(self) -> Option<Self::Item>
     where
-        T: Zero + Clone,
+        Self::Item: Zero,
     {
-        self.to_iter().fold(T::zero(), |acc, x| acc + x.clone())
+        self.n_sum().1
     }
 
     #[inline]
-    fn mean(&self) -> f64
+    fn mean(self) -> Option<f64>
     where
-        T: Zero + Clone + Cast<f64>,
+        Self::Item: Zero + Cast<f64>,
     {
-        let len = self.len();
-        let sum = self.sum();
-        sum.cast() / len as f64
+        let (len, sum) = self.n_sum();
+        sum.map(|v| v.cast() / len as f64)
     }
 
     #[inline]
-    fn max(&self) -> Option<T>
+    fn max(self) -> Option<Self::Item>
     where
-        T: Number,
+        Self::Item: Number,
     {
-        self.to_iter().fold(None, |acc, x| match acc {
+        self.into_iter().fold(None, |acc, x| match acc {
             None => Some(x),
             Some(v) => Some(v.max_with(&x)),
         })
     }
 
     #[inline]
-    fn min(&self) -> Option<T>
+    fn min(self) -> Option<Self::Item>
     where
-        T: Number,
+        Self::Item: Number,
     {
-        self.to_iter().fold(None, |acc, x| match acc {
+        self.into_iter().fold(None, |acc, x| match acc {
             None => Some(x),
             Some(v) => Some(v.min_with(&x)),
         })
     }
 }
 
-impl<Type: Vec1View<Item = T>, T> Vec1ViewAgg<T> for Type {}
-impl<Type: Vec1View<Item = Option<T>>, T> Vec1ViewAggValid<T> for Type {}
+impl<I: IntoIterator> Vec1ViewAgg for I {}
+impl<I: IntoIterator> Vec1ViewAggValid for I where I::Item: IsNone {}
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::Vec1Collect;
-
-    // use crate::prelude::*;
     use super::*;
+    use crate::prelude::*;
     #[test]
     fn test_sum() {
+        let data: Vec<i32> = vec![];
+        assert_eq!(Vec1ViewAgg::sum(data.to_iter()), None);
         let data = vec![1, 2, 3, 4, 5];
-        assert_eq!(data.sum(), 15);
-        assert_eq!(data.mean(), 3.);
-        assert_eq!(data.to_opt().vsum(), 15);
-        assert_eq!(data.to_opt().vmean(), 3.);
+        assert_eq!(Vec1ViewAgg::sum(data.to_iter()), Some(15));
+        assert_eq!(data.to_iter().mean(), Some(3.));
+        assert_eq!(data.to_iter().vsum(), Some(15));
+        assert_eq!(data.to_opt().vmean(), Some(3.));
         let data = vec![1., f64::NAN, 3.];
-        assert!(data.sum().is_nan());
-        assert_eq!(data.to_opt().vsum(), 4.);
-        assert_eq!(data.to_opt().vmean(), 2.);
+        assert!(Vec1ViewAgg::sum(data.to_iter()).unwrap().is_nan());
+        assert_eq!(data.to_iter().vsum(), Some(4.));
+        assert_eq!(data.to_opt().vsum(), Some(4.));
+        assert_eq!(data.to_opt().vmean(), Some(2.));
     }
 
     #[test]
     fn test_cmp() {
         let data = vec![1., 3., f64::NAN, 2., 5.];
-        assert_eq!(data.max(), Some(5.));
-        assert_eq!(data.min(), Some(1.));
+        assert_eq!(Vec1ViewAgg::max(data.to_iter()), Some(5.));
+        assert_eq!(Vec1ViewAgg::min(data.to_iter()), Some(1.));
         assert_eq!(data.to_opt().vmax(), Some(5.));
         assert_eq!(data.to_opt().vmin(), Some(1.));
         let data: Vec<_> = data.to_opt().collect_trusted_vec1();
-        assert_eq!(data.vmax(), Some(5.));
+        assert_eq!(data.to_iter().vmax(), Some(5.));
         assert_eq!(data.vmin(), Some(1.));
     }
 
@@ -202,24 +234,24 @@ mod tests {
         let data = vec![1., 2., f64::NAN, 2., f64::NAN, f64::NAN];
         assert_eq!(data.to_opt().count(), 3);
         assert_eq!(data.to_opt().count_none(), 3);
-        assert_eq!(data.count_value(1.), 1);
-        assert_eq!(data.count_value(2.), 2);
+        assert_eq!(data.to_iter().count_value(1.), 1);
+        assert_eq!(data.to_iter().count_value(2.), 2);
         assert_eq!((data.to_opt().vcount_value(2.)), 2);
     }
 
     #[test]
-    fn test_boll() {
+    fn test_bool() {
         let data = vec![true, false, false, false];
-        assert_eq!(data.any(), true);
+        assert_eq!(data.to_iter().any(), true);
         assert_eq!(data.to_opt().vany(), true);
         let data = vec![false, false, false, false];
-        assert_eq!(data.any(), false);
+        assert_eq!(data.to_iter().any(), false);
         assert_eq!(data.to_opt().vany(), false);
         let data = vec![true, true, true, true];
-        assert_eq!(data.all(), true);
+        assert_eq!(data.to_iter().all(), true);
         assert_eq!(data.to_opt().vall(), true);
         let data = vec![true, false, true, true];
-        assert_eq!(data.all(), false);
+        assert_eq!(data.to_iter().all(), false);
         assert_eq!(data.to_opt().vall(), false);
     }
 }

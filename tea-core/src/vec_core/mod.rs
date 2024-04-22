@@ -1,4 +1,5 @@
 mod iter;
+mod iter_traits;
 mod trusted;
 mod uninit;
 
@@ -6,6 +7,7 @@ pub use uninit::UninitVec;
 
 use crate::prelude::IsNone;
 pub use iter::{IntoIter, OptIter, ToIter};
+pub use iter_traits::IterBasic;
 use tea_dtype::{Cast, Opt};
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
@@ -51,10 +53,17 @@ pub trait Vec1View: ToIter {
         Self::Item: IsNone,
         Self: Sized,
     {
-        OptIter {
-            view: self,
-            // type_: std::marker::PhantomData,
-        }
+        OptIter { view: self }
+    }
+
+    #[inline]
+    fn to_opt_iter<'a>(
+        &'a self,
+    ) -> TrustIter<impl Iterator<Item = Option<<Self::Item as IsNone>::Inner>>>
+    where
+        Self::Item: IsNone + 'a,
+    {
+        TrustIter::new(self.to_iterator().map(|v| v.to_opt()), self.len())
     }
 
     /// if the value is valid, return it, otherwise return None
@@ -96,33 +105,33 @@ pub trait Vec1View: ToIter {
         }
     }
 
-    #[inline]
-    fn vfold<U, F>(&self, init: U, mut f: F) -> U
-    where
-        F: FnMut(U, Self::Item) -> U,
-        Self::Item: IsNone,
-    {
-        self.to_iter()
-            .fold(init, |acc, v| if v.not_none() { f(acc, v) } else { acc })
-    }
+    // #[inline]
+    // fn vfold<U, F>(&self, init: U, mut f: F) -> U
+    // where
+    //     F: FnMut(U, Self::Item) -> U,
+    //     Self::Item: IsNone,
+    // {
+    //     self.to_iter()
+    //         .fold(init, |acc, v| if v.not_none() { f(acc, v) } else { acc })
+    // }
 
-    #[inline]
-    fn vfold_n<U, F>(&self, init: U, mut f: F) -> (usize, U)
-    where
-        F: FnMut(U, Self::Item) -> U,
-        Self::Item: IsNone,
-    {
-        let mut n = 0;
-        let acc = self.to_iter().fold(init, |acc, v| {
-            if v.not_none() {
-                n += 1;
-                f(acc, v)
-            } else {
-                acc
-            }
-        });
-        (n, acc)
-    }
+    // #[inline]
+    // fn vfold_n<U, F>(&self, init: U, mut f: F) -> (usize, U)
+    // where
+    //     F: FnMut(U, Self::Item) -> U,
+    //     Self::Item: IsNone,
+    // {
+    //     let mut n = 0;
+    //     let acc = self.to_iter().fold(init, |acc, v| {
+    //         if v.not_none() {
+    //             n += 1;
+    //             f(acc, v)
+    //         } else {
+    //             acc
+    //         }
+    //     });
+    //     (n, acc)
+    // }
 }
 
 pub trait Vec1Mut<'a>: Vec1View {

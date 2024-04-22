@@ -1,20 +1,20 @@
 use super::cast::Cast;
 
-pub trait Opt {
+pub trait Opt: IsNone {
     type Value;
-    fn v(self) -> Self;
+    fn v(self) -> Self::Value;
 
     fn map_to<U, F>(self, f: F) -> Option<U>
     where
         F: FnMut(Self::Value) -> U;
 }
 
-impl<T> Opt for Option<T> {
+impl<T: IsNone> Opt for Option<T> {
     type Value = T;
 
     #[inline(always)]
-    fn v(self) -> Self {
-        self
+    fn v(self) -> T {
+        self.unwrap()
     }
 
     #[inline]
@@ -32,10 +32,18 @@ where
     Self: Cast<Self::Opt>,
 {
     type Opt;
+    type Inner: IsNone;
 
     fn is_none(&self) -> bool;
 
     fn none() -> Self;
+
+    fn to_opt(self) -> Option<Self::Inner>;
+
+    #[inline]
+    fn unwrap(self) -> Self::Inner {
+        self.to_opt().unwrap()
+    }
 
     #[inline]
     fn not_none(&self) -> bool {
@@ -45,6 +53,8 @@ where
 
 impl IsNone for f32 {
     type Opt = Option<f32>;
+    type Inner = f32;
+
     #[inline]
     #[allow(clippy::eq_op)]
     fn is_none(&self) -> bool {
@@ -57,6 +67,20 @@ impl IsNone for f32 {
     }
 
     #[inline]
+    fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline(always)]
+    fn unwrap(self) -> Self::Inner {
+        self
+    }
+
+    #[inline]
     #[allow(clippy::eq_op)]
     fn not_none(&self) -> bool {
         self == self
@@ -65,6 +89,7 @@ impl IsNone for f32 {
 
 impl IsNone for f64 {
     type Opt = Option<f64>;
+    type Inner = f64;
     #[inline]
     #[allow(clippy::eq_op)]
     fn is_none(&self) -> bool {
@@ -77,14 +102,28 @@ impl IsNone for f64 {
     }
 
     #[inline]
+    fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline(always)]
+    fn unwrap(self) -> Self::Inner {
+        self
+    }
+    #[inline]
     #[allow(clippy::eq_op)]
     fn not_none(&self) -> bool {
         self == self
     }
 }
 
-impl<T> IsNone for Option<T> {
+impl<T: IsNone> IsNone for Option<T> {
     type Opt = Option<T>; // Option<Option<T>> is not needed
+    type Inner = T;
     #[inline]
     fn is_none(&self) -> bool {
         self.is_none()
@@ -93,6 +132,11 @@ impl<T> IsNone for Option<T> {
     #[inline]
     fn none() -> Self {
         None
+    }
+
+    #[inline(always)]
+    fn to_opt(self) -> Option<Self::Inner> {
+        self
     }
 
     #[inline]
@@ -106,6 +150,7 @@ macro_rules! impl_not_none {
         $(
             impl IsNone for $type {
                 type Opt = Option<$type>;
+                type Inner = $type;
                 #[inline]
                 #[allow(clippy::eq_op)]
                 fn is_none(&self) -> bool {
@@ -114,6 +159,16 @@ macro_rules! impl_not_none {
 
                 fn none() -> Self {
                     panic!("Cannot call none() on a non-float type");
+                }
+
+                #[inline(always)]
+                fn to_opt(self) -> Option<Self::Inner> {
+                    Some(self)
+                }
+
+                #[inline(always)]
+                fn unwrap(self) -> Self::Inner {
+                    self
                 }
 
                 #[inline]
