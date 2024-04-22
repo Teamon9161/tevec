@@ -8,13 +8,20 @@ license.workspace = true
 
 [features]
 default = []
-time = ["tea-dtype/time", "tea-core/time"]
+
+# ops
+rolling = ["tea-rolling"]
+map = ["tea-map"]
+
+# backends
 pl = ["tea-core/pl"]
 nd_array = ["tea-core/nd_array"]
-rolling = ["tea-rolling"]
 
+# dtype
+time = ["tea-dtype/time", "tea-core/time"]
 
 [dependencies]
 tea-dtype = { path = "../tea-dtype", default-features = false }
 tea-core = { path = "../tea-core", default-features = false }
 tea-rolling = { path = "../tea-rolling", default-features = false , optional=true}
+tea-map = { path = "../tea-map", default-features = false, optional=true }
