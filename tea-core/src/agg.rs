@@ -135,6 +135,7 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
     {
         Iterator::all(&mut self.into_iter(), |x| x.bool_())
     }
+
     #[inline]
     /// Returns the sum of all elements in the vector.
     fn n_sum(self) -> (usize, Option<Self::Item>)
