@@ -24,10 +24,13 @@ pub trait ToIter {
     }
 }
 
-pub trait IntoIter: IntoIterator {
+pub trait IntoIter: Iterator + TrustedLen
+where
+    Self: Sized,
+{
     fn len(&self) -> usize;
 
-    fn into_iterator(self) -> TrustIter<impl Iterator<Item = Self::Item>>;
+    fn into_iterator(self) -> TrustIter<Self>;
 
     #[inline(always)]
     fn is_empty(&self) -> bool {
@@ -35,18 +38,33 @@ pub trait IntoIter: IntoIterator {
     }
 }
 
-impl<I: IntoIterator + TrustedLen> IntoIter for I {
+impl<I: Iterator + TrustedLen> IntoIter for I {
     #[inline]
     fn len(&self) -> usize {
         self.size_hint().1.unwrap()
     }
 
     #[inline]
-    fn into_iterator(self) -> TrustIter<impl Iterator<Item = Self::Item>> {
+    fn into_iterator(self) -> TrustIter<I> {
         let len = self.len();
         TrustIter::new(self.into_iter(), len)
     }
 }
+
+// impl<V: Vec1View> IntoIter for &V {
+//     type Item = V::Item;
+//     type IntoIter<'a> = V::IntoIter<'a> where Self: 'a;
+
+//     #[inline]
+//     fn len(&self) -> usize {
+//         (*self).len()
+//     }
+
+//     #[inline]
+//     fn into_iterator<'a>(self) -> TrustIter<Self::IntoIter<'a>> where Self: 'a {
+//         self.to_iter()
+//     }
+// }
 
 pub struct OptIter<'a, V: Vec1View> {
     pub view: &'a V,
@@ -57,6 +75,7 @@ where
     V::Item: IsNone,
 {
     type Item = <V::Item as IsNone>::Opt;
+    // type IntoIter<'a> = impl Iterator<Item = Self::Item> where Self: 'a;
 
     #[inline]
     fn len(&self) -> usize {

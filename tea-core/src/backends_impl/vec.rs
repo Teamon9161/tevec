@@ -11,7 +11,7 @@ impl<T: Clone> ToIter for Vec<T> {
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
         T: 'a,
     {
@@ -28,11 +28,11 @@ impl<T: Clone> ToIter for &Vec<T> {
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
         T: 'a,
     {
-        TrustIter::new(self.iter().cloned(), self.len())
+        TrustIter::new(self.iter().cloned(), ToIter::len(self))
     }
 }
 
@@ -44,7 +44,7 @@ impl<T: Clone> ToIter for &[T] {
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
         T: 'a,
     {

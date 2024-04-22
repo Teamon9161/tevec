@@ -22,7 +22,7 @@ pub trait Vec1View: ToIter {
     where
         Self::Item: 'a,
     {
-        TrustIter::new(self.to_iterator(), self.len())
+        self.to_iterator()
     }
 
     #[inline]
@@ -171,23 +171,23 @@ pub trait Vec1: Vec1View + Sized {
         Self::collect_from_iter(iter)
     }
 
-    #[inline]
-    fn collect_opt_from_trusted<I: Iterator<Item = Option<Self::Item>> + TrustedLen>(
-        iter: I,
-    ) -> Self
-    where
-        Self::Item: IsNone,
-    {
-        Self::collect_from_opt_iter(iter)
-    }
+    // #[inline]
+    // fn collect_opt_from_trusted<I: Iterator<Item = Option<Self::Item>> + TrustedLen>(
+    //     iter: I,
+    // ) -> Self
+    // where
+    //     Self::Item: IsNone,
+    // {
+    //     Self::collect_from_opt_iter(iter)
+    // }
 
-    #[inline]
-    fn collect_opt_with_len<I: Iterator<Item = Option<Self::Item>>>(iter: I, len: usize) -> Self
-    where
-        Self::Item: IsNone,
-    {
-        Self::collect_opt_from_trusted(iter.to_trust(len))
-    }
+    // #[inline]
+    // fn collect_opt_with_len<I: Iterator<Item = Option<Self::Item>>>(iter: I, len: usize) -> Self
+    // where
+    //     Self::Item: IsNone
+    // {
+    //     Self::collect_opt_from_trusted(TrustIter::new(iter, len))
+    // }
 
     #[inline]
     fn empty() -> Self {
@@ -195,10 +195,7 @@ pub trait Vec1: Vec1View + Sized {
     }
 }
 
-pub trait Vec1Collect: IntoIterator
-where
-    Self::Item: Clone,
-{
+pub trait Vec1Collect: IntoIterator {
     #[inline]
     fn collect_vec1<O: Vec1<Item = Self::Item>>(self) -> O
     where
@@ -225,7 +222,7 @@ where
     }
 }
 
-pub trait Vec1DOptCollect<T: IsNone + Clone>: IntoIterator<Item = Option<T>> {
+pub trait Vec1DOptCollect<T: IsNone>: IntoIterator<Item = Option<T>> {
     #[inline]
     fn collect_vec1_opt<O: Vec1<Item = T>>(self) -> O
     where
@@ -234,23 +231,23 @@ pub trait Vec1DOptCollect<T: IsNone + Clone>: IntoIterator<Item = Option<T>> {
         <O as Vec1>::collect_from_opt_iter(self.into_iter())
     }
 
-    #[inline]
-    fn collect_trusted_vec1_opt<O: Vec1<Item = T>>(self) -> O
-    where
-        Self: Sized,
-        Self::IntoIter: TrustedLen,
-    {
-        <O as Vec1>::collect_opt_from_trusted(self.into_iter())
-    }
+    // #[inline]
+    // fn collect_trusted_vec1_opt<O: Vec1<Item = T>>(self) -> O
+    // where
+    //     Self: Sized,
+    //     Self::IntoIter: TrustedLen,
+    // {
+    //     <O as Vec1>::collect_opt_from_trusted(self.into_iter())
+    // }
 
-    #[inline]
-    fn collect_vec1_opt_with_len<O: Vec1<Item = T>>(self, len: usize) -> O
-    where
-        Self: Sized,
-    {
-        <O as Vec1>::collect_opt_with_len(self.into_iter(), len)
-    }
+    // #[inline]
+    // fn collect_vec1_opt_with_len<O: Vec1<Item = T>>(self, len: usize) -> O
+    // where
+    //     Self: Sized,
+    // {
+    //     <O as Vec1>::collect_opt_with_len(self.into_iter(), len)
+    // }
 }
 
-impl<T: IntoIterator + Sized> Vec1Collect for T where T::Item: Clone {}
-impl<I: IntoIterator<Item = Option<T>>, T: IsNone + Clone> Vec1DOptCollect<T> for I {}
+impl<T: IntoIterator + Sized> Vec1Collect for T {}
+impl<I: IntoIterator<Item = Option<T>>, T: IsNone> Vec1DOptCollect<T> for I {}
