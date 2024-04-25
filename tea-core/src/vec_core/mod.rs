@@ -8,7 +8,7 @@ pub use uninit::UninitVec;
 use crate::prelude::IsNone;
 pub use iter::{IntoIter, OptIter, ToIter};
 pub use iter_traits::IterBasic;
-use tea_dtype::{Cast, Opt};
+use tea_dtype::Cast;
 pub use trusted::{CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen};
 
 pub trait Vec1View: ToIter {
@@ -38,11 +38,11 @@ pub trait Vec1View: ToIter {
     #[inline]
     fn opt_iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = Option<U>>>
     where
-        Self::Item: Opt,
-        <Self::Item as Opt>::Value: Cast<U>,
+        Self::Item: IsNone,
+        <Self::Item as IsNone>::Inner: Cast<U>,
     {
         TrustIter::new(
-            self.to_iterator().map(|v| v.map_to(Cast::<U>::cast)),
+            self.to_iterator().map(|v| v.to_opt().map(Cast::<U>::cast)),
             self.len(),
         )
     }
