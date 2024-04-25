@@ -1,5 +1,3 @@
-// #![feature(trusted_len)]
-#![feature(return_position_impl_trait_in_trait)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(associated_type_defaults)]
 #![feature(vec_into_raw_parts)]

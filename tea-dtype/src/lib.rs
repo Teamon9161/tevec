@@ -1,5 +1,3 @@
-#![feature(return_position_impl_trait_in_trait)]
-
 mod bool_type;
 mod cast;
 mod isnone;

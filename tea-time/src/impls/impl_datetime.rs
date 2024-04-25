@@ -45,9 +45,9 @@ impl From<i64> for DateTime {
     }
 }
 
-impl ToString for DateTime {
-    #[inline(always)]
-    fn to_string(&self) -> String {
-        self.strftime(None)
+impl std::fmt::Display for DateTime {
+    #[inline]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.strftime(None))
     }
 }

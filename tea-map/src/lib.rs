@@ -1,4 +1,3 @@
-#![feature(return_position_impl_trait_in_trait)]
 use num_traits::Signed;
 use tea_core::prelude::*;
 
