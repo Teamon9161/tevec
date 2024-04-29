@@ -1,8 +1,8 @@
-use super::RollingBasic;
+// use super::RollingBasic;
 use num_traits::Zero;
 use tea_core::prelude::*;
 
-pub trait RollingValidFeature<T: IsNone + Clone>: RollingBasic<T> {
+pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     fn ts_vsum<O: Vec1<Item = Option<T::Inner>>>(
         &self,
         window: usize,
@@ -619,7 +619,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: RollingBasic<T> {
 //     }
 // }
 
-pub trait RollingFeature<T: Clone>: RollingBasic<T> {
+pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     fn ts_sum<O: Vec1<Item = T>>(&self, window: usize, min_periods: Option<usize>) -> O
     where
         T: Number,
@@ -906,9 +906,9 @@ pub trait RollingFeature<T: Clone>: RollingBasic<T> {
 }
 
 // impl<T: IsNone + Clone, I: RollingValidBasic<T>> RollingValidFeature<T> for I {}
-impl<T: Clone, I: RollingBasic<T>> RollingFeature<T> for I {}
+impl<T: Clone, I: Vec1View<Item = T>> RollingFeature<T> for I {}
 
-impl<T: IsNone + Clone, I: RollingBasic<T>> RollingValidFeature<T> for I {}
+impl<T: IsNone + Clone, I: Vec1View<Item = T>> RollingValidFeature<T> for I {}
 
 #[cfg(test)]
 mod tests {
@@ -922,6 +922,13 @@ mod tests {
         let sum2: Vec<_> = data.ts_vsum(3, None);
         assert!(sum.is_empty());
         assert!(sum2.is_empty());
+
+        // test when window is greater than length
+        let data = vec![1, 2, 3];
+        let sum: Vec<_> = data.ts_sum(5, Some(1));
+        let sum2: Vec<_> = data.ts_vsum(5, Some(1));
+        assert_eq!(sum, vec![1, 3, 6]);
+        assert_eq!(sum2, vec![Some(1), Some(3), Some(6)]);
 
         // test sum
         let data = vec![1, 2, 3, 4, 5];

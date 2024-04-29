@@ -1,9 +1,9 @@
 use std::cmp::min;
 
-use super::RollingBasic;
+// use super::RollingBasic;
 use tea_core::prelude::*;
 
-pub trait RollingValidCmp<T: IsNone + Clone>: RollingBasic<T> {
+pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
     fn ts_vargmin<O: Vec1<Item = Option<i32>>>(
         &self,
         window: usize,
@@ -245,10 +245,10 @@ pub trait RollingValidCmp<T: IsNone + Clone>: RollingBasic<T> {
     }
 }
 
-pub trait RollingCmp<T: Clone>: RollingBasic<T> {}
+pub trait RollingCmp<T: Clone>: Vec1View<Item = T> {}
 
-impl<T: IsNone + Clone, I: RollingBasic<T>> RollingValidCmp<T> for I {}
-impl<T: Clone, I: RollingBasic<T>> RollingCmp<T> for I {}
+impl<T: IsNone + Clone, I: Vec1View<Item = T>> RollingValidCmp<T> for I {}
+impl<T: Clone, I: Vec1View<Item = T>> RollingCmp<T> for I {}
 
 #[cfg(test)]
 mod tests {

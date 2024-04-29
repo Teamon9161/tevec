@@ -19,23 +19,6 @@ impl<T: Clone> ToIter for Vec<T> {
     }
 }
 
-impl<T: Clone> ToIter for &Vec<T> {
-    type Item = T;
-
-    #[inline]
-    fn len(&self) -> usize {
-        (*self).len()
-    }
-
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
-    where
-        T: 'a,
-    {
-        TrustIter::new(self.iter().cloned(), ToIter::len(self))
-    }
-}
-
 impl<T: Clone> ToIter for &[T] {
     type Item = T;
 
@@ -57,12 +40,48 @@ impl<T: Clone> Vec1View for Vec<T> {
     unsafe fn uget(&self, index: usize) -> T {
         self.get_unchecked(index).clone()
     }
-}
 
-impl<T: Clone> Vec1View for &Vec<T> {
     #[inline]
-    unsafe fn uget(&self, index: usize) -> T {
-        self.get_unchecked(index).clone()
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let len = self.len();
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v_remove = start.map(|v| unsafe { self.uget(v) });
+                let v = unsafe { self.uget(end) };
+                f(v_remove, v)
+            })
+            .collect_trusted_vec1()
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling_apply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let len = self.len();
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v = unsafe { self.uget(end) };
+                f(start, end, v)
+            })
+            .collect_trusted_vec1()
     }
 }
 
@@ -70,6 +89,48 @@ impl<T: Clone> Vec1View for &[T] {
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         self.get_unchecked(index).clone()
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    {
+        let len = self.len();
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v_remove = start.map(|v| unsafe { self.uget(v) });
+                let v = unsafe { self.uget(end) };
+                f(v_remove, v)
+            })
+            .collect_trusted_vec1()
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling_apply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let len = self.len();
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v = unsafe { self.uget(end) };
+                f(start, end, v)
+            })
+            .collect_trusted_vec1()
     }
 }
 

@@ -244,15 +244,19 @@ mod tests {
     fn test_bool() {
         let data = vec![true, false, false, false];
         assert_eq!(data.to_iter().any(), true);
+        assert_eq!(data.to_iter().vany(), true);
         assert_eq!(data.to_opt().vany(), true);
         let data = vec![false, false, false, false];
         assert_eq!(data.to_iter().any(), false);
+        assert_eq!(data.to_iter().vany(), false);
         assert_eq!(data.to_opt().vany(), false);
         let data = vec![true, true, true, true];
         assert_eq!(data.to_iter().all(), true);
+        assert_eq!(data.to_iter().vall(), true);
         assert_eq!(data.to_opt().vall(), true);
         let data = vec![true, false, true, true];
         assert_eq!(data.to_iter().all(), false);
+        assert_eq!(data.to_iter().vall(), false);
         assert_eq!(data.to_opt().vall(), false);
     }
 }

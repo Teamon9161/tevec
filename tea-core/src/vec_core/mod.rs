@@ -105,33 +105,38 @@ pub trait Vec1View: ToIter {
         }
     }
 
-    // #[inline]
-    // fn vfold<U, F>(&self, init: U, mut f: F) -> U
-    // where
-    //     F: FnMut(U, Self::Item) -> U,
-    //     Self::Item: IsNone,
-    // {
-    //     self.to_iter()
-    //         .fold(init, |acc, v| if v.not_none() { f(acc, v) } else { acc })
-    // }
+    #[inline]
+    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        Self::Item: Clone,
+        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let remove_value_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain(self.to_iterator().map(Some));
+        self.to_iter()
+            .zip(remove_value_iter)
+            .map(move |(v, v_remove)| f(v_remove, v))
+            .collect_trusted_vec1()
+    }
 
-    // #[inline]
-    // fn vfold_n<U, F>(&self, init: U, mut f: F) -> (usize, U)
-    // where
-    //     F: FnMut(U, Self::Item) -> U,
-    //     Self::Item: IsNone,
-    // {
-    //     let mut n = 0;
-    //     let acc = self.to_iter().fold(init, |acc, v| {
-    //         if v.not_none() {
-    //             n += 1;
-    //             f(acc, v)
-    //         } else {
-    //             acc
-    //         }
-    //     });
-    //     (n, acc)
-    // }
+    #[inline]
+    fn rolling_apply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        // start, end, value
+        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        self.to_iter()
+            .zip(start_iter)
+            .enumerate()
+            .map(move |(end, (v, start))| f(start, end, v))
+            .collect_trusted_vec1()
+    }
 }
 
 pub trait Vec1Mut<'a>: Vec1View {
@@ -177,24 +182,6 @@ pub trait Vec1: Vec1View + Sized {
         let iter = iter.map(|v| v.unwrap_or(Self::Item::none()));
         Self::collect_from_iter(iter)
     }
-
-    // #[inline]
-    // fn collect_opt_from_trusted<I: Iterator<Item = Option<Self::Item>> + TrustedLen>(
-    //     iter: I,
-    // ) -> Self
-    // where
-    //     Self::Item: IsNone,
-    // {
-    //     Self::collect_from_opt_iter(iter)
-    // }
-
-    // #[inline]
-    // fn collect_opt_with_len<I: Iterator<Item = Option<Self::Item>>>(iter: I, len: usize) -> Self
-    // where
-    //     Self::Item: IsNone
-    // {
-    //     Self::collect_opt_from_trusted(TrustIter::new(iter, len))
-    // }
 
     #[inline]
     fn empty() -> Self {

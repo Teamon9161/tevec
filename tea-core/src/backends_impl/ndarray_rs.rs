@@ -25,6 +25,48 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
     unsafe fn uget(&self, index: usize) -> T {
         self.uget(index).clone()
     }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    {
+        let len = self.len();
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v_remove = start.map(|v| unsafe { self.uget(v).clone() });
+                let v = unsafe { self.uget(end) };
+                f(v_remove, v.clone())
+            })
+            .collect_trusted_vec1()
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling_apply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    where
+        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+    {
+        assert!(window > 0, "window must be greater than 0");
+        let len = self.len();
+        let start_iter = std::iter::repeat(None)
+            .take(window - 1)
+            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+        start_iter
+            .zip(0..len)
+            .map(|(start, end)| {
+                let v = unsafe { self.uget(end) };
+                f(start, end, v.clone())
+            })
+            .collect_trusted_vec1()
+    }
 }
 
 impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> {
@@ -57,6 +99,7 @@ impl<T: Clone> Vec1 for Array1<T> {
 
 impl<'a, T: 'a + Copy> UninitVec<'a, T> for Array1<MaybeUninit<T>> {
     type Vec = Array1<T>;
+    #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
         self.assume_init()
     }
