@@ -162,7 +162,7 @@ pub trait Vec1: Vec1View + Sized {
 
     fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item, Vec = Self>
     where
-        Self::Item: Copy + 'a;
+        Self::Item: 'a;
 
     #[inline]
     fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {

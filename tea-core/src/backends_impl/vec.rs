@@ -52,7 +52,7 @@ impl<T: Clone> Vec1View for Vec<T> {
         let len = self.len();
         let start_iter = std::iter::repeat(None)
             .take(window - 1)
-            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+            .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
         start_iter
             .zip(0..len)
             .map(|(start, end)| {
@@ -74,7 +74,7 @@ impl<T: Clone> Vec1View for Vec<T> {
         let len = self.len();
         let start_iter = std::iter::repeat(None)
             .take(window - 1)
-            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
+            .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
         start_iter
             .zip(0..len)
             .map(|(start, end)| {
@@ -98,6 +98,7 @@ impl<T: Clone> Vec1View for &[T] {
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
+        assert!(window > 0, "window must be greater than 0");
         let len = self.len();
         let start_iter = std::iter::repeat(None)
             .take(window - 1)
@@ -150,7 +151,7 @@ impl<T: Clone> Vec1 for Vec<T> {
     #[inline]
     fn uninit<'a>(len: usize) -> impl UninitVec<'a, T, Vec = Self>
     where
-        T: Copy + 'a,
+        T: 'a,
     {
         let mut v = Vec::with_capacity(len);
         unsafe {
@@ -170,7 +171,7 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 }
 
-impl<'a, T: 'a + Copy> UninitVec<'a, T> for Vec<MaybeUninit<T>> {
+impl<'a, T: 'a + Clone> UninitVec<'a, T> for Vec<MaybeUninit<T>> {
     type Vec = Vec<T>;
 
     #[inline]
@@ -181,7 +182,7 @@ impl<'a, T: 'a + Copy> UninitVec<'a, T> for Vec<MaybeUninit<T>> {
 
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
-        let ele = self.uget_mut(idx);
+        let ele = self.get_unchecked_mut(idx);
         ele.write(v);
     }
 }
@@ -237,7 +238,7 @@ mod tests {
     fn test_uninit() {
         let mut data = Vec::<i32>::uninit(2);
         unsafe { data.uset(0, 1) };
-        data.set(1, 2);
+        unsafe { data.uset(1, 2) };
         let data: Vec<_> = unsafe { data.assume_init() };
         assert_eq!(data, vec![1, 2]);
     }

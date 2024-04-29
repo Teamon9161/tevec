@@ -85,7 +85,7 @@ impl<T: Clone> Vec1 for Array1<T> {
     #[inline]
     fn uninit<'a>(len: usize) -> impl UninitVec<'a, T, Vec = Self>
     where
-        T: Copy + 'a,
+        T: 'a,
     {
         Array1::uninit(len)
     }
@@ -97,7 +97,7 @@ impl<T: Clone> Vec1 for Array1<T> {
     }
 }
 
-impl<'a, T: 'a + Copy> UninitVec<'a, T> for Array1<MaybeUninit<T>> {
+impl<'a, T: 'a + Clone> UninitVec<'a, T> for Array1<MaybeUninit<T>> {
     type Vec = Array1<T>;
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {

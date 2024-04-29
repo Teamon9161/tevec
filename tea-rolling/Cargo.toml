@@ -7,5 +7,8 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
-tea-core = { path = "../tea-core", default-features = false }
+tea-core = { path = "../tea-core", default-features = false, features = ["nd_array"] }
 num-traits = { workspace = true }
+
+# teapy_core = {path = "C:/code/rust/teapy/tea-core", default-features = false, package="tea-core"}
+# tea-ext = {path = "C:/code/rust/teapy/tea-ext", default-features = false, features = ["rolling"]}

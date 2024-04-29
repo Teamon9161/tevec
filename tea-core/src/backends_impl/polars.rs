@@ -215,9 +215,15 @@ impl_for_primitive!(BooleanType: bool);
 
 // impl<'a> ToIter for ChunkedArray<StringType> {
 //     type Item = Option<&'a str>;
+
 //     #[inline]
-//     fn to_iterator<'b>(&'b self) -> impl Iterator<Item=Option<&'a str>> where Self::Item: 'b {
-//         self.into_iter()
+//     fn len(&self) -> usize {
+//         self.len()
+//     }
+
+//     #[inline]
+//     fn to_iterator<'b>(&'b self) -> TrustIter<impl Iterator<Item=Option<&'a str>>> where Self::Item: 'b {
+//         TrustIter::new(self.into_iter(), self.len())
 //     }
 // }
 

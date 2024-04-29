@@ -1,6 +1,6 @@
-use super::{Vec1, Vec1Mut};
+use super::Vec1;
 
-pub trait UninitVec<'a, T: Copy>: Vec1 + Vec1Mut<'a> {
+pub trait UninitVec<'a, T> {
     type Vec: Vec1<Item = T>;
 
     /// # Safety
@@ -18,11 +18,11 @@ pub trait UninitVec<'a, T: Copy>: Vec1 + Vec1Mut<'a> {
         );
     }
 
-    #[inline]
-    fn set(&mut self, idx: usize, v: T) {
-        assert!(idx < self.len());
-        unsafe {
-            self.uset(idx, v);
-        }
-    }
+    // #[inline]
+    // fn set(&mut self, idx: usize, v: T) {
+    //     assert!(idx < self.len());
+    //     unsafe {
+    //         self.uset(idx, v);
+    //     }
+    // }
 }
