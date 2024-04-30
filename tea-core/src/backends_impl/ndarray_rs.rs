@@ -39,36 +39,37 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
         let len = self.len();
-        if out.is_none() {
+        if let Some(out) = out {
+            self.rolling_apply_to::<O, _>(window, f, out);
+            None
+        } else {
             let mut out = O::uninit(len);
             self.rolling_apply_to::<O, _>(window, f, &mut out);
             Some(unsafe { out.assume_init() })
-        } else {
-            let out = out.unwrap();
-            self.rolling_apply_to::<O, _>(window, f, out);
-            None
         }
     }
 
     #[inline]
     /// this should be a faster implemention than default as
     /// we read value directly by ptr
-    fn rolling_apply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    fn rolling_apply_idx<O: Vec1, F>(
+        &self,
+        window: usize,
+        f: F,
+        out: Option<&mut O::Uninit>,
+    ) -> Option<O>
     where
         F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
     {
-        assert!(window > 0, "window must be greater than 0");
         let len = self.len();
-        let start_iter = std::iter::repeat(None)
-            .take(window - 1)
-            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
-        start_iter
-            .zip(0..len)
-            .map(|(start, end)| {
-                let v = unsafe { self.uget(end) };
-                f(start, end, v.clone())
-            })
-            .collect_trusted_vec1()
+        if let Some(out) = out {
+            self.rolling_apply_idx_to::<O, _>(window, f, out);
+            None
+        } else {
+            let mut out = O::uninit(len);
+            self.rolling_apply_idx_to::<O, _>(window, f, &mut out);
+            Some(unsafe { out.assume_init() })
+        }
     }
 }
 
