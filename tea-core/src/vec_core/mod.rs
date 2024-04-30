@@ -122,6 +122,34 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
+    fn rolling_apply_to<O: Vec1, F>(&self, window: usize, mut f: F, out: &mut O::Uninit)
+    where
+        Self::Item: Clone,
+        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return;
+        }
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                // no value should be removed in the first window
+                out.uset(i, f(None, self.uget(i)))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe {
+                // new valid value
+                let (v_rm, v) = (self.uget(start), self.uget(end));
+                out.uset(end, f(Some(v_rm), v))
+            }
+        }
+    }
+
+    #[inline]
     fn rolling_apply_idx<O: Vec1, F>(&self, window: usize, mut f: F) -> O
     where
         // start, end, value
@@ -158,11 +186,13 @@ pub trait Vec1Mut<'a>: Vec1View {
 
 /// a vector owns its data is not necessarily mutable
 pub trait Vec1: Vec1View + Sized {
+    type Uninit: UninitVec<Self::Item, Vec = Self>;
+
     fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self;
 
-    fn uninit<'a>(len: usize) -> impl UninitVec<'a, Self::Item, Vec = Self>
-    where
-        Self::Item: 'a;
+    fn uninit(len: usize) -> Self::Uninit;
+    // where
+    //     Self::Item: 'a;
 
     #[inline]
     fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {

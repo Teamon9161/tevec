@@ -77,14 +77,16 @@ macro_rules! impl_for_primitive {
 
 
             impl Vec1 for ChunkedArray<$type> {
+                type Uninit = ChunkedArray<$type>;
                 #[inline]
                 fn collect_from_iter<I: Iterator<Item = Option<<$type as PolarsNumericType>::Native>>>(iter: I) -> Self {
                     iter.collect()
                 }
 
                 #[inline]
-                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<<$type as PolarsNumericType>::Native>, Vec=Self>
-                where Option<<$type as PolarsNumericType>::Native>: Copy
+                fn uninit(len: usize) -> Self::Uninit
+                // impl UninitVec<'a, Option<<$type as PolarsNumericType>::Native>, Vec=Self>
+                // where Option<<$type as PolarsNumericType>::Native>: Copy
                 {
                     ChunkedArray::<$type>::full_null("", len)
                 }
@@ -95,7 +97,7 @@ macro_rules! impl_for_primitive {
                 }
             }
 
-            impl<'a> UninitVec<'a, Option<<$type as PolarsNumericType>::Native>> for ChunkedArray<$type>
+            impl UninitVec<Option<<$type as PolarsNumericType>::Native>> for ChunkedArray<$type>
             {
                 type Vec = ChunkedArray<$type>;
                 #[inline(always)]
@@ -182,18 +184,21 @@ macro_rules! impl_for_primitive {
             }
 
             impl Vec1 for ChunkedArray<$type> {
+                type Uninit = ChunkedArray<$type>;
                 #[inline]
                 fn collect_from_iter<I: Iterator<Item = Option<$real>>>(iter: I) -> Self {
                     iter.collect()
                 }
 
                 #[inline]
-                fn uninit<'a>(len: usize) -> impl UninitVec<'a, Option<$real>, Vec=Self> where Option<$real>: Copy {
+                fn uninit<'a>(len: usize) -> Self::Uninit
+                // impl UninitVec<'a, Option<$real>, Vec=Self> where Option<$real>: Copy
+                {
                     ChunkedArray::<$type>::full_null("", len)
                 }
             }
 
-            impl<'a> UninitVec<'a, Option<$real>> for ChunkedArray<$type>
+            impl UninitVec<Option<$real>> for ChunkedArray<$type>
             {
                 type Vec = ChunkedArray<$type>;
                 #[inline(always)]

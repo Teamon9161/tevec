@@ -34,17 +34,27 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
         let len = self.len();
-        let start_iter = std::iter::repeat(None)
-            .take(window - 1)
-            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
-        start_iter
-            .zip(0..len)
-            .map(|(start, end)| {
-                let v_remove = start.map(|v| unsafe { self.uget(v).clone() });
-                let v = unsafe { self.uget(end) };
-                f(v_remove, v.clone())
-            })
-            .collect_trusted_vec1()
+        let window = window.min(len);
+        if window == 0 {
+            return O::empty();
+        }
+        let mut out = O::uninit(len);
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                // no value should be removed in the first window
+                out.uset(i, f(None, self.uget(i).clone()))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe {
+                // new valid value
+                let (v_rm, v) = (self.uget(start).clone(), self.uget(end).clone());
+                out.uset(end, f(Some(v_rm), v))
+            }
+        }
+        unsafe { out.assume_init() }
     }
 
     #[inline]
@@ -77,15 +87,16 @@ impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> 
 }
 
 impl<T: Clone> Vec1 for Array1<T> {
+    type Uninit = Array1<MaybeUninit<T>>;
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         Array1::from_iter(iter)
     }
 
     #[inline]
-    fn uninit<'a>(len: usize) -> impl UninitVec<'a, T, Vec = Self>
-    where
-        T: 'a,
+    fn uninit(len: usize) -> Self::Uninit
+// where
+    //     T: 'a,
     {
         Array1::uninit(len)
     }
@@ -97,7 +108,7 @@ impl<T: Clone> Vec1 for Array1<T> {
     }
 }
 
-impl<'a, T: 'a + Clone> UninitVec<'a, T> for Array1<MaybeUninit<T>> {
+impl<T: Clone> UninitVec<T> for Array1<MaybeUninit<T>> {
     type Vec = Array1<T>;
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {

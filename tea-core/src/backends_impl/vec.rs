@@ -48,19 +48,39 @@ impl<T: Clone> Vec1View for Vec<T> {
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
-        assert!(window > 0, "window must be greater than 0");
         let len = self.len();
-        let start_iter = std::iter::repeat(None)
-            .take(window - 1)
-            .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
-        start_iter
-            .zip(0..len)
-            .map(|(start, end)| {
-                let v_remove = start.map(|v| unsafe { self.uget(v) });
-                let v = unsafe { self.uget(end) };
-                f(v_remove, v)
-            })
-            .collect_trusted_vec1()
+        let window = window.min(len);
+        if window == 0 {
+            return O::empty();
+        }
+        let mut out = O::uninit(len);
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                // no value should be removed in the first window
+                out.uset(i, f(None, self.uget(i)))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe {
+                // new valid value
+                let (v_rm, v) = (self.uget(start), self.uget(end));
+                out.uset(end, f(Some(v_rm), v))
+            }
+        }
+        unsafe { out.assume_init() }
+        // let start_iter = std::iter::repeat(None)
+        //     .take(window - 1)
+        //     .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
+        // start_iter
+        //     .zip(0..len)
+        //     .map(|(start, end)| {
+        //         let v_remove = start.map(|v| unsafe { self.uget(v) });
+        //         let v = unsafe { self.uget(end) };
+        //         f(v_remove, v)
+        //     })
+        //     .collect_trusted_vec1()
     }
 
     #[inline]
@@ -98,19 +118,39 @@ impl<T: Clone> Vec1View for &[T] {
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
-        assert!(window > 0, "window must be greater than 0");
         let len = self.len();
-        let start_iter = std::iter::repeat(None)
-            .take(window - 1)
-            .chain((0..len).map(Some)); // this is longer than expect, but start_iter will stop earlier
-        start_iter
-            .zip(0..len)
-            .map(|(start, end)| {
-                let v_remove = start.map(|v| unsafe { self.uget(v) });
-                let v = unsafe { self.uget(end) };
-                f(v_remove, v)
-            })
-            .collect_trusted_vec1()
+        let window = window.min(len);
+        if window == 0 {
+            return O::empty();
+        }
+        let mut out = O::uninit(len);
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                // no value should be removed in the first window
+                out.uset(i, f(None, self.uget(i)))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe {
+                // new valid value
+                let (v_rm, v) = (self.uget(start), self.uget(end));
+                out.uset(end, f(Some(v_rm), v))
+            }
+        }
+        unsafe { out.assume_init() }
+        // let start_iter = std::iter::repeat(None)
+        //     .take(window - 1)
+        //     .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
+        // start_iter
+        //     .zip(0..len)
+        //     .map(|(start, end)| {
+        //         let v_remove = start.map(|v| unsafe { self.uget(v) });
+        //         let v = unsafe { self.uget(end) };
+        //         f(v_remove, v)
+        //     })
+        //     .collect_trusted_vec1()
     }
 
     #[inline]
@@ -143,16 +183,14 @@ impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
 }
 
 impl<T: Clone> Vec1 for Vec<T> {
+    type Uninit = Vec<MaybeUninit<T>>;
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         iter.collect()
     }
 
     #[inline]
-    fn uninit<'a>(len: usize) -> impl UninitVec<'a, T, Vec = Self>
-    where
-        T: 'a,
-    {
+    fn uninit(len: usize) -> Self::Uninit {
         let mut v = Vec::with_capacity(len);
         unsafe {
             v.set_len(len);
@@ -171,7 +209,7 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 }
 
-impl<'a, T: 'a + Clone> UninitVec<'a, T> for Vec<MaybeUninit<T>> {
+impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
     type Vec = Vec<T>;
 
     #[inline]

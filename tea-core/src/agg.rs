@@ -2,12 +2,9 @@ use crate::prelude::IterBasic;
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IsNone, Number};
 
-type ValidInner<T> = <<T as IntoIterator>::Item as IsNone>::Inner;
+// type ValidInner<T> = <<T as IntoIterator>::Item as IsNone>::Inner;
 
-pub trait Vec1ViewAggValid: IntoIterator + Sized
-where
-    Self::Item: IsNone,
-{
+pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     /// count the number of valid elements in the vector.
     fn count(self) -> usize {
@@ -26,27 +23,23 @@ where
     }
 
     #[inline]
-    fn vcount_value(self, value: ValidInner<Self>) -> usize
+    fn vcount_value(self, value: T) -> usize
     where
-        ValidInner<Self>: PartialEq,
+        T::Inner: PartialEq,
     {
-        self.vfold(0, |acc, x| {
-            if let Some(x) = x.to_opt() {
-                if x == value {
-                    acc + 1
-                } else {
-                    acc
-                }
-            } else {
-                acc
-            }
-        })
+        if value.not_none() {
+            let value = value.unwrap();
+            self.vfold(0, |acc, x| if x.unwrap() == value { acc + 1 } else { acc })
+        } else {
+            self.into_iter()
+                .fold(0, |acc, x| if x.is_none() { acc + 1 } else { acc })
+        }
     }
 
     #[inline]
     fn vany(self) -> bool
     where
-        ValidInner<Self>: BoolType + Copy,
+        T::Inner: BoolType + Copy,
     {
         self.vfold(false, |acc, x| acc || x.unwrap().bool_())
     }
@@ -54,18 +47,18 @@ where
     #[inline]
     fn vall(self) -> bool
     where
-        ValidInner<Self>: BoolType + Copy,
+        T::Inner: BoolType + Copy,
     {
         self.vfold(true, |acc, x| acc && x.unwrap().bool_())
     }
 
     #[inline]
     /// Returns the sum of all valid elements in the vector.
-    fn vsum(self) -> Option<ValidInner<Self>>
+    fn vsum(self) -> Option<T::Inner>
     where
-        ValidInner<Self>: Zero,
+        T::Inner: Zero,
     {
-        let (n, sum) = self.vfold_n(ValidInner::<Self>::zero(), |acc, x| acc + x);
+        let (n, sum) = self.vfold_n(T::Inner::zero(), |acc, x| acc + x);
         if n >= 1 {
             Some(sum)
         } else {
@@ -75,22 +68,22 @@ where
 
     #[inline]
     #[allow(clippy::clone_on_copy)]
-    fn vmean(self) -> Option<f64>
+    fn vmean(self) -> T::Cast<f64>
     where
-        ValidInner<Self>: Zero + Number,
+        T::Inner: Zero + Number,
     {
-        let (n, sum) = self.vfold_n(ValidInner::<Self>::zero(), |acc, x| acc + x);
+        let (n, sum) = self.vfold_n(T::Inner::zero(), |acc, x| acc + x);
         if n >= 1 {
-            (sum.f64() / n as f64).to_opt()
+            T::inner_cast(sum.f64() / n as f64)
         } else {
-            None
+            T::inner_cast(f64::NAN)
         }
     }
 
     #[inline]
-    fn vmax(self) -> Option<ValidInner<Self>>
+    fn vmax(self) -> Option<T::Inner>
     where
-        ValidInner<Self>: Number,
+        T::Inner: Number,
     {
         self.vfold(None, |acc, x| match acc.to_opt() {
             None => Some(x.unwrap()),
@@ -99,9 +92,9 @@ where
     }
 
     #[inline]
-    fn vmin(self) -> Option<ValidInner<Self>>
+    fn vmin(self) -> Option<T::Inner>
     where
-        ValidInner<Self>: Number,
+        T::Inner: Number,
     {
         self.vfold(None, |acc, x| match acc {
             None => Some(x.unwrap()),
@@ -196,7 +189,7 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
 }
 
 impl<I: IntoIterator> Vec1ViewAgg for I {}
-impl<I: IntoIterator> Vec1ViewAggValid for I where I::Item: IsNone {}
+impl<I: IntoIterator<Item = T>, T: IsNone> Vec1ViewAggValid<T> for I {}
 
 #[cfg(test)]
 mod tests {
@@ -237,7 +230,10 @@ mod tests {
         assert_eq!(data.to_opt().count_none(), 3);
         assert_eq!(data.to_iter().count_value(1.), 1);
         assert_eq!(data.to_iter().count_value(2.), 2);
-        assert_eq!((data.to_opt().vcount_value(2.)), 2);
+        assert_eq!(data.to_iter().vcount_value(1.), 1);
+        assert_eq!(data.to_iter().vcount_value(f64::NAN), 3);
+        assert_eq!((data.to_opt().vcount_value(Some(2.))), 2);
+        assert_eq!((data.to_opt().vcount_value(None)), 3);
     }
 
     #[test]

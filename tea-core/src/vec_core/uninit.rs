@@ -1,6 +1,6 @@
 use super::Vec1;
 
-pub trait UninitVec<'a, T> {
+pub trait UninitVec<T> {
     type Vec: Vec1<Item = T>;
 
     /// # Safety

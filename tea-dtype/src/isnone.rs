@@ -33,12 +33,19 @@ where
 {
     type Opt;
     type Inner: IsNone;
+    type Cast<U: IsNone>: IsNone;
 
     fn is_none(&self) -> bool;
 
     fn none() -> Self;
 
     fn to_opt(self) -> Option<Self::Inner>;
+
+    fn from_inner(inner: Self::Inner) -> Self;
+
+    fn inner_cast<U: IsNone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>;
 
     #[inline]
     fn unwrap(self) -> Self::Inner {
@@ -54,6 +61,7 @@ where
 impl IsNone for f32 {
     type Opt = Option<f32>;
     type Inner = f32;
+    type Cast<U: IsNone> = U;
 
     #[inline]
     #[allow(clippy::eq_op)]
@@ -76,6 +84,19 @@ impl IsNone for f32 {
     }
 
     #[inline(always)]
+    fn from_inner(inner: Self::Inner) -> Self {
+        inner
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        Cast::<U>::cast(inner)
+    }
+
+    #[inline(always)]
     fn unwrap(self) -> Self::Inner {
         self
     }
@@ -90,6 +111,7 @@ impl IsNone for f32 {
 impl IsNone for f64 {
     type Opt = Option<f64>;
     type Inner = f64;
+    type Cast<U: IsNone> = U;
     #[inline]
     #[allow(clippy::eq_op)]
     fn is_none(&self) -> bool {
@@ -111,6 +133,19 @@ impl IsNone for f64 {
     }
 
     #[inline(always)]
+    fn from_inner(inner: Self::Inner) -> Self {
+        inner
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        Cast::<U>::cast(inner)
+    }
+
+    #[inline(always)]
     fn unwrap(self) -> Self::Inner {
         self
     }
@@ -124,6 +159,7 @@ impl IsNone for f64 {
 impl<T: IsNone> IsNone for Option<T> {
     type Opt = Option<T>; // Option<Option<T>> is not needed
     type Inner = T;
+    type Cast<U: IsNone> = Option<U>;
     #[inline]
     fn is_none(&self) -> bool {
         self.is_none()
@@ -140,6 +176,27 @@ impl<T: IsNone> IsNone for Option<T> {
     }
 
     #[inline]
+    fn from_inner(inner: Self::Inner) -> Self {
+        if inner.is_none() {
+            None
+        } else {
+            Some(inner)
+        }
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        if inner.is_none() {
+            None
+        } else {
+            Some(Cast::<U>::cast(inner))
+        }
+    }
+
+    #[inline]
     fn not_none(&self) -> bool {
         self.is_some()
     }
@@ -151,6 +208,7 @@ macro_rules! impl_not_none {
             impl IsNone for $type {
                 type Opt = Option<$type>;
                 type Inner = $type;
+                type Cast<U: IsNone> = U;
                 #[inline]
                 #[allow(clippy::eq_op)]
                 fn is_none(&self) -> bool {
@@ -165,6 +223,20 @@ macro_rules! impl_not_none {
                 fn to_opt(self) -> Option<Self::Inner> {
                     Some(self)
                 }
+
+                #[inline(always)]
+                fn from_inner(inner: Self::Inner) -> Self {
+                    inner
+                }
+
+
+                #[inline]
+                fn inner_cast<U: IsNone>(inner: U) -> Self::Cast<U>
+                where Self::Inner: Cast<U::Inner>
+                {
+                    Cast::<U>::cast(inner)
+                }
+
 
                 #[inline(always)]
                 fn unwrap(self) -> Self::Inner {
