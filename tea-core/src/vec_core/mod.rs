@@ -106,19 +106,31 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    fn rolling_apply<O: Vec1, F>(
+        &self,
+        window: usize,
+        mut f: F,
+        out: Option<&mut O::Uninit>,
+    ) -> Option<O>
     where
         Self::Item: Clone,
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
-        assert!(window > 0, "window must be greater than 0");
-        let remove_value_iter = std::iter::repeat(None)
-            .take(window - 1)
-            .chain(self.to_iterator().map(Some));
-        self.to_iter()
-            .zip(remove_value_iter)
-            .map(move |(v, v_remove)| f(v_remove, v))
-            .collect_trusted_vec1()
+        if let Some(out) = out {
+            self.rolling_apply_to::<O, _>(window, f, out);
+            None
+        } else {
+            assert!(window > 0, "window must be greater than 0");
+            let remove_value_iter = std::iter::repeat(None)
+                .take(window - 1)
+                .chain(self.to_iterator().map(Some));
+            Some(
+                self.to_iter()
+                    .zip(remove_value_iter)
+                    .map(move |(v, v_remove)| f(v_remove, v))
+                    .collect_trusted_vec1(),
+            )
+        }
     }
 
     #[inline]

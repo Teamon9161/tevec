@@ -29,32 +29,25 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
     #[inline]
     /// this should be a faster implemention than default as
     /// we read value directly by ptr
-    fn rolling_apply<O: Vec1, F>(&self, window: usize, mut f: F) -> O
+    fn rolling_apply<O: Vec1, F>(
+        &self,
+        window: usize,
+        f: F,
+        out: Option<&mut O::Uninit>,
+    ) -> Option<O>
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
     {
         let len = self.len();
-        let window = window.min(len);
-        if window == 0 {
-            return O::empty();
+        if out.is_none() {
+            let mut out = O::uninit(len);
+            self.rolling_apply_to::<O, _>(window, f, &mut out);
+            Some(unsafe { out.assume_init() })
+        } else {
+            let out = out.unwrap();
+            self.rolling_apply_to::<O, _>(window, f, out);
+            None
         }
-        let mut out = O::uninit(len);
-        // within the first window
-        for i in 0..window - 1 {
-            unsafe {
-                // no value should be removed in the first window
-                out.uset(i, f(None, self.uget(i).clone()))
-            }
-        }
-        // other windows
-        for (start, end) in (window - 1..len).enumerate() {
-            unsafe {
-                // new valid value
-                let (v_rm, v) = (self.uget(start).clone(), self.uget(end).clone());
-                out.uset(end, f(Some(v_rm), v))
-            }
-        }
-        unsafe { out.assume_init() }
     }
 
     #[inline]
