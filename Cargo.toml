@@ -21,7 +21,7 @@ license = "MIT"
 lto = true
 
 [workspace.dependencies]
-num-traits = "0.2.18"
+num-traits = "0.2"
 
 
 [profile.dev]
