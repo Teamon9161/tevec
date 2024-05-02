@@ -4,10 +4,12 @@ use std::cmp::min;
 use tea_core::prelude::*;
 
 pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
+    #[no_out]
     fn ts_vargmin<O: Vec1<Item = Option<i32>>>(
         &self,
         window: usize,
         min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
     ) -> O
     where
         T::Inner: Number,
@@ -52,15 +54,16 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
                     out
                 }
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
+    #[no_out]
     fn ts_vmin<O: Vec1<Item = Option<T::Inner>>>(
         &self,
         window: usize,
         min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
     ) -> O
     where
         T::Inner: Number,
@@ -101,15 +104,16 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
                     out
                 }
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
+    #[no_out]
     fn ts_vargmax<O: Vec1<Item = Option<i32>>>(
         &self,
         window: usize,
         min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
     ) -> O
     where
         T::Inner: Number,
@@ -154,15 +158,16 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
                     out
                 }
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
+    #[no_out]
     fn ts_vmax<O: Vec1<Item = Option<T::Inner>>>(
         &self,
         window: usize,
         min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
     ) -> O
     where
         T::Inner: Number,
@@ -203,17 +208,18 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
                     out
                 }
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
+    #[no_out]
     fn ts_vrank<O: Vec1<Item = Option<f64>>>(
         &self,
         window: usize,
         min_periods: Option<usize>,
         pct: bool,
         rev: bool,
+        out: Option<&mut O::Uninit>,
     ) -> O
     where
         T::Inner: Number,
@@ -264,9 +270,8 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 out.to_opt()
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 }
 

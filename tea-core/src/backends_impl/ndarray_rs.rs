@@ -88,10 +88,7 @@ impl<T: Clone> Vec1 for Array1<T> {
     }
 
     #[inline]
-    fn uninit(len: usize) -> Self::Uninit
-// where
-    //     T: 'a,
-    {
+    fn uninit(len: usize) -> Self::Uninit {
         Array1::uninit(len)
     }
 

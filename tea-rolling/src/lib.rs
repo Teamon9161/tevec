@@ -2,5 +2,8 @@
 mod cmp;
 mod features;
 
+#[macro_use]
+extern crate tea_macros;
+
 pub use cmp::{RollingCmp, RollingValidCmp};
 pub use features::{RollingFeature, RollingValidFeature};

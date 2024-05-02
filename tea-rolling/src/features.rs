@@ -3,7 +3,13 @@ use num_traits::Zero;
 use tea_core::prelude::*;
 
 pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
-    fn ts_vsum<O: Vec1<Item = T>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vsum<O: Vec1<Item = T>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number + Zero,
     {
@@ -30,15 +36,20 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
-    fn ts_vmean<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+
+    #[no_out]
+    fn ts_vmean<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut n = 0;
@@ -62,12 +73,17 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_vewm<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vewm<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
@@ -100,12 +116,17 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_vwma<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vwma<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
@@ -139,12 +160,17 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_vstd<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vstd<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
@@ -187,12 +213,17 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_vvar<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vvar<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
@@ -234,12 +265,17 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_vskew<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vskew<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
@@ -290,12 +326,17 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_vkurt<O: Vec1<Item = T::Cast<f64>>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_vkurt<O: Vec1<Item = T::Cast<f64>>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T::Inner: Number,
     {
@@ -356,14 +397,19 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 }
 
 pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
-    fn ts_sum<O: Vec1<Item = T>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_sum<O: Vec1<Item = T>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -383,12 +429,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_mean<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_mean<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -412,12 +463,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_ewm<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_ewm<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -446,12 +502,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_wma<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_wma<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -481,12 +542,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_std<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_std<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -525,12 +591,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_var<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_var<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -569,12 +640,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_skew<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_skew<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -622,12 +698,17 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 
-    fn ts_kurt<O: Vec1<Item = f64>>(&self, window: usize, min_periods: Option<usize>) -> O
+    #[no_out]
+    fn ts_kurt<O: Vec1<Item = f64>>(
+        &self,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<&mut O::Uninit>,
+    ) -> O
     where
         T: Number,
     {
@@ -683,9 +764,8 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                 }
                 res
             },
-            None,
+            out,
         )
-        .unwrap()
     }
 }
 

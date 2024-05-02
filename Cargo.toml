@@ -6,11 +6,12 @@ members = [
     "tea-dtype",
     # "tea-time",
     "tea-map",
-    "tea-rolling",
+    "tea-rolling", 
+    "tea-macros",
 ]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Teamon"]
 edition = "2021"
 repository = "https://github.com/Teamon9161/tevec"

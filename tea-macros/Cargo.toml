@@ -1,0 +1,15 @@
+[package]
+name = "tea-macros"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features=["full"] }
+quote = { version = "1" }
+proc-macro2 = { version = "1", default-features = false }
