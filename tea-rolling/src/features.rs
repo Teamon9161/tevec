@@ -1,4 +1,3 @@
-// use super::RollingBasic;
 use num_traits::Zero;
 use tea_core::prelude::*;
 
@@ -87,7 +86,6 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         // 错位相减核心公式：
         // q_x(t) = 1 * new_element - alpha(q_x(t-1 without 1st element)) - 1st element * oma ^ (n-1)
@@ -130,7 +128,6 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut sum_xt = 0.;
@@ -174,7 +171,6 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -227,7 +223,6 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -279,7 +274,6 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(3);
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -340,7 +334,6 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     where
         T::Inner: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(4);
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -413,7 +406,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = T::zero();
         let mut n = 0;
@@ -443,7 +435,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut n = 0;
@@ -477,7 +468,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         // 错位相减核心公式：
         // q_x(t) = 1 * new_element - alpha(q_x(t-1 without 1st element)) - 1st element * oma ^ (n-1)
@@ -516,7 +506,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
         let mut sum_xt = 0.;
@@ -556,7 +545,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -605,7 +593,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -654,7 +641,6 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     where
         T: Number,
     {
-        // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(3);
         let mut sum = 0.;
         let mut sum2 = 0.;
