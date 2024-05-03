@@ -55,6 +55,31 @@ where
     }
 }
 
+// pub trait IntoCast<T: IsNone>
+// where
+//     T::Inner: Clone,
+//     Self: Sized,
+// {
+//     #[inline]
+//     fn into_cast<U: IsNone<Inner=U> + Clone>(v: U) -> T::Cast::<U>
+//     where T::Inner: Cast<U::Inner>
+//     {
+//         T::inner_cast(v)
+//     }
+// }
+
+pub trait IntoCast: IsNone<Inner = Self> + Clone + Sized {
+    #[inline]
+    fn into_cast<T: IsNone>(self) -> T::Cast<Self>
+    where
+        T::Inner: Cast<Self::Inner>,
+    {
+        T::inner_cast(self)
+    }
+}
+
+impl<U: IsNone<Inner = U> + Clone> IntoCast for U {}
+
 impl IsNone for f32 {
     type Opt = Option<f32>;
     type Inner = f32;
