@@ -1,7 +1,7 @@
 use std::mem::MaybeUninit;
 
 use crate::prelude::*;
-use ndarray::{Array1, ArrayBase, Data, DataMut, Ix1};
+use ndarray::{Array1, ArrayBase, ArrayViewMut1, Data, DataMut, Ix1};
 
 impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
     type Item = T;
@@ -33,7 +33,7 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
         &self,
         window: usize,
         f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
@@ -44,7 +44,7 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
             None
         } else {
             let mut out = O::uninit(len);
-            self.rolling_apply_to::<O, _>(window, f, &mut out);
+            self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
     }
@@ -56,7 +56,7 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
         &self,
         window: usize,
         f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
@@ -67,7 +67,7 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
             None
         } else {
             let mut out = O::uninit(len);
-            self.rolling_apply_idx_to::<O, _>(window, f, &mut out);
+            self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
     }
@@ -82,6 +82,8 @@ impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> 
 
 impl<T: Clone> Vec1 for Array1<T> {
     type Uninit = Array1<MaybeUninit<T>>;
+    type UninitRefMut<'a> = ArrayViewMut1<'a, MaybeUninit<T>> where T: 'a;
+
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         Array1::from_iter(iter)
@@ -90,6 +92,11 @@ impl<T: Clone> Vec1 for Array1<T> {
     #[inline]
     fn uninit(len: usize) -> Self::Uninit {
         Array1::uninit(len)
+    }
+
+    #[inline]
+    fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_> {
+        uninit_vec.view_mut()
     }
 
     #[inline]
@@ -104,6 +111,20 @@ impl<T: Clone> UninitVec<T> for Array1<MaybeUninit<T>> {
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
         self.assume_init()
+    }
+
+    #[inline]
+    unsafe fn uset(&mut self, idx: usize, v: T) {
+        let ele = self.uget_mut(idx);
+        ele.write(v);
+    }
+}
+
+impl<'a, T> UninitRefMut<T> for ArrayViewMut1<'a, MaybeUninit<T>> {
+    #[inline]
+    unsafe fn uset(&mut self, idx: usize, v: T) {
+        let ele = self.uget_mut(idx);
+        ele.write(v);
     }
 }
 

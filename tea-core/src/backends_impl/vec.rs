@@ -48,7 +48,7 @@ impl<T: Clone> Vec1View for Vec<T> {
         &self,
         window: usize,
         f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
@@ -59,7 +59,7 @@ impl<T: Clone> Vec1View for Vec<T> {
             None
         } else {
             let mut out = O::uninit(len);
-            self.rolling_apply_to::<O, _>(window, f, &mut out);
+            self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
         // let start_iter = std::iter::repeat(None)
@@ -82,7 +82,7 @@ impl<T: Clone> Vec1View for Vec<T> {
         &self,
         window: usize,
         f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
@@ -93,7 +93,7 @@ impl<T: Clone> Vec1View for Vec<T> {
             None
         } else {
             let mut out = O::uninit(len);
-            self.rolling_apply_idx_to::<O, _>(window, f, &mut out);
+            self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
         // assert!(window > 0, "window must be greater than 0");
@@ -124,7 +124,7 @@ impl<T: Clone> Vec1View for &[T] {
         &self,
         window: usize,
         f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
@@ -135,7 +135,7 @@ impl<T: Clone> Vec1View for &[T] {
             None
         } else {
             let mut out = O::uninit(len);
-            self.rolling_apply_to::<O, _>(window, f, &mut out);
+            self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
     }
@@ -147,7 +147,7 @@ impl<T: Clone> Vec1View for &[T] {
         &self,
         window: usize,
         f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
@@ -158,7 +158,7 @@ impl<T: Clone> Vec1View for &[T] {
             None
         } else {
             let mut out = O::uninit(len);
-            self.rolling_apply_idx_to::<O, _>(window, f, &mut out);
+            self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
     }
@@ -173,6 +173,8 @@ impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
 
 impl<T: Clone> Vec1 for Vec<T> {
     type Uninit = Vec<MaybeUninit<T>>;
+    type UninitRefMut<'a> = &'a mut [MaybeUninit<T>] where T: 'a;
+
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
         iter.collect()
@@ -188,6 +190,11 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 
     #[inline]
+    fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_> {
+        uninit_vec
+    }
+
+    #[inline]
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
         iter.collect_trusted_to_vec()
     }
@@ -200,6 +207,7 @@ impl<T: Clone> Vec1 for Vec<T> {
 
 impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
     type Vec = Vec<T>;
+    // type RefMut<'a> =  &'a mut [MaybeUninit<T>] where T: 'a;
 
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
@@ -207,6 +215,14 @@ impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
         Vec::from_raw_parts(ptr as *mut T, len, cap)
     }
 
+    #[inline]
+    unsafe fn uset(&mut self, idx: usize, v: T) {
+        let ele = self.get_unchecked_mut(idx);
+        ele.write(v);
+    }
+}
+
+impl<T> UninitRefMut<T> for &mut [MaybeUninit<T>] {
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
         let ele = self.get_unchecked_mut(idx);

@@ -8,7 +8,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number + Zero,
@@ -45,7 +45,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -82,7 +82,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -125,7 +125,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -169,7 +169,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -222,7 +222,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -274,7 +274,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -335,7 +335,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -408,7 +408,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -438,7 +438,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -472,7 +472,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -511,7 +511,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -551,7 +551,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -600,7 +600,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -649,7 +649,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,
@@ -707,7 +707,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T: Number,

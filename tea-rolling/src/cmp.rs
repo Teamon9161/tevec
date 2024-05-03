@@ -9,7 +9,7 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -63,7 +63,7 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -113,7 +113,7 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -167,7 +167,7 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
         &self,
         window: usize,
         min_periods: Option<usize>,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,
@@ -219,7 +219,7 @@ pub trait RollingValidCmp<T: IsNone + Clone>: Vec1View<Item = T> {
         min_periods: Option<usize>,
         pct: bool,
         rev: bool,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
         T::Inner: Number,

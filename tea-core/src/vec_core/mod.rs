@@ -3,7 +3,7 @@ mod iter_traits;
 mod trusted;
 mod uninit;
 
-pub use uninit::UninitVec;
+pub use uninit::{UninitRefMut, UninitVec};
 
 use crate::prelude::IsNone;
 pub use iter::{IntoIter, OptIter, ToIter};
@@ -110,7 +110,7 @@ pub trait Vec1View: ToIter {
         &self,
         window: usize,
         mut f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         Self::Item: Clone,
@@ -134,7 +134,7 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn rolling_apply_to<O: Vec1, F>(&self, window: usize, mut f: F, out: &mut O::Uninit)
+    fn rolling_apply_to<O: Vec1, F>(&self, window: usize, mut f: F, mut out: O::UninitRefMut<'_>)
     where
         Self::Item: Clone,
         F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
@@ -166,7 +166,7 @@ pub trait Vec1View: ToIter {
         &self,
         window: usize,
         mut f: F,
-        out: Option<&mut O::Uninit>,
+        out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         // start, end, value
@@ -191,8 +191,12 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn rolling_apply_idx_to<O: Vec1, F>(&self, window: usize, mut f: F, out: &mut O::Uninit)
-    where
+    fn rolling_apply_idx_to<O: Vec1, F>(
+        &self,
+        window: usize,
+        mut f: F,
+        mut out: O::UninitRefMut<'_>,
+    ) where
         // start, end, value
         F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
     {
@@ -235,12 +239,15 @@ pub trait Vec1Mut<'a>: Vec1View {
 /// a vector owns its data is not necessarily mutable
 pub trait Vec1: Vec1View + Sized {
     type Uninit: UninitVec<Self::Item, Vec = Self>;
+    type UninitRefMut<'a>: UninitRefMut<Self::Item>
+    where
+        Self::Item: 'a;
 
     fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self;
 
     fn uninit(len: usize) -> Self::Uninit;
-    // where
-    //     Self::Item: 'a;
+
+    fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_>;
 
     #[inline]
     fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {
