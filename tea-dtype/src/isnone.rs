@@ -33,7 +33,7 @@ where
 {
     type Opt;
     type Inner: IsNone;
-    type Cast<U: IsNone<Inner = U>>: IsNone;
+    type Cast<U: IsNone<Inner = U>>: IsNone<Inner = U>;
 
     fn is_none(&self) -> bool;
 
