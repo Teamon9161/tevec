@@ -30,7 +30,7 @@ where
 {
     type Opt: Opt<Inner = Self::Inner>;
     type Inner: IsNone<Inner = Self::Inner>;
-    type Cast<U: IsNone<Inner = U>>: IsNone<Inner = U>;
+    type Cast<U: IsNone<Inner = U> + Clone>: IsNone<Inner = U> + Clone;
 
     fn is_none(&self) -> bool;
 
@@ -40,7 +40,7 @@ where
 
     fn from_inner(inner: Self::Inner) -> Self;
 
-    fn inner_cast<U: IsNone<Inner = U>>(inner: U) -> Self::Cast<U>
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
     where
         Self::Inner: Cast<U::Inner>;
 
@@ -58,7 +58,7 @@ where
 impl IsNone for f32 {
     type Opt = Option<f32>;
     type Inner = f32;
-    type Cast<U: IsNone<Inner = U>> = U;
+    type Cast<U: IsNone<Inner = U> + Clone> = U;
 
     #[inline]
     #[allow(clippy::eq_op)]
@@ -86,7 +86,7 @@ impl IsNone for f32 {
     }
 
     #[inline]
-    fn inner_cast<U: IsNone<Inner = U>>(inner: U) -> Self::Cast<U>
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
     where
         Self::Inner: Cast<U::Inner>,
     {
@@ -108,7 +108,7 @@ impl IsNone for f32 {
 impl IsNone for f64 {
     type Opt = Option<f64>;
     type Inner = f64;
-    type Cast<U: IsNone<Inner = U>> = U;
+    type Cast<U: IsNone<Inner = U> + Clone> = U;
     #[inline]
     #[allow(clippy::eq_op)]
     fn is_none(&self) -> bool {
@@ -135,7 +135,7 @@ impl IsNone for f64 {
     }
 
     #[inline]
-    fn inner_cast<U: IsNone<Inner = U>>(inner: U) -> Self::Cast<U>
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
     where
         Self::Inner: Cast<U::Inner>,
     {
@@ -156,7 +156,7 @@ impl IsNone for f64 {
 impl<T: IsNone<Inner = T>> IsNone for Option<T> {
     type Opt = Option<T>; // Option<Option<T>> is not needed
     type Inner = T;
-    type Cast<U: IsNone<Inner = U>> = Option<U>;
+    type Cast<U: IsNone<Inner = U> + Clone> = Option<U>;
     #[inline]
     fn is_none(&self) -> bool {
         self.is_none()
@@ -182,7 +182,7 @@ impl<T: IsNone<Inner = T>> IsNone for Option<T> {
     }
 
     #[inline]
-    fn inner_cast<U: IsNone<Inner = U>>(inner: U) -> Self::Cast<U>
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
     where
         Self::Inner: Cast<U::Inner>,
     {
@@ -205,7 +205,7 @@ macro_rules! impl_not_none {
             impl IsNone for $type {
                 type Opt = Option<$type>;
                 type Inner = $type;
-                type Cast<U: IsNone<Inner=U>> = U;
+                type Cast<U: IsNone<Inner=U> + Clone> = U;
                 #[inline]
                 #[allow(clippy::eq_op)]
                 fn is_none(&self) -> bool {
@@ -228,7 +228,7 @@ macro_rules! impl_not_none {
 
 
                 #[inline]
-                fn inner_cast<U: IsNone<Inner=U>>(inner: U) -> Self::Cast<U>
+                fn inner_cast<U: IsNone<Inner=U> + Clone>(inner: U) -> Self::Cast<U>
                 where Self::Inner: Cast<U::Inner>
                 {
                     Cast::<U>::cast(inner)
@@ -275,5 +275,19 @@ mod tests {
         }
         assert_eq!(0., test2(2_i32));
         assert_eq!(Some(0.), test2(Some(3_usize)));
+
+        fn test3<T: IsNone>(_v: T) -> f64
+        where
+            T::Inner: Cast<f64>,
+        {
+            let out = T::inner_cast(0.);
+            let v = out.unwrap();
+            if v > 1. {
+                v + 1.
+            } else {
+                v + 2.
+            }
+        }
+        assert_eq!(2., test3(1_i32));
     }
 }

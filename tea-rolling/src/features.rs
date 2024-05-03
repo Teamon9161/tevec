@@ -2,6 +2,26 @@ use num_traits::Zero;
 use tea_core::prelude::*;
 
 pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
+    fn test(&self) -> Vec<f64>
+    where
+        T::Inner: Number,
+        T::Cast<f64>: Clone,
+    {
+        let mean: Vec<_> = self.ts_vmean(3, None);
+        let out: Vec<_> = mean
+            .into_iter()
+            .map(|v| {
+                let v = v.unwrap();
+                if v > 1. {
+                    0.
+                } else {
+                    1.
+                }
+            })
+            .collect_trusted_vec1();
+        out
+    }
+
     #[no_out]
     fn ts_vsum<O: Vec1<Item = T>>(
         &self,
