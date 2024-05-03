@@ -1,17 +1,14 @@
 use super::cast::Cast;
 
 pub trait Opt: IsNone {
-    type Value;
-    fn v(self) -> Self::Value;
+    fn v(self) -> Self::Inner;
 
     fn map_to<U, F>(self, f: F) -> Option<U>
     where
-        F: FnMut(Self::Value) -> U;
+        F: FnMut(Self::Inner) -> U;
 }
 
-impl<T: IsNone> Opt for Option<T> {
-    type Value = T;
-
+impl<T: IsNone<Inner = T>> Opt for Option<T> {
     #[inline(always)]
     fn v(self) -> T {
         self.unwrap()
@@ -20,7 +17,7 @@ impl<T: IsNone> Opt for Option<T> {
     #[inline]
     fn map_to<U, F>(self, f: F) -> Option<U>
     where
-        F: FnMut(Self::Value) -> U,
+        F: FnMut(T) -> U,
     {
         self.map(f)
     }
@@ -31,8 +28,8 @@ where
     Self: Sized,
     Self: Cast<Self::Opt>,
 {
-    type Opt;
-    type Inner: IsNone;
+    type Opt: Opt<Inner = Self::Inner>;
+    type Inner: IsNone<Inner = Self::Inner>;
     type Cast<U: IsNone<Inner = U>>: IsNone<Inner = U>;
 
     fn is_none(&self) -> bool;
@@ -156,7 +153,7 @@ impl IsNone for f64 {
     }
 }
 
-impl<T: IsNone> IsNone for Option<T> {
+impl<T: IsNone<Inner = T>> IsNone for Option<T> {
     type Opt = Option<T>; // Option<Option<T>> is not needed
     type Inner = T;
     type Cast<U: IsNone<Inner = U>> = Option<U>;
@@ -254,3 +251,29 @@ macro_rules! impl_not_none {
 }
 
 impl_not_none!(bool, i32, i64, u64, usize);
+
+#[cfg(test)]
+mod tests {
+    use crate::{Cast, IsNone};
+    #[test]
+    fn test_type_cast() {
+        fn test1<T: IsNone>(_v: T) -> f64
+        where
+            T::Inner: Cast<f64>,
+        {
+            let out = T::inner_cast(0.);
+            out.unwrap()
+        }
+        assert_eq!(0., test1(2_i32));
+        assert_eq!(0., test1(Some(3_usize)));
+
+        fn test2<T: IsNone>(_v: T) -> T::Cast<f64>
+        where
+            T::Inner: Cast<f64>,
+        {
+            T::inner_cast(0.)
+        }
+        assert_eq!(0., test2(2_i32));
+        assert_eq!(Some(0.), test2(Some(3_usize)));
+    }
+}
