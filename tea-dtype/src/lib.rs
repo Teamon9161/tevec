@@ -5,7 +5,7 @@ mod number;
 
 pub use bool_type::BoolType;
 pub use cast::Cast;
-pub use isnone::{IntoCast, IsNone, Opt};
+pub use isnone::{IntoCast, IsNone};
 pub use number::Number;
 
 #[cfg(feature = "time")]

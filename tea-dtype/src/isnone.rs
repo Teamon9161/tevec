@@ -1,34 +1,9 @@
 use super::cast::Cast;
 
-pub trait Opt: IsNone {
-    fn v(self) -> Self::Inner;
-
-    fn map_to<U, F>(self, f: F) -> Option<U>
-    where
-        F: FnMut(Self::Inner) -> U;
-}
-
-impl<T: IsNone<Inner = T>> Opt for Option<T> {
-    #[inline(always)]
-    fn v(self) -> T {
-        self.unwrap()
-    }
-
-    #[inline]
-    fn map_to<U, F>(self, f: F) -> Option<U>
-    where
-        F: FnMut(T) -> U,
-    {
-        self.map(f)
-    }
-}
-
 pub trait IsNone
 where
     Self: Sized,
-    Self: Cast<Self::Opt>,
 {
-    type Opt: Opt<Inner = Self::Inner>;
     type Inner: IsNone<Inner = Self::Inner>;
     type Cast<U: IsNone<Inner = U> + Clone>: IsNone<Inner = U> + Clone;
 
@@ -55,19 +30,6 @@ where
     }
 }
 
-// pub trait IntoCast<T: IsNone>
-// where
-//     T::Inner: Clone,
-//     Self: Sized,
-// {
-//     #[inline]
-//     fn into_cast<U: IsNone<Inner=U> + Clone>(v: U) -> T::Cast::<U>
-//     where T::Inner: Cast<U::Inner>
-//     {
-//         T::inner_cast(v)
-//     }
-// }
-
 pub trait IntoCast: IsNone<Inner = Self> + Clone + Sized {
     #[inline]
     fn into_cast<T: IsNone>(self) -> T::Cast<Self>
@@ -81,7 +43,6 @@ pub trait IntoCast: IsNone<Inner = Self> + Clone + Sized {
 impl<U: IsNone<Inner = U> + Clone> IntoCast for U {}
 
 impl IsNone for f32 {
-    type Opt = Option<f32>;
     type Inner = f32;
     type Cast<U: IsNone<Inner = U> + Clone> = U;
 
@@ -131,7 +92,6 @@ impl IsNone for f32 {
 }
 
 impl IsNone for f64 {
-    type Opt = Option<f64>;
     type Inner = f64;
     type Cast<U: IsNone<Inner = U> + Clone> = U;
     #[inline]
@@ -179,7 +139,6 @@ impl IsNone for f64 {
 }
 
 impl<T: IsNone<Inner = T>> IsNone for Option<T> {
-    type Opt = Option<T>; // Option<Option<T>> is not needed
     type Inner = T;
     type Cast<U: IsNone<Inner = U> + Clone> = Option<U>;
     #[inline]
@@ -228,7 +187,6 @@ macro_rules! impl_not_none {
     ($($type: ty),*) => {
         $(
             impl IsNone for $type {
-                type Opt = Option<$type>;
                 type Inner = $type;
                 type Cast<U: IsNone<Inner=U> + Clone> = U;
                 #[inline]

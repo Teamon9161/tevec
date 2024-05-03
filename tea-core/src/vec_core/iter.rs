@@ -1,5 +1,5 @@
 use super::{TrustIter, TrustedLen, Vec1View};
-use tea_dtype::{Cast, IsNone};
+use tea_dtype::IsNone;
 
 pub trait ToIter {
     type Item;
@@ -8,6 +8,7 @@ pub trait ToIter {
 
     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
+        Self: 'a,
         Self::Item: 'a;
 
     #[inline]
@@ -59,7 +60,7 @@ impl<V: Vec1View> ToIter for OptIter<'_, V>
 where
     V::Item: IsNone,
 {
-    type Item = <V::Item as IsNone>::Opt;
+    type Item = Option<<V::Item as IsNone>::Inner>;
 
     #[inline]
     fn len(&self) -> usize {
@@ -69,9 +70,9 @@ where
     #[inline]
     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
-        Self::Item: 'a,
+        Self: 'a,
     {
-        TrustIter::new(self.view.to_iterator().map(|v| v.cast()), self.len())
+        TrustIter::new(self.view.to_iterator().map(|v| v.to_opt()), self.len())
     }
 }
 
@@ -79,7 +80,7 @@ impl<V: Vec1View> ToIter for &OptIter<'_, V>
 where
     V::Item: IsNone,
 {
-    type Item = <V::Item as IsNone>::Opt;
+    type Item = Option<<V::Item as IsNone>::Inner>;
 
     #[inline]
     fn len(&self) -> usize {
@@ -89,23 +90,23 @@ where
     #[inline]
     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
     where
-        Self::Item: 'a,
+        Self: 'a,
     {
-        TrustIter::new(self.view.to_iter().map(|v| v.cast()), self.view.len())
+        TrustIter::new(self.view.to_iterator().map(|v| v.to_opt()), self.len())
     }
 }
 
 impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V> {
     #[inline]
-    unsafe fn uget(&self, index: usize) -> T::Opt {
-        self.view.uget(index).cast()
+    unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
+        self.view.uget(index).to_opt()
     }
 }
 
 impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for &OptIter<'a, V> {
     #[inline]
-    unsafe fn uget(&self, index: usize) -> T::Opt {
-        self.view.uget(index).cast()
+    unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
+        self.view.uget(index).to_opt()
     }
 }
 
@@ -113,7 +114,7 @@ impl<'a, V: Vec1View> IntoIterator for &OptIter<'a, V>
 where
     V::Item: IsNone,
 {
-    type Item = <V::Item as IsNone>::Opt;
+    type Item = Option<<V::Item as IsNone>::Inner>;
     type IntoIter = TrustIter<impl Iterator<Item = Self::Item>>;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
