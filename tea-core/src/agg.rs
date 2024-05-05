@@ -2,8 +2,6 @@ use crate::prelude::IterBasic;
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IsNone, Number};
 
-// type ValidInner<T> = <<T as IntoIterator>::Item as IsNone>::Inner;
-
 pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     /// count the number of valid elements in the vector.

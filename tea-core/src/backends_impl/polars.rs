@@ -30,9 +30,9 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                unsafe fn uvget(&self, index: usize) -> Option<Option<<$type as PolarsNumericType>::Native>>
+                unsafe fn uvget(&self, index: usize) -> Option<<$type as PolarsNumericType>::Native>
                 {
-                    Some(self.uget(index))
+                    self.uget(index).to_opt()
                 }
             }
 
@@ -61,9 +61,9 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                unsafe fn uvget(&self, index: usize) -> Option<Option<<$type as PolarsNumericType>::Native>>
+                unsafe fn uvget(&self, index: usize) -> Option<<$type as PolarsNumericType>::Native>
                 {
-                    Some(self.uget(index))
+                    self.uget(index).to_opt()
                 }
             }
 
@@ -153,9 +153,9 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                unsafe fn uvget(&self, index: usize) -> Option<Option<$real>>
+                unsafe fn uvget(&self, index: usize) -> Option<$real>
                 {
-                    Some(self.uget(index))
+                    self.uget(index).to_opt()
                 }
             }
 
@@ -183,9 +183,9 @@ macro_rules! impl_for_primitive {
                 }
 
                 #[inline]
-                unsafe fn uvget(&self, index: usize) -> Option<Option<$real>>
+                unsafe fn uvget(&self, index: usize) -> Option<$real>
                 {
-                    Some(self.uget(index))
+                    self.uget(index).to_opt()
                 }
             }
 

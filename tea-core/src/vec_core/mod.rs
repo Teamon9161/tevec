@@ -72,7 +72,7 @@ pub trait Vec1View: ToIter {
     ///
     /// The index should be less than the length of the array
     #[inline]
-    unsafe fn uvget(&self, index: usize) -> Option<Self::Item>
+    unsafe fn uvget(&self, index: usize) -> Option<<Self::Item as IsNone>::Inner>
     where
         Self::Item: IsNone,
     {
@@ -80,7 +80,7 @@ pub trait Vec1View: ToIter {
         if v.is_none() {
             None
         } else {
-            Some(v)
+            v.to_opt()
         }
     }
 
@@ -94,7 +94,7 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn vget(&self, index: usize) -> Option<Self::Item>
+    fn vget(&self, index: usize) -> Option<<Self::Item as IsNone>::Inner>
     where
         Self::Item: IsNone,
     {
@@ -134,6 +134,8 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
+    /// be careful to use this function as it will panic in polars backend.
+    /// use rolling_apply instead
     fn rolling_apply_to<O: Vec1, F>(&self, window: usize, mut f: F, mut out: O::UninitRefMut<'_>)
     where
         Self::Item: Clone,
@@ -191,6 +193,8 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
+    /// be careful to use this function as it will panic in polars backend.
+    /// use rolling_apply_idx instead
     fn rolling_apply_idx_to<O: Vec1, F>(
         &self,
         window: usize,
@@ -309,23 +313,6 @@ pub trait Vec1DOptCollect<T: IsNone>: IntoIterator<Item = Option<T>> {
     {
         <O as Vec1>::collect_from_opt_iter(self.into_iter())
     }
-
-    // #[inline]
-    // fn collect_trusted_vec1_opt<O: Vec1<Item = T>>(self) -> O
-    // where
-    //     Self: Sized,
-    //     Self::IntoIter: TrustedLen,
-    // {
-    //     <O as Vec1>::collect_opt_from_trusted(self.into_iter())
-    // }
-
-    // #[inline]
-    // fn collect_vec1_opt_with_len<O: Vec1<Item = T>>(self, len: usize) -> O
-    // where
-    //     Self: Sized,
-    // {
-    //     <O as Vec1>::collect_opt_with_len(self.into_iter(), len)
-    // }
 }
 
 impl<T: IntoIterator + Sized> Vec1Collect for T {}
