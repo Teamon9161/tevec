@@ -62,17 +62,30 @@ impl<T: Clone> Vec1View for Vec<T> {
             self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
-        // let start_iter = std::iter::repeat(None)
-        //     .take(window - 1)
-        //     .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
-        // start_iter
-        //     .zip(0..len)
-        //     .map(|(start, end)| {
-        //         let v_remove = start.map(|v| unsafe { self.uget(v) });
-        //         let v = unsafe { self.uget(end) };
-        //         f(v_remove, v)
-        //     })
-        //     .collect_trusted_vec1()
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+    {
+        let len = self.len();
+        if let Some(out) = out {
+            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+            None
+        } else {
+            let mut out = O::uninit(len);
+            self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
+            Some(unsafe { out.assume_init() })
+        }
     }
 
     #[inline]
@@ -96,18 +109,6 @@ impl<T: Clone> Vec1View for Vec<T> {
             self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
-        // assert!(window > 0, "window must be greater than 0");
-        // let len = self.len();
-        // let start_iter = std::iter::repeat(None)
-        //     .take(window - 1)
-        //     .chain((0..len).map(Some)); // this is longer than expected, but start_iter will stop earlier
-        // start_iter
-        //     .zip(0..len)
-        //     .map(|(start, end)| {
-        //         let v = unsafe { self.uget(end) };
-        //         f(start, end, v)
-        //     })
-        //     .collect_trusted_vec1()
     }
 }
 
@@ -136,6 +137,30 @@ impl<T: Clone> Vec1View for &[T] {
         } else {
             let mut out = O::uninit(len);
             self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
+            Some(unsafe { out.assume_init() })
+        }
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+    {
+        let len = self.len();
+        if let Some(out) = out {
+            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+            None
+        } else {
+            let mut out = O::uninit(len);
+            self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
     }
@@ -284,5 +309,12 @@ mod tests {
         unsafe { data.uset(1, 2) };
         let data: Vec<_> = unsafe { data.assume_init() };
         assert_eq!(data, vec![1, 2]);
+    }
+
+    #[test]
+    fn test_rolling_custom() {
+        let data = vec![1, 2, 3, 4, 5];
+        let out: Vec<_> = data.rolling_custom(3, |s| s.to_iter().vsum().unwrap());
+        assert_eq!(out, vec![1, 3, 6, 9, 12]);
     }
 }

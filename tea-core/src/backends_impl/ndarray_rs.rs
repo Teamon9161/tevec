@@ -52,6 +52,30 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
     #[inline]
     /// this should be a faster implemention than default as
     /// we read value directly by ptr
+    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+    {
+        let len = self.len();
+        if let Some(out) = out {
+            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+            None
+        } else {
+            let mut out = O::uninit(len);
+            self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
+            Some(unsafe { out.assume_init() })
+        }
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
     fn rolling_apply_idx<O: Vec1, F>(
         &self,
         window: usize,

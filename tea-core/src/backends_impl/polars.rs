@@ -86,8 +86,6 @@ macro_rules! impl_for_primitive {
 
                 #[inline]
                 fn uninit(len: usize) -> Self::Uninit
-                // impl UninitVec<'a, Option<<$type as PolarsNumericType>::Native>, Vec=Self>
-                // where Option<<$type as PolarsNumericType>::Native>: Copy
                 {
                     ChunkedArray::<$type>::full_null("", len)
                 }
@@ -247,7 +245,7 @@ macro_rules! impl_for_primitive {
 impl_for_primitive!(Float32Type, Float64Type, Int32Type, Int64Type);
 impl_for_primitive!(BooleanType: bool);
 
-// impl<'a> ToIter for ChunkedArray<StringType> {
+// impl ToIter for ChunkedArray<StringType> {
 //     type Item = Option<&'a str>;
 
 //     #[inline]
@@ -256,7 +254,7 @@ impl_for_primitive!(BooleanType: bool);
 //     }
 
 //     #[inline]
-//     fn to_iterator<'b>(&'b self) -> TrustIter<impl Iterator<Item=Option<&'a str>>> where Self::Item: 'b {
+//     fn to_iterator<'b>(&'b self) -> TrustIter<impl Iterator<Item=Self::Item>> where Self::Item: 'b {
 //         TrustIter::new(self.into_iter(), self.len())
 //     }
 // }

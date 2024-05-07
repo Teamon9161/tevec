@@ -106,6 +106,36 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
+    fn rolling_custom<O: Vec1, U: ?Sized, F>(&self, window: usize, mut f: F) -> O
+    where
+        Self: std::ops::Index<std::ops::Range<usize>, Output = U>,
+        F: FnMut(&U) -> O::Item,
+    {
+        (1..self.len() + 1)
+            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+            .map(|(end, start)| f(&self[start..end]))
+            .collect_trusted_vec1()
+    }
+
+    #[inline]
+    fn rolling2_custom<O: Vec1, V2, U1: ?Sized, U2: ?Sized, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        mut f: F,
+    ) -> O
+    where
+        Self: std::ops::Index<std::ops::Range<usize>, Output = U1>,
+        V2: Vec1 + std::ops::Index<std::ops::Range<usize>, Output = U2>,
+        F: FnMut(&U1, &U2) -> O::Item,
+    {
+        (1..self.len() + 1)
+            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+            .map(|(end, start)| f(&self[start..end], &other[start..end]))
+            .collect_trusted_vec1()
+    }
+
+    #[inline]
     fn rolling_apply<O: Vec1, F>(
         &self,
         window: usize,
@@ -125,9 +155,9 @@ pub trait Vec1View: ToIter {
                 .take(window - 1)
                 .chain(self.to_iterator().map(Some));
             Some(
-                self.to_iter()
-                    .zip(remove_value_iter)
-                    .map(move |(v, v_remove)| f(v_remove, v))
+                remove_value_iter
+                    .zip(self.to_iter())
+                    .map(move |(v_remove, v)| f(v_remove, v))
                     .collect_trusted_vec1(),
             )
         }
@@ -159,6 +189,71 @@ pub trait Vec1View: ToIter {
                 // new valid value
                 let (v_rm, v) = (self.uget(start), self.uget(end));
                 out.uset(end, f(Some(v_rm), v))
+            }
+        }
+    }
+
+    #[inline]
+    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        mut f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        Self::Item: Clone,
+        V2::Item: Clone,
+        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+    {
+        if let Some(out) = out {
+            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+            None
+        } else {
+            assert!(window > 0, "window must be greater than 0");
+            let remove_value_iter = std::iter::repeat(None)
+                .take(window - 1)
+                .chain(self.to_iter().zip(other.to_iter()).map(Some));
+            Some(
+                remove_value_iter
+                    .zip(self.to_iter().zip(other.to_iter()))
+                    .map(move |(v_remove, v)| f(v_remove, v))
+                    .collect_trusted_vec1(),
+            )
+        }
+    }
+
+    #[inline]
+    /// be careful to use this function as it will panic in polars backend.
+    /// use rolling_apply instead
+    fn rolling2_apply_to<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        mut f: F,
+        mut out: O::UninitRefMut<'_>,
+    ) where
+        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return;
+        }
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                // no value should be removed in the first window
+                out.uset(i, f(None, (self.uget(i), other.uget(i))))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe {
+                // new valid value
+                let (v1_rm, v1) = (self.uget(start), self.uget(end));
+                let (v2_rm, v2) = (other.uget(start), other.uget(end));
+                out.uset(end, f(Some((v1_rm, v2_rm)), (v1, v2)))
             }
         }
     }

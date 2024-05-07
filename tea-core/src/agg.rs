@@ -1,6 +1,6 @@
-use crate::prelude::IterBasic;
+use crate::prelude::{IterBasic, EPS};
 use num_traits::Zero;
-use tea_dtype::{BoolType, Cast, IsNone, Number};
+use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number};
 
 pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
@@ -65,7 +65,6 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     }
 
     #[inline]
-    #[allow(clippy::clone_on_copy)]
     fn vmean(self) -> T::Cast<f64>
     where
         T::Inner: Zero + Number,
@@ -98,6 +97,73 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
             None => Some(x.unwrap()),
             Some(v) => Some(v.min_with(&x.unwrap())),
         })
+    }
+
+    fn vcov<V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T::Cast<f64>
+    where
+        T::Inner: Zero + Number,
+    {
+        let (mut sum_a, mut sum_b, mut sum_ab) = (0., 0., 0.);
+        let mut n = 0;
+        let min_periods = min_periods.max(2);
+        self.into_iter().zip(other).for_each(|(va, vb)| {
+            if va.not_none() && vb.not_none() {
+                n += 1;
+                let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                sum_a += va;
+                sum_b += vb;
+                sum_ab += va * vb;
+            }
+        });
+        if n >= min_periods {
+            let res = (sum_ab - (sum_a * sum_b) / n as f64) / (n - 1) as f64;
+            res.into_cast::<T>()
+        } else {
+            T::Cast::<f64>::none()
+        }
+    }
+
+    fn vcorr_pearson<V2: IntoIterator<Item = T>>(
+        self,
+        other: V2,
+        min_periods: usize,
+    ) -> T::Cast<f64>
+    where
+        T::Inner: Zero + Number,
+    {
+        let (mut sum_a, mut sum2_a, mut sum_b, mut sum2_b, mut sum_ab) = (0., 0., 0., 0., 0.);
+        let mut n = 0;
+        let min_periods = min_periods.max(2);
+        self.into_iter().zip(other).for_each(|(va, vb)| {
+            if va.not_none() && vb.not_none() {
+                n += 1;
+                let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                sum_a += va;
+                sum2_a += va * va;
+                sum_b += vb;
+                sum2_b += vb * vb;
+                sum_ab += va * vb;
+            }
+        });
+        if n >= min_periods {
+            let n = n.f64();
+            let mean_a = sum_a / n;
+            let mut var_a = sum2_a / n;
+            let mean_b = sum_b / n;
+            let mut var_b = sum2_b / n;
+            var_a -= mean_a.powi(2);
+            var_b -= mean_b.powi(2);
+            if (var_a > EPS) & (var_b > EPS) {
+                let exy = sum_ab / n;
+                let exey = sum_a * sum_b / (n * n);
+                let res = (exy - exey) / (var_a * var_b).sqrt();
+                res.into_cast::<T>()
+            } else {
+                T::Cast::<f64>::none()
+            }
+        } else {
+            T::Cast::<f64>::none()
+        }
     }
 }
 

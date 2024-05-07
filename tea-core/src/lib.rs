@@ -8,6 +8,7 @@ mod vec_core;
 
 pub use tea_dtype;
 
+// #[cfg(test)]
 pub mod testing;
 
 pub mod prelude;

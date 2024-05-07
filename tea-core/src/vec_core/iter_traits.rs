@@ -11,6 +11,22 @@ pub trait IterBasic: IntoIterator + Sized {
         self.into_iter()
             .fold(init, |acc, v| if v.not_none() { f(acc, v) } else { acc })
     }
+    #[inline]
+    fn vfold2<U, I2, F>(self, other: I2, init: U, mut f: F) -> U
+    where
+        I2: IntoIterator,
+        I2::Item: IsNone,
+        F: FnMut(U, Self::Item, I2::Item) -> U,
+        Self::Item: IsNone,
+    {
+        self.into_iter().zip(other).fold(init, |acc, (va, vb)| {
+            if va.not_none() && vb.not_none() {
+                f(acc, va, vb)
+            } else {
+                acc
+            }
+        })
+    }
 
     #[inline]
     fn vfold_n<U, F>(self, init: U, mut f: F) -> (usize, U)

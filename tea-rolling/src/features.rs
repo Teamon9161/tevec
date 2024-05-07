@@ -798,10 +798,14 @@ mod tests {
     fn test_ts_mean() {
         let data = vec![1, 2, 3, 4, 5];
         let mean: Vec<_> = data.ts_mean(3, Some(1));
-        assert_vec1d_equal_numeric(mean, vec![1., 1.5, 2., 3., 4.], None);
+        assert_vec1d_equal_numeric(&mean, &vec![1., 1.5, 2., 3., 4.], None);
         let data = vec![1., f64::NAN, 3., 4., 5.];
         let out: Vec<_> = data.ts_mean(2, Some(1));
-        assert_vec1d_equal_numeric(out, vec![1., f64::NAN, f64::NAN, f64::NAN, f64::NAN], None);
+        assert_vec1d_equal_numeric(
+            &out,
+            &vec![1., f64::NAN, f64::NAN, f64::NAN, f64::NAN],
+            None,
+        );
         let out2: Vec<_> = data.ts_vmean(2, Some(1));
         let out3: Vec<_> = data.to_opt().ts_vmean(2, Some(1));
         let expect = vec![Some(1.), Some(1.), Some(3.), Some(3.5), Some(4.5)];
@@ -809,6 +813,6 @@ mod tests {
         assert_eq!(out3, expect);
 
         let out: Vec<_> = data.to_opt().ts_vmean(2, Some(2));
-        assert_vec1d_opt_equal_numeric(out, vec![None, None, None, Some(3.5), Some(4.5)], None)
+        assert_vec1d_equal_numeric(&out, &vec![None, None, None, Some(3.5), Some(4.5)], None)
     }
 }

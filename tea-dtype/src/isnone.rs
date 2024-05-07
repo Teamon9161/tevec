@@ -28,6 +28,16 @@ where
     fn not_none(&self) -> bool {
         !self.is_none()
     }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        self.to_opt()
+            .map(|v| U::from_inner(f(v)))
+            .unwrap_or_else(|| U::none())
+    }
 }
 
 pub trait IntoCast: IsNone<Inner = Self> + Clone + Sized {
@@ -89,6 +99,14 @@ impl IsNone for f32 {
     fn not_none(&self) -> bool {
         self == self
     }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        U::from_inner(f(self))
+    }
 }
 
 impl IsNone for f64 {
@@ -136,6 +154,14 @@ impl IsNone for f64 {
     fn not_none(&self) -> bool {
         self == self
     }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        U::from_inner(f(self))
+    }
 }
 
 impl<T: IsNone<Inner = T>> IsNone for Option<T> {
@@ -180,6 +206,15 @@ impl<T: IsNone<Inner = T>> IsNone for Option<T> {
     #[inline]
     fn not_none(&self) -> bool {
         self.is_some()
+    }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        self.map(|v| U::from_inner(f(v)))
+            .unwrap_or_else(|| U::none())
     }
 }
 
@@ -227,6 +262,15 @@ macro_rules! impl_not_none {
                 #[allow(clippy::eq_op)]
                 fn not_none(&self) -> bool {
                     true
+                }
+
+
+                #[inline]
+                fn map<F, U: IsNone>(self, f: F) -> U
+                where
+                    F: Fn(Self::Inner) -> U::Inner
+                {
+                    U::from_inner(f(self))
                 }
             }
         )*
