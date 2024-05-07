@@ -363,7 +363,7 @@ pub trait Vec1: Vec1View + Sized {
     where
         Self::Item: IsNone,
     {
-        let iter = iter.map(|v| v.unwrap_or_else(|| Self::Item::none()));
+        let iter = iter.map(|v| v.unwrap_or_else(Self::Item::none));
         Self::collect_from_iter(iter)
     }
 
