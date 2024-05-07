@@ -36,7 +36,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> {
             n if n >= 0 => Box::new(TrustIter::new(
                 std::iter::repeat(value)
                     .take(n_abs)
-                    .chain(self.take(len - n_abs + 1)),
+                    .chain(self.take(len - n_abs)),
                 len,
             )),
             n if n < 0 => Box::new(TrustIter::new(

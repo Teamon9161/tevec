@@ -10,7 +10,7 @@ pub trait Cast<T> {
 impl<T: IsNone> Cast<T> for Option<T> {
     #[inline]
     fn cast(self) -> T {
-        self.unwrap_or(T::none())
+        self.unwrap_or_else(|| T::none())
     }
 }
 
