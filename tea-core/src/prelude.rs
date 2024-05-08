@@ -3,7 +3,7 @@ pub use crate::vec_core::{
     CollectTrustedToVec, IntoIter, IterBasic, ToIter, ToTrustIter, TrustIter, TrustedLen,
     UninitRefMut, UninitVec, Vec1, Vec1Collect, Vec1DOptCollect, Vec1Mut, Vec1View,
 };
-pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number};
+pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number, One, Zero};
 
 #[cfg(feature = "time")]
 pub use tea_dtype::{DateTime, TimeDelta};

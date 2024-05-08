@@ -8,10 +8,12 @@ license.workspace = true
 
 [features]
 default = []
+# default = ["agg", "map"]
 
 # ops
 rolling = ["tea-rolling"]
 map = ["tea-map"]
+agg = []
 
 # backends
 pl = ["tea-core/pl"]

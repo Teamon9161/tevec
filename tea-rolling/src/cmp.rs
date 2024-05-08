@@ -377,7 +377,7 @@ mod tests {
     }
 
     #[test]
-    fn test_vrank() {
+    fn test_ts_vrank() {
         let v = vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)];
         // test ts_vargmax
         let res: Vec<_> = v.ts_vrank(3, None, false, false);

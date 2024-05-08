@@ -233,6 +233,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
 
 impl<I: TrustedLen> MapBasic for I {}
 impl<T: IsNone, I: TrustedLen<Item = T>> MapValidBasic<T> for I {}
+impl<T: IsNone, I: Vec1View<Item = T>> MapValidVec<T> for I {}
 
 #[cfg(test)]
 mod test {
@@ -261,5 +262,16 @@ mod test {
             .vshift(0, Some(0))
             .collect_trusted_to_vec();
         assert_eq!(res, vec![3, 4, 5, 0, 0]);
+    }
+
+    #[test]
+    fn test_rank() {
+        let v = vec![2., 1., f64::NAN, 3., 1.];
+        let res: Vec<f64> = v.vrank(false, false);
+        let expect = vec![3., 1.5, f64::NAN, 4., 1.5];
+        assert_vec1d_equal_numeric(&res, &expect, None);
+        let res: Vec<Option<f64>> = v.vrank(false, true);
+        let expect = vec![Some(2.), Some(3.5), None, Some(1.), Some(3.5)];
+        assert_vec1d_equal_numeric(&res, &expect, None);
     }
 }
