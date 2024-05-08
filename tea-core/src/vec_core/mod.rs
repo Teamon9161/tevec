@@ -371,6 +371,15 @@ pub trait Vec1: Vec1View + Sized {
     fn empty() -> Self {
         Self::collect_from_iter(std::iter::empty())
     }
+
+    #[inline]
+    fn full(len: usize, v: Self::Item) -> Self
+    where
+        Self::Item: Clone,
+    {
+        let iter = std::iter::repeat(v).take(len);
+        Self::collect_from_trusted(iter)
+    }
 }
 
 pub trait Vec1Collect: IntoIterator {

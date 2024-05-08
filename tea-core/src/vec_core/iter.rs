@@ -25,26 +25,24 @@ pub trait ToIter {
     }
 }
 
-pub trait IntoIter: TrustedLen // where
-//     Self: Sized,
-{
-    fn len(&self) -> usize;
+pub trait IntoIter: TrustedLen {
+    // fn len(&self) -> usize;
 
     fn into_iterator(self) -> TrustIter<Self>
     where
         Self: Sized;
 
-    #[inline(always)]
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
+    // #[inline(always)]
+    // fn is_empty(&self) -> bool {
+    //     self.len() == 0
+    // }
 }
 
 impl<I: Iterator + TrustedLen> IntoIter for I {
-    #[inline]
-    fn len(&self) -> usize {
-        self.size_hint().1.unwrap()
-    }
+    // #[inline]
+    // fn len(&self) -> usize {
+    //     self.size_hint().1.unwrap()
+    // }
 
     #[inline]
     fn into_iterator(self) -> TrustIter<I> {

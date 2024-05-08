@@ -14,7 +14,17 @@ use std::slice::Iter;
 /// This trait must only be implemented when the contract is upheld.
 /// Consumers of this trait must inspect Iterator::size_hint()’s upper bound.
 #[cfg(not(feature = "pl"))]
-pub unsafe trait TrustedLen: Iterator {}
+pub unsafe trait TrustedLen: Iterator {
+    #[inline]
+    fn len(&self) -> usize {
+        self.size_hint().1.unwrap()
+    }
+
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
 
 /// An iterator of known, fixed size.
 /// A trait denoting Rusts' unstable [TrustedLen](https://doc.rust-lang.org/std/iter/trait.TrustedLen.html).
@@ -25,7 +35,17 @@ pub unsafe trait TrustedLen: Iterator {}
 /// This trait must only be implemented when the contract is upheld.
 /// Consumers of this trait must inspect Iterator::size_hint()’s upper bound.
 #[cfg(feature = "pl")]
-pub unsafe trait TrustedLen: Iterator + PlTrustedLen {}
+pub unsafe trait TrustedLen: Iterator + PlTrustedLen {
+    #[inline]
+    fn len(&self) -> usize {
+        self.size_hint().1.unwrap()
+    }
+
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
 
 unsafe impl<T> TrustedLen for Iter<'_, T> {}
 

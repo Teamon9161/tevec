@@ -1,4 +1,5 @@
 use super::cast::Cast;
+use std::cmp::Ordering;
 
 pub trait IsNone
 where
@@ -37,6 +38,57 @@ where
         self.to_opt()
             .map(|v| U::from_inner(f(v)))
             .unwrap_or_else(|| U::none())
+    }
+
+    /// let None value be largest, only for sorting(from smallest to largest)
+    #[inline]
+    fn sort_cmp(self, other: Self) -> Ordering
+    where
+        Self::Inner: PartialOrd,
+    {
+        if other.is_none() {
+            if self.is_none() {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            }
+        } else if self.is_none() {
+            Ordering::Greater
+        } else {
+            let (va, vb) = (self.unwrap(), other.unwrap());
+            if va > vb {
+                Ordering::Greater
+            } else if va == vb {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            }
+        }
+    }
+
+    #[inline]
+    fn sort_cmp_rev(self, other: Self) -> Ordering
+    where
+        Self::Inner: PartialOrd,
+    {
+        if other.is_none() {
+            if self.is_none() {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            }
+        } else if self.is_none() {
+            Ordering::Greater
+        } else {
+            let (va, vb) = (self.unwrap(), other.unwrap());
+            if va < vb {
+                Ordering::Greater
+            } else if va == vb {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            }
+        }
     }
 }
 
