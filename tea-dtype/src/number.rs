@@ -31,6 +31,16 @@ pub trait Number:
     /// return the max value of the data type
     fn max_() -> Self;
 
+    #[inline]
+    fn ceil(self) -> Self {
+        self
+    }
+
+    #[inline]
+    fn floor(self) -> Self {
+        self
+    }
+
     fn min_with(&self, other: &Self) -> Self {
         if other < self {
             *other
@@ -110,6 +120,16 @@ macro_rules! impl_number {
     (float $($dtype:ty, $datatype:ident); *) => {
         $(impl Number for $dtype {
             impl_number!(@ base_impl $dtype, $datatype);
+
+            #[inline]
+            fn ceil(self) -> Self {
+                self.ceil()
+            }
+
+            #[inline]
+            fn floor(self) -> Self {
+                self.floor()
+            }
         })*
     };
     // special impl for other type
@@ -133,3 +153,29 @@ impl_number!(
     u64, U64;
     usize, Usize
 );
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_ceil() {
+        fn _ceil<T: Number>(v: T) -> T {
+            v.ceil()
+        }
+        assert_eq!(_ceil(1.23_f64), 2.);
+        assert_eq!(_ceil(-1.23_f32), -1.);
+        assert_eq!(_ceil(0_usize), 0);
+        assert_eq!(_ceil(-3i32), -3);
+    }
+
+    #[test]
+    fn test_floor() {
+        fn _floor<T: Number>(v: T) -> T {
+            v.floor()
+        }
+        assert_eq!(_floor(1.23_f64), 1.);
+        assert_eq!(_floor(-1.23_f32), -2.);
+        assert_eq!(_floor(0_usize), 0);
+        assert_eq!(_floor(-3i32), -3);
+    }
+}

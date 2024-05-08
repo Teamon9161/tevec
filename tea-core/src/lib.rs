@@ -4,6 +4,8 @@
 
 mod agg;
 mod backends_impl;
+mod create;
+mod linspace;
 mod vec_core;
 
 pub use tea_dtype;
