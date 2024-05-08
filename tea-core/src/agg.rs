@@ -123,13 +123,11 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
-    fn vcorr_pearson<V2: IntoIterator<Item = T>>(
-        self,
-        other: V2,
-        min_periods: usize,
-    ) -> T::Cast<f64>
+    fn vcorr_pearson<T2, V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T2
     where
         T::Inner: Zero + Number,
+        f64: Cast<T2>,
+        T2: IsNone + Clone,
     {
         let (mut sum_a, mut sum2_a, mut sum_b, mut sum2_b, mut sum_ab) = (0., 0., 0., 0., 0.);
         let mut n = 0;
@@ -157,12 +155,12 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
                 let exy = sum_ab / n;
                 let exey = sum_a * sum_b / (n * n);
                 let res = (exy - exey) / (var_a * var_b).sqrt();
-                res.into_cast::<T>()
+                res.cast()
             } else {
-                T::Cast::<f64>::none()
+                T2::none()
             }
         } else {
-            T::Cast::<f64>::none()
+            T2::none()
         }
     }
 }

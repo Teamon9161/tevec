@@ -54,6 +54,9 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> {
         let len = self.len();
         let n_abs = n.unsigned_abs() as usize;
         let value = value.unwrap_or_else(|| T::none());
+        if len <= n_abs {
+            return Box::new(std::iter::repeat(value).take(len));
+        }
         match n {
             n if n > 0 => Box::new(TrustIter::new(
                 std::iter::repeat(value)
@@ -252,6 +255,10 @@ mod test {
 
     #[test]
     fn test_shift() {
+        // test shift on empty vec
+        let v: Vec<f64> = vec![];
+        let res: Vec<_> = v.to_iter().vshift(2, None).collect_trusted_vec1();
+        assert_eq!(res, vec![]);
         let v = vec![1., 2., 3., 4., 5.];
         let res: Vec<_> = v.to_iter().vshift(2, None).collect_trusted_vec1();
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, f64::NAN, 1., 2., 3.], None);
