@@ -70,16 +70,20 @@ macro_rules! terr {
         )
     };
     ($err: expr) => {
-        $crate::TError::Str($err.into())
+        $crate::terr!(Str: $err)
     };
     (lm, $left: expr, $right: expr) => {
-        $crate::TError::LengthMismatch {
-            left: $left,
-            right: $right,
-        }
+        $crate::__private::must_use(
+            $crate::TError::LengthMismatch {
+                left: $left,
+                right: $right,
+            }
+        )
     };
     () => {
-        $crate::TError::Unknown
+        $crate::__private::must_use(
+            $crate::TError::Unknown
+        )
     };
 }
 

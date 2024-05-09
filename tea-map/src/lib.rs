@@ -119,7 +119,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.ok_or_else(|| terr!("value not in bins in cut"))
+                    out.ok_or_else(|| terr!("value not in bins in function cut"))
                 }
             })))
         } else {
@@ -139,7 +139,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.ok_or_else(|| terr!("value not in bins in cut"))
+                    out.ok_or_else(|| terr!("value not in bins in function cut"))
                 }
             })))
         }
