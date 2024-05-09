@@ -100,6 +100,7 @@ pub trait Vec1View: ToIter {
         }
     }
 
+    /// Rolling and apply a custom funtion to each window
     #[inline]
     fn rolling_custom<O: Vec1, U: ?Sized, F>(&self, window: usize, mut f: F) -> O
     where
@@ -112,6 +113,7 @@ pub trait Vec1View: ToIter {
             .collect_trusted_vec1()
     }
 
+    /// Rolling and apply a custom funtion to each window if two vecs
     #[inline]
     fn rolling2_custom<O: Vec1, V2, U1: ?Sized, U2: ?Sized, F>(
         &self,
@@ -130,6 +132,9 @@ pub trait Vec1View: ToIter {
             .collect_trusted_vec1()
     }
 
+    /// Rolling and apply a function, the function accept whether to
+    /// move element from the window and a value to be added to
+    /// the window
     #[inline]
     fn rolling_apply<O: Vec1, F>(
         &self,
@@ -158,9 +163,15 @@ pub trait Vec1View: ToIter {
         }
     }
 
+    /// Rolling and apply a function, the function accept whether to
+    /// move element from the window and a value to be added to
+    /// the window.
+    ///
+    /// Different with `rolling_apply`, the caller should pass a mut reference
+    /// of uninit vec.
+    /// Be careful to use this function as it will panic in polars backend.
+    /// use `rolling_apply` instead
     #[inline]
-    /// be careful to use this function as it will panic in polars backend.
-    /// use rolling_apply instead
     fn rolling_apply_to<O: Vec1, F>(&self, window: usize, mut f: F, mut out: O::UninitRefMut<'_>)
     where
         Self::Item: Clone,
@@ -188,6 +199,9 @@ pub trait Vec1View: ToIter {
         }
     }
 
+    /// Rolling and apply a function to both vecs, the function accept whether to
+    /// move element from the window and a value to be added to
+    /// the window
     #[inline]
     fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
         &self,
@@ -219,8 +233,14 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    /// be careful to use this function as it will panic in polars backend.
-    /// use rolling_apply instead
+    /// Rolling and apply a function to both vecs, the function accept whether to
+    /// move element from the window and a value to be added to
+    /// the window.
+    ///
+    /// Different with `rolling_apply`, the caller should pass a mut reference
+    /// of uninit vec.
+    /// Be careful to use this function as it will panic in polars backend.
+    /// use `rolling_apply` instead
     fn rolling2_apply_to<O: Vec1, V2: Vec1View, F>(
         &self,
         other: &V2,

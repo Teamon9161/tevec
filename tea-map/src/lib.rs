@@ -77,7 +77,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         labels: &'a V3,
         right: bool,
         add_bounds: bool,
-    ) -> Box<dyn TrustedLen<Item = T2> + 'a>
+    ) -> Result<Box<dyn TrustedLen<Item = T2> + 'a>>
     where
         Self: 'a,
         T::Inner: Number,
@@ -88,26 +88,22 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     {
         use itertools::Itertools;
         let bins: Vec<T::Inner> = if add_bounds {
-            assert_eq!(
-                labels.len(),
-                bins.len() + 1,
-                "Bin labels must be one more than the number of bin edges"
-            );
+            if labels.len() != bins.len() + 1 {
+                bail!("Number of labels must be one more than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+            }
             vec![T::Inner::min_()]
                 .into_iter()
                 .chain(bins.to_iter().map(IsNone::unwrap))
                 .chain(vec![T::Inner::max_()])
                 .collect()
         } else {
-            assert_eq!(
-                labels.len() + 1,
-                bins.len(),
-                "Bin labels must be one fewer than the number of bin edges"
-            );
+            if labels.len() + 1 != bins.len() {
+                bail!("Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+            }
             bins.to_iter().map(IsNone::unwrap).collect_trusted_vec1()
         };
         if right {
-            Box::new(self.map(move |value| {
+            Ok(Box::new(self.map(move |value| {
                 if value.is_none() {
                     T2::none()
                 } else {
@@ -125,9 +121,9 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     }
                     out.expect("value out of bounds in cut")
                 }
-            }))
+            })))
         } else {
-            Box::new(self.map(move |value| {
+            Ok(Box::new(self.map(move |value| {
                 if value.is_none() {
                     T2::none()
                 } else {
@@ -145,7 +141,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     }
                     out.expect("value out of bounds in cut")
                 }
-            }))
+            })))
         }
     }
 }
@@ -360,13 +356,16 @@ mod test {
     }
 
     #[test]
-    fn test_vcut() {
+    fn test_vcut() -> Result<()> {
         let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
         let bins = vec![2, 5, 8];
         let labels = vec![1, 2, 3, 4];
-        let res1: Vec<_> = v.to_iter().vcut(&bins, &labels, true, true).collect();
+        let res1: Vec<_> = v.to_iter().vcut(&bins, &labels, true, true)?.collect();
         assert_eq!(res1, vec![1, 2, 2, 1, 2, 3, 3, 4, 1]);
-        let res2: Vec<_> = v.to_iter().vcut(&bins, &labels, false, true).collect();
+        let res2: Vec<_> = v.to_iter().vcut(&bins, &labels, false, true)?.collect();
         assert_eq!(res2, vec![1, 2, 3, 1, 3, 3, 3, 4, 1]);
+        let bins = vec![3];
+        assert!(v.to_iter().vcut(&bins, &labels, true, true).is_err());
+        Ok(())
     }
 }

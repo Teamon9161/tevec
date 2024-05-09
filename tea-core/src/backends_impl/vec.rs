@@ -2,12 +2,114 @@ use std::mem::MaybeUninit;
 
 use crate::prelude::*;
 
-impl<T: Clone> ToIter for Vec<T> {
+macro_rules! impl_vec1 {
+    (to_iter $($ty: ty),*) => {
+        $(impl<T: Clone> ToIter for $ty {
+            type Item = T;
+
+            #[inline]
+            fn len(&self) -> usize {
+                (*self).len()
+            }
+
+            #[inline]
+            fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+            where
+                T: 'a,
+            {
+                TrustIter::new(self.iter().cloned(), self.len())
+            }
+        })*
+    };
+
+    (view $($({$N: ident})? $ty: ty),*) => {
+        $(
+            impl<T: Clone $(, const $N: usize)?> Vec1View for $ty {
+                #[inline]
+                unsafe fn uget(&self, index: usize) -> T {
+                    self.get_unchecked(index).clone()
+                }
+
+                #[inline]
+                /// this should be a faster implemention than default as
+                /// we read value directly by ptr
+                fn rolling_apply<O: Vec1, F>(
+                    &self,
+                    window: usize,
+                    f: F,
+                    out: Option<O::UninitRefMut<'_>>,
+                ) -> Option<O>
+                where
+                    F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+                {
+                    let len = self.len();
+                    if let Some(out) = out {
+                        self.rolling_apply_to::<O, _>(window, f, out);
+                        None
+                    } else {
+                        let mut out = O::uninit(len);
+                        self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
+                        Some(unsafe { out.assume_init() })
+                    }
+                }
+
+                #[inline]
+                /// this should be a faster implemention than default as
+                /// we read value directly by ptr
+                fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+                    &self,
+                    other: &V2,
+                    window: usize,
+                    f: F,
+                    out: Option<O::UninitRefMut<'_>>,
+                ) -> Option<O>
+                where
+                    F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+                {
+                    let len = self.len();
+                    if let Some(out) = out {
+                        self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+                        None
+                    } else {
+                        let mut out = O::uninit(len);
+                        self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
+                        Some(unsafe { out.assume_init() })
+                    }
+                }
+
+                #[inline]
+                /// this should be a faster implemention than default as
+                /// we read value directly by ptr
+                fn rolling_apply_idx<O: Vec1, F>(
+                    &self,
+                    window: usize,
+                    f: F,
+                    out: Option<O::UninitRefMut<'_>>,
+                ) -> Option<O>
+                where
+                    F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+                {
+                    let len = self.len();
+                    if let Some(out) = out {
+                        self.rolling_apply_idx_to::<O, _>(window, f, out);
+                        None
+                    } else {
+                        let mut out = O::uninit(len);
+                        self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
+                        Some(unsafe { out.assume_init() })
+                    }
+                }
+            }
+        )*
+    };
+}
+
+impl<T: Clone, const N: usize> ToIter for [T; N] {
     type Item = T;
 
     #[inline]
     fn len(&self) -> usize {
-        self.len()
+        N
     }
 
     #[inline]
@@ -19,11 +121,12 @@ impl<T: Clone> ToIter for Vec<T> {
     }
 }
 
-impl<T: Clone> ToIter for &[T] {
+impl<T: Clone, const N: usize> ToIter for &[T; N] {
     type Item = T;
 
+    #[inline]
     fn len(&self) -> usize {
-        (*self).len()
+        N
     }
 
     #[inline]
@@ -35,159 +138,8 @@ impl<T: Clone> ToIter for &[T] {
     }
 }
 
-impl<T: Clone> Vec1View for Vec<T> {
-    #[inline]
-    unsafe fn uget(&self, index: usize) -> T {
-        self.get_unchecked(index).clone()
-    }
-
-    #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
-    fn rolling_apply<O: Vec1, F>(
-        &self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
-    {
-        let len = self.len();
-        if let Some(out) = out {
-            self.rolling_apply_to::<O, _>(window, f, out);
-            None
-        } else {
-            let mut out = O::uninit(len);
-            self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
-            Some(unsafe { out.assume_init() })
-        }
-    }
-
-    #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
-    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
-        &self,
-        other: &V2,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
-    {
-        let len = self.len();
-        if let Some(out) = out {
-            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
-            None
-        } else {
-            let mut out = O::uninit(len);
-            self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
-            Some(unsafe { out.assume_init() })
-        }
-    }
-
-    #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
-    fn rolling_apply_idx<O: Vec1, F>(
-        &self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
-    {
-        let len = self.len();
-        if let Some(out) = out {
-            self.rolling_apply_idx_to::<O, _>(window, f, out);
-            None
-        } else {
-            let mut out = O::uninit(len);
-            self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
-            Some(unsafe { out.assume_init() })
-        }
-    }
-}
-
-impl<T: Clone> Vec1View for &[T] {
-    #[inline]
-    unsafe fn uget(&self, index: usize) -> T {
-        self.get_unchecked(index).clone()
-    }
-
-    #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
-    fn rolling_apply<O: Vec1, F>(
-        &self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
-    {
-        let len = self.len();
-        if let Some(out) = out {
-            self.rolling_apply_to::<O, _>(window, f, out);
-            None
-        } else {
-            let mut out = O::uninit(len);
-            self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
-            Some(unsafe { out.assume_init() })
-        }
-    }
-
-    #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
-    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
-        &self,
-        other: &V2,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
-    {
-        let len = self.len();
-        if let Some(out) = out {
-            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
-            None
-        } else {
-            let mut out = O::uninit(len);
-            self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
-            Some(unsafe { out.assume_init() })
-        }
-    }
-
-    #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
-    fn rolling_apply_idx<O: Vec1, F>(
-        &self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
-    {
-        let len = self.len();
-        if let Some(out) = out {
-            self.rolling_apply_idx_to::<O, _>(window, f, out);
-            None
-        } else {
-            let mut out = O::uninit(len);
-            self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
-            Some(unsafe { out.assume_init() })
-        }
-    }
-}
+impl_vec1!(to_iter Vec<T>, &[T], &Vec<T>);
+impl_vec1!(view Vec<T>, &[T], &Vec<T>, {N} &[T; N], {N} [T; N]);
 
 impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     #[inline]
@@ -232,7 +184,6 @@ impl<T: Clone> Vec1 for Vec<T> {
 
 impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
     type Vec = Vec<T>;
-    // type RefMut<'a> =  &'a mut [MaybeUninit<T>] where T: 'a;
 
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
@@ -264,7 +215,9 @@ mod tests {
         let data = vec![1, 2, 3, 4, 5];
         let view = &data;
         assert_eq!(ToIter::len(&data), 5);
+        assert_eq!(ToIter::len(&[1, 2]), 2);
         assert_eq!(view.get(0), 1);
+        assert_eq!([1, 2].get(0), 1);
         let slice = view.as_slice();
         assert_eq!(unsafe { slice.uget(2) }, 3);
     }
