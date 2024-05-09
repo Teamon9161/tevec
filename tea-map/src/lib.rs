@@ -89,7 +89,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         use itertools::Itertools;
         let bins: Vec<T::Inner> = if add_bounds {
             if labels.len() != bins.len() + 1 {
-                tbail!("Number of labels must be one more than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+                tbail!(func=cut, "Number of labels must be one more than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
             }
             vec![T::Inner::min_()]
                 .into_iter()
@@ -98,7 +98,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                 .collect()
         } else {
             if labels.len() + 1 != bins.len() {
-                tbail!("Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+                tbail!(func=cut, "Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
             }
             bins.to_iter().map(IsNone::unwrap).collect_trusted_vec1()
         };
@@ -119,7 +119,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.ok_or_else(|| terr!("value not in bins in function cut"))
+                    out.ok_or_else(|| terr!(func = cut, "value not in bins"))
                 }
             })))
         } else {
@@ -139,7 +139,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.ok_or_else(|| terr!("value not in bins in function cut"))
+                    out.ok_or_else(|| terr!(func = cut, "value not in bins"))
                 }
             })))
         }
@@ -369,9 +369,15 @@ mod test {
             .to_iter()
             .vcut(&bins, &labels, false, true)?
             .try_collect_trusted_vec1()?;
+        // bin label mismatch
         assert_eq!(res2, vec![1, 2, 3, 1, 3, 3, 3, 4, 1]);
-        let bins = vec![3];
-        assert!(v.to_iter().vcut(&bins, &labels, true, true).is_err());
+        assert!(v.to_iter().vcut(&[3], &labels, true, true).is_err());
+        // value not in bins
+        let res: TResult<Vec<_>> = v
+            .to_iter()
+            .vcut(&[1, 2, 5, 8, 20], &labels, true, false)?
+            .try_collect_vec1();
+        assert!(res.is_err());
         Ok(())
     }
 }
