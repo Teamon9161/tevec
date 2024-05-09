@@ -36,12 +36,11 @@ where
     }
 }
 
-pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> {
+pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     #[inline]
     fn vabs(self) -> impl TrustedLen<Item = T>
     where
         T::Inner: Signed,
-        Self: Sized,
     {
         self.map(|v| v.map(|v| v.abs()))
     }
@@ -49,7 +48,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> {
     fn vshift<'a>(self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
     where
         T: Clone + 'a,
-        Self: Sized + 'a,
+        Self: 'a,
     {
         let len = self.len();
         let n_abs = n.unsigned_abs() as usize;
@@ -69,6 +68,83 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> {
                 len,
             )),
             _ => Box::new(self),
+        }
+    }
+
+    fn vcut<'a, V2, T2>(
+        self,
+        bins: &'a V2,
+        labels: &'a [T2],
+        right: bool,
+        add_bounds: bool,
+    ) -> Box<dyn TrustedLen<Item = T2> + 'a>
+    where
+        Self: 'a,
+        T::Inner: Number,
+        (T::Inner, T::Inner): itertools::traits::HomogeneousTuple<Item = T::Inner>,
+        T2: Clone + IsNone + 'a,
+        V2: Vec1View<Item = T>,
+    {
+        use itertools::Itertools;
+        let bins: Vec<T::Inner> = if add_bounds {
+            assert_eq!(
+                labels.len(),
+                bins.len() + 1,
+                "Bin labels must be one more than the number of bin edges"
+            );
+            vec![T::Inner::min_()]
+                .into_iter()
+                .chain(bins.to_iter().map(IsNone::unwrap))
+                .chain(vec![T::Inner::max_()])
+                .collect()
+        } else {
+            assert_eq!(
+                labels.len() + 1,
+                bins.len(),
+                "Bin labels must be one fewer than the number of bin edges"
+            );
+            bins.to_iter().map(IsNone::unwrap).collect_trusted_vec1()
+        };
+        if right {
+            Box::new(self.map(move |value| {
+                if value.is_none() {
+                    T2::none()
+                } else {
+                    let value = value.unwrap();
+                    let mut out = None;
+                    for (bound, label) in bins
+                        .to_iter()
+                        .tuple_windows::<(T::Inner, T::Inner)>()
+                        .zip(labels)
+                    {
+                        if (bound.0 < value) && (value <= bound.1) {
+                            out = Some(label.clone());
+                            break;
+                        }
+                    }
+                    out.expect("value out of bounds in cut")
+                }
+            }))
+        } else {
+            Box::new(self.map(move |value| {
+                if value.is_none() {
+                    T2::none()
+                } else {
+                    let value = value.unwrap();
+                    let mut out = None;
+                    for (bound, label) in bins
+                        .to_iter()
+                        .tuple_windows::<(T::Inner, T::Inner)>()
+                        .zip(labels)
+                    {
+                        if (bound.0 <= value) && (value < bound.1) {
+                            out = Some(label.clone());
+                            break;
+                        }
+                    }
+                    out.expect("value out of bounds in cut")
+                }
+            }))
         }
     }
 }
@@ -280,5 +356,16 @@ mod test {
         let res: Vec<Option<f64>> = v.vrank(false, true);
         let expect = vec![Some(2.), Some(3.5), None, Some(1.), Some(3.5)];
         assert_vec1d_equal_numeric(&res, &expect, None);
+    }
+
+    #[test]
+    fn test_vcut() {
+        let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
+        let bins = vec![2, 5, 8];
+        let labels = [1, 2, 3, 4];
+        let res1: Vec<_> = v.to_iter().vcut(&bins, &labels, true, true).collect();
+        assert_eq!(res1, vec![1, 2, 2, 1, 2, 3, 3, 4, 1]);
+        let res2: Vec<_> = v.to_iter().vcut(&bins, &labels, false, true).collect();
+        assert_eq!(res2, vec![1, 2, 3, 1, 3, 3, 3, 4, 1]);
     }
 }

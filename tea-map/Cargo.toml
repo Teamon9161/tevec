@@ -9,3 +9,4 @@ license.workspace = true
 [dependencies]
 tea-core = { path = "../tea-core", default-features = false }
 num-traits = { workspace = true }
+itertools = "0.12"

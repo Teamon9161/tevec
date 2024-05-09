@@ -14,3 +14,13 @@ pub use tea_dtype;
 pub mod testing;
 
 pub mod prelude;
+
+// re-export polars backend
+#[cfg(feature = "pl")]
+pub use polars;
+#[cfg(feature = "pl")]
+pub use polars_arrow;
+
+// re-export nd_array backend
+#[cfg(feature = "nd_array")]
+pub use ndarray;
