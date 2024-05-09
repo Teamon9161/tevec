@@ -80,9 +80,17 @@ macro_rules! impl_for_primitive {
                 type Uninit = ChunkedArray<$type>;
                 type UninitRefMut<'a> = &'a mut ChunkedArray<$type>;
                 #[inline]
-                fn collect_from_iter<I: Iterator<Item = Option<<$type as PolarsNumericType>::Native>>>(iter: I) -> Self {
+                fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self {
                     iter.collect()
                 }
+
+
+                #[inline]
+                fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self>
+                {
+                    iter.collect()
+                }
+
 
                 #[inline]
                 fn uninit(len: usize) -> Self::Uninit
@@ -199,7 +207,14 @@ macro_rules! impl_for_primitive {
                 type Uninit = ChunkedArray<$type>;
                 type UninitRefMut<'a> = &'a mut ChunkedArray<$type>;
                 #[inline]
-                fn collect_from_iter<I: Iterator<Item = Option<$real>>>(iter: I) -> Self {
+                fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self {
+                    iter.collect()
+                }
+
+
+                #[inline]
+                fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self>
+                {
                     iter.collect()
                 }
 

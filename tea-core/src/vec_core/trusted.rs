@@ -4,6 +4,7 @@
 use polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
 use std::iter::Scan;
 use std::slice::Iter;
+use tea_error::TResult;
 
 /// An iterator of known, fixed size.
 /// A trait denoting Rusts' unstable [TrustedLen](https://doc.rust-lang.org/std/iter/trait.TrustedLen.html).
@@ -191,6 +192,13 @@ pub trait CollectTrusted<T> {
     where
         I: IntoIterator<Item = T>,
         I::IntoIter: TrustedLen;
+
+    fn try_collect_from_trusted<I>(i: I) -> TResult<Self>
+    where
+        I: IntoIterator<Item = TResult<T>>,
+        I::IntoIter: TrustedLen,
+        T: std::fmt::Debug,
+        Self: Sized;
 }
 
 impl<T> CollectTrusted<T> for Vec<T> {
@@ -216,16 +224,55 @@ impl<T> CollectTrusted<T> for Vec<T> {
         }
         vec
     }
+
+    /// safety: upper bound on the remaining length of the iterator must be correct.
+    fn try_collect_from_trusted<I>(iter: I) -> TResult<Self>
+    where
+        I: IntoIterator<Item = TResult<T>>,
+        I::IntoIter: TrustedLen,
+        Self: Sized,
+        T: std::fmt::Debug,
+    {
+        let iter = iter.into_iter();
+        let len = iter
+            .size_hint()
+            .1
+            .expect("The iterator must have an upper bound");
+        let mut vec = Vec::<T>::with_capacity(len);
+        let mut ptr = vec.as_mut_ptr();
+        unsafe {
+            for v in iter {
+                if let Ok(v) = v {
+                    std::ptr::write(ptr, v);
+                    ptr = ptr.add(1);
+                } else {
+                    return Err(v.unwrap_err());
+                }
+            }
+            vec.set_len(len);
+        }
+        Ok(vec)
+    }
 }
 
-pub trait CollectTrustedToVec: Iterator + TrustedLen {
+pub trait CollectTrustedToVec: Iterator + TrustedLen + Sized {
     #[inline(always)]
-    fn collect_trusted_to_vec(self) -> Vec<Self::Item>
-    where
-        Self: Sized,
-    {
+    fn collect_trusted_to_vec(self) -> Vec<Self::Item> {
         CollectTrusted::<Self::Item>::collect_from_trusted(self)
     }
 }
 
-impl<T: Iterator + TrustedLen + Sized> CollectTrustedToVec for T {}
+pub trait TryCollectTrustedToVec<T: std::fmt::Debug>:
+    Iterator<Item = TResult<T>> + TrustedLen + Sized
+{
+    #[inline(always)]
+    fn try_collect_trusted_to_vec(self) -> TResult<Vec<T>> {
+        CollectTrusted::<T>::try_collect_from_trusted(self)
+    }
+}
+
+impl<T: Iterator + TrustedLen> CollectTrustedToVec for T {}
+impl<I: Iterator<Item = TResult<T>> + TrustedLen + Sized, T: std::fmt::Debug>
+    TryCollectTrustedToVec<T> for I
+{
+}

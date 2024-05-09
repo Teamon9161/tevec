@@ -158,6 +158,11 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 
     #[inline]
+    fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self> {
+        iter.collect()
+    }
+
+    #[inline]
     fn uninit(len: usize) -> Self::Uninit {
         let mut v = Vec::with_capacity(len);
         unsafe {
@@ -174,6 +179,16 @@ impl<T: Clone> Vec1 for Vec<T> {
     #[inline]
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
         iter.collect_trusted_to_vec()
+    }
+
+    #[inline]
+    fn try_collect_from_trusted<I: Iterator<Item = TResult<Self::Item>> + TrustedLen>(
+        iter: I,
+    ) -> TResult<Self>
+    where
+        Self::Item: std::fmt::Debug,
+    {
+        iter.try_collect_trusted_to_vec()
     }
 
     #[inline]
@@ -242,7 +257,13 @@ mod tests {
         assert_eq!(data, v);
         let data = vec![Some(1.), None, Some(2.)].collect_vec1_opt::<Vec<f64>>();
         assert!(data[1].is_nan());
-        assert_eq!(data[2], 2.)
+        assert_eq!(data[2], 2.);
+        let data = vec![Ok(1), Ok(2), Err(terr!("err")), Ok(3)];
+        let v: TResult<Vec<_>> = data.try_collect_vec1();
+        assert!(v.is_err());
+        let data = vec![Ok(1), Ok(2), Ok(3)];
+        let v: TResult<Vec<_>> = data.try_collect_trusted_vec1();
+        assert_eq!(v.unwrap(), vec![1, 2, 3]);
     }
 
     #[test]

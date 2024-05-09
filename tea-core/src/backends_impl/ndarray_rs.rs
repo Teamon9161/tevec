@@ -114,6 +114,12 @@ impl<T: Clone> Vec1 for Array1<T> {
     }
 
     #[inline]
+    fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self> {
+        let vec = iter.collect::<TResult<Vec<_>>>()?;
+        Ok(Array1::from_vec(vec))
+    }
+
+    #[inline]
     fn uninit(len: usize) -> Self::Uninit {
         Array1::uninit(len)
     }
@@ -127,6 +133,17 @@ impl<T: Clone> Vec1 for Array1<T> {
     fn collect_from_trusted<I: Iterator<Item = T> + TrustedLen>(iter: I) -> Self {
         let vec = iter.collect_trusted_to_vec();
         Array1::from_vec(vec)
+    }
+
+    #[inline]
+    fn try_collect_from_trusted<I: Iterator<Item = TResult<Self::Item>> + TrustedLen>(
+        iter: I,
+    ) -> TResult<Self>
+    where
+        Self::Item: std::fmt::Debug,
+    {
+        let vec = iter.try_collect_trusted_to_vec()?;
+        Ok(Array1::from_vec(vec))
     }
 }
 

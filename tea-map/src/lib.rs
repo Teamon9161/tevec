@@ -77,7 +77,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         labels: &'a V3,
         right: bool,
         add_bounds: bool,
-    ) -> TResult<Box<dyn TrustedLen<Item = T2> + 'a>>
+    ) -> TResult<Box<dyn TrustedLen<Item = TResult<T2>> + 'a>>
     where
         Self: 'a,
         T::Inner: Number,
@@ -105,7 +105,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         if right {
             Ok(Box::new(self.map(move |value| {
                 if value.is_none() {
-                    T2::none()
+                    Ok(T2::none())
                 } else {
                     let value = value.unwrap();
                     let mut out = None;
@@ -119,13 +119,13 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.expect("value out of bounds in cut")
+                    out.ok_or_else(|| terr!("value not in bins in cut"))
                 }
             })))
         } else {
             Ok(Box::new(self.map(move |value| {
                 if value.is_none() {
-                    T2::none()
+                    Ok(T2::none())
                 } else {
                     let value = value.unwrap();
                     let mut out = None;
@@ -139,7 +139,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.expect("value out of bounds in cut")
+                    out.ok_or_else(|| terr!("value not in bins in cut"))
                 }
             })))
         }
@@ -360,9 +360,15 @@ mod test {
         let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
         let bins = vec![2, 5, 8];
         let labels = vec![1, 2, 3, 4];
-        let res1: Vec<_> = v.to_iter().vcut(&bins, &labels, true, true)?.collect();
+        let res1: Vec<_> = v
+            .to_iter()
+            .vcut(&bins, &labels, true, true)?
+            .try_collect_vec1()?;
         assert_eq!(res1, vec![1, 2, 2, 1, 2, 3, 3, 4, 1]);
-        let res2: Vec<_> = v.to_iter().vcut(&bins, &labels, false, true)?.collect();
+        let res2: Vec<_> = v
+            .to_iter()
+            .vcut(&bins, &labels, false, true)?
+            .try_collect_trusted_vec1()?;
         assert_eq!(res2, vec![1, 2, 3, 1, 3, 3, 3, 4, 1]);
         let bins = vec![3];
         assert!(v.to_iter().vcut(&bins, &labels, true, true).is_err());

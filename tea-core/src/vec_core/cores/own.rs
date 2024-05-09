@@ -4,6 +4,7 @@ use super::super::{
 };
 use super::Vec1View;
 use tea_dtype::IsNone;
+use tea_error::*;
 
 /// a vector owns its data is not necessarily mutable
 pub trait Vec1: Vec1View + Sized {
@@ -19,8 +20,23 @@ pub trait Vec1: Vec1View + Sized {
     fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_>;
 
     #[inline]
+    fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self> {
+        Ok(Self::collect_from_iter(iter.map(|v| v.unwrap())))
+    }
+
+    #[inline]
     fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {
         Self::collect_from_iter(iter)
+    }
+
+    #[inline]
+    fn try_collect_from_trusted<I: Iterator<Item = TResult<Self::Item>> + TrustedLen>(
+        iter: I,
+    ) -> TResult<Self>
+    where
+        Self::Item: std::fmt::Debug,
+    {
+        Self::try_collect_from_iter(iter)
     }
 
     #[inline]
@@ -79,7 +95,7 @@ pub trait Vec1Collect: IntoIterator {
     }
 }
 
-pub trait Vec1DOptCollect<T: IsNone>: IntoIterator<Item = Option<T>> {
+pub trait Vec1OptCollect<T: IsNone>: IntoIterator<Item = Option<T>> {
     #[inline]
     fn collect_vec1_opt<O: Vec1<Item = T>>(self) -> O
     where
@@ -89,5 +105,26 @@ pub trait Vec1DOptCollect<T: IsNone>: IntoIterator<Item = Option<T>> {
     }
 }
 
+pub trait Vec1TryCollect<T: IsNone>: IntoIterator<Item = TResult<T>> {
+    #[inline]
+    fn try_collect_vec1<O: Vec1<Item = T>>(self) -> TResult<O>
+    where
+        Self: Sized,
+    {
+        <O as Vec1>::try_collect_from_iter(self.into_iter())
+    }
+
+    #[inline]
+    fn try_collect_trusted_vec1<O: Vec1<Item = T>>(self) -> TResult<O>
+    where
+        T: std::fmt::Debug,
+        Self: Sized,
+        Self::IntoIter: TrustedLen,
+    {
+        <O as Vec1>::try_collect_from_trusted(self.into_iter())
+    }
+}
+
 impl<T: IntoIterator + Sized> Vec1Collect for T {}
-impl<I: IntoIterator<Item = Option<T>>, T: IsNone> Vec1DOptCollect<T> for I {}
+impl<I: IntoIterator<Item = Option<T>>, T: IsNone> Vec1OptCollect<T> for I {}
+impl<I: IntoIterator<Item = TResult<T>>, T: IsNone + std::fmt::Debug> Vec1TryCollect<T> for I {}
