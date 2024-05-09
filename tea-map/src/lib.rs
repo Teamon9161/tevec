@@ -71,10 +71,10 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
-    fn vcut<'a, V2, T2>(
+    fn vcut<'a, V2, V3, T2>(
         self,
         bins: &'a V2,
-        labels: &'a [T2],
+        labels: &'a V3,
         right: bool,
         add_bounds: bool,
     ) -> Box<dyn TrustedLen<Item = T2> + 'a>
@@ -84,6 +84,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         (T::Inner, T::Inner): itertools::traits::HomogeneousTuple<Item = T::Inner>,
         T2: Clone + IsNone + 'a,
         V2: Vec1View<Item = T>,
+        V3: Vec1View<Item = T2>,
     {
         use itertools::Itertools;
         let bins: Vec<T::Inner> = if add_bounds {
@@ -115,7 +116,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     for (bound, label) in bins
                         .to_iter()
                         .tuple_windows::<(T::Inner, T::Inner)>()
-                        .zip(labels)
+                        .zip(labels.to_iter())
                     {
                         if (bound.0 < value) && (value <= bound.1) {
                             out = Some(label.clone());
@@ -135,7 +136,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     for (bound, label) in bins
                         .to_iter()
                         .tuple_windows::<(T::Inner, T::Inner)>()
-                        .zip(labels)
+                        .zip(labels.to_iter())
                     {
                         if (bound.0 <= value) && (value < bound.1) {
                             out = Some(label.clone());
