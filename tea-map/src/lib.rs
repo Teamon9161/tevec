@@ -363,7 +363,7 @@ mod test {
     fn test_vcut() {
         let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
         let bins = vec![2, 5, 8];
-        let labels = [1, 2, 3, 4];
+        let labels = vec![1, 2, 3, 4];
         let res1: Vec<_> = v.to_iter().vcut(&bins, &labels, true, true).collect();
         assert_eq!(res1, vec![1, 2, 2, 1, 2, 3, 3, 4, 1]);
         let res2: Vec<_> = v.to_iter().vcut(&bins, &labels, false, true).collect();
