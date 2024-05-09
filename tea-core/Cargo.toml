@@ -11,12 +11,12 @@ default = []
 # default = ["nd_array", "time", "pl"]
 
 nd_array = ["ndarray"]
-pl = ["polars", "polars-arrow"]
+pl = ["polars", "polars-arrow", "tea-error/polars"]
 time = ["tea-dtype/time"]
 
 [dependencies]
 num-traits = {workspace = true}
-tea-error = {path = "../tea-error"}
+tea-error = {path = "../tea-error", default_features = false}
 tea-dtype = {path = "../tea-dtype", default_features = false}
 serde = "1.0"
 ndarray = {version = "0.15.6", optional = true}

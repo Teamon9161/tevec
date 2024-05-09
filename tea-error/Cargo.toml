@@ -6,6 +6,10 @@ edition.workspace = true
 repository.workspace = true
 license.workspace = true
 
+[features]
+default = []
+
 [dependencies]
 anyhow = {workspace = true}
 thiserror = {workspace = true}
+polars = {version = "0.39", optional = true, default_features = false}

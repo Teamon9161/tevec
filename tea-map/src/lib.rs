@@ -77,7 +77,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         labels: &'a V3,
         right: bool,
         add_bounds: bool,
-    ) -> Result<Box<dyn TrustedLen<Item = T2> + 'a>>
+    ) -> TResult<Box<dyn TrustedLen<Item = T2> + 'a>>
     where
         Self: 'a,
         T::Inner: Number,
@@ -89,7 +89,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         use itertools::Itertools;
         let bins: Vec<T::Inner> = if add_bounds {
             if labels.len() != bins.len() + 1 {
-                bail!("Number of labels must be one more than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+                tbail!("Number of labels must be one more than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
             }
             vec![T::Inner::min_()]
                 .into_iter()
@@ -98,7 +98,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                 .collect()
         } else {
             if labels.len() + 1 != bins.len() {
-                bail!("Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+                tbail!("Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
             }
             bins.to_iter().map(IsNone::unwrap).collect_trusted_vec1()
         };
