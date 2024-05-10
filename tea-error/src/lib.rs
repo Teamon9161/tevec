@@ -64,7 +64,7 @@ macro_rules! terr {
             $crate::TError::Str(format!($fmt, $($arg),*).into())
         )
     };
-    (func = $func: ident, $fmt:literal $(, $arg:expr)* $(,)?) => {
+    (func=$func: ident, $fmt:literal $(, $arg:expr)* $(,)?) => {
         $crate::__private::must_use(
             $crate::TError::Str(
                 format!("function {}: {}", stringify!($func), format!($fmt, $($arg),*)).into()
