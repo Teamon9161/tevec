@@ -84,7 +84,7 @@ macro_rules! impl_for_ca {
             where
                 Self::Item: std::fmt::Debug,
             {
-                Ok(iter.try_collect_ca_trusted("")?)
+                iter.try_collect_ca_trusted("")
             }
         })*
     };
