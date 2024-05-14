@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use num_traits::Signed;
 use tea_core::prelude::*;
 
@@ -80,7 +82,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     ) -> TResult<Box<dyn TrustedLen<Item = TResult<T2>> + 'a>>
     where
         Self: 'a,
-        T::Inner: Number,
+        T::Inner: Number + Debug,
         (T::Inner, T::Inner): itertools::traits::HomogeneousTuple<Item = T::Inner>,
         T2: Clone + IsNone + 'a,
         V2: Vec1View<Item = T>,
@@ -119,7 +121,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.ok_or_else(|| terr!(func = cut, "value not in bins"))
+                    out.ok_or_else(|| terr!(func = cut, "value: {:?} not in bins", value))
                 }
             })))
         } else {
@@ -139,7 +141,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                             break;
                         }
                     }
-                    out.ok_or_else(|| terr!(func = cut, "value not in bins"))
+                    out.ok_or_else(|| terr!(func = cut, "value: {:?} not in bins", value))
                 }
             })))
         }
