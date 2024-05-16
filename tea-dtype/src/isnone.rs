@@ -329,7 +329,7 @@ macro_rules! impl_not_none {
     };
 }
 
-impl_not_none!(bool, i32, i64, u64, usize);
+impl_not_none!(bool, u8, i32, i64, u64, usize);
 
 #[cfg(test)]
 mod tests {
