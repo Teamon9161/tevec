@@ -7,22 +7,6 @@ pub trait Cast<T> {
     fn cast(self) -> T;
 }
 
-// impl<T: IsNone> Cast<T> for Option<T> {
-//     #[inline]
-//     fn cast(self) -> T {
-//         self.unwrap_or_else(|| T::none())
-//     }
-// }
-
-// default impl<T: IsNone, U: IsNone> Cast<U> for Option<T>
-// where T: Cast<U::Inner>
-// {
-//     #[inline]
-//     fn cast(self) -> U {
-//         self.map(|v| U::from_inner(v.cast())).unwrap_or_else(U::none)
-//     }
-// }
-
 impl<T: IsNone> Cast<Option<T>> for T {
     #[inline]
     fn cast(self) -> Option<T> {
@@ -73,20 +57,40 @@ macro_rules! impl_numeric_cast {
             }
         }
 
+        #[cfg(feature="time")]
+        impl Cast<DateTime> for $T {
+            #[inline] fn cast(self) -> DateTime { Cast::<i64>::cast(self).into() }
+        }
+
+        #[cfg(feature="time")]
+        impl Cast<TimeDelta> for $T {
+            #[inline] fn cast(self) -> TimeDelta { Cast::<i64>::cast(self).into() }
+        }
+
+
         impl Cast<bool> for Option<$T> {
             #[inline] fn cast(self) -> bool {
                 self.expect("can not cast None to bool").cast()
             }
         }
 
-        #[cfg(feature="time")]
-        impl Cast<DateTime> for $T {
-            #[inline] fn cast(self) -> DateTime { Cast::<i64>::cast(self).into() }
+        impl Cast<String> for Option<$T> {
+            #[inline] fn cast(self) -> String {
+                self.map(|v| v.to_string()).unwrap_or("None".to_string())
+            }
         }
+
         #[cfg(feature="time")]
-        impl Cast<TimeDelta> for $T {
-            #[inline] fn cast(self) -> TimeDelta { Cast::<i64>::cast(self).into() }
+        impl Cast<DateTime> for Option<$T> {
+            #[inline] fn cast(self) -> DateTime { self.map(|v| v.cast()).unwrap_or(DateTime(None)) }
         }
+
+        #[cfg(feature="time")]
+        impl Cast<TimeDelta> for Option<$T> {
+            #[inline] fn cast(self) -> TimeDelta { self.map(|v| v.cast()).unwrap_or(TimeDelta::nat()) }
+        }
+
+
     };
 
     ($T: ty => { $( $U: ty ),* } ) => {
