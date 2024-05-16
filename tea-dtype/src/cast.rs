@@ -7,12 +7,21 @@ pub trait Cast<T> {
     fn cast(self) -> T;
 }
 
-impl<T: IsNone> Cast<T> for Option<T> {
-    #[inline]
-    fn cast(self) -> T {
-        self.unwrap_or_else(|| T::none())
-    }
-}
+// impl<T: IsNone> Cast<T> for Option<T> {
+//     #[inline]
+//     fn cast(self) -> T {
+//         self.unwrap_or_else(|| T::none())
+//     }
+// }
+
+// default impl<T: IsNone, U: IsNone> Cast<U> for Option<T>
+// where T: Cast<U::Inner>
+// {
+//     #[inline]
+//     fn cast(self) -> U {
+//         self.map(|v| U::from_inner(v.cast())).unwrap_or_else(U::none)
+//     }
+// }
 
 impl<T: IsNone> Cast<Option<T>> for T {
     #[inline]
@@ -72,6 +81,12 @@ macro_rules! impl_numeric_cast {
     };
 
     ($T: ty => { $( $U: ty ),* } ) => {
+        // impl Cast<$T> for $T {
+        //     #[inline(always)]
+        //     fn cast(self) -> Self {
+        //         self
+        //     }
+        // }
         impl_numeric_cast!(@common_impl $T => { $( $U ),* });
         impl_numeric_cast!(@ $T => { $( $U),* });
     };
@@ -90,7 +105,7 @@ impl_numeric_cast!(f64 => { u8, f32, i32, i64, u64, usize, isize  });
 impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
 impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
 // impl_numeric_cast!(char => { char });
-impl_numeric_cast!(nocommon bool => {u8, i32, i64, usize, isize});
+impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
 
 impl Cast<String> for bool {
     #[inline]
@@ -257,5 +272,17 @@ impl Cast<TimeDelta> for String {
     #[inline(always)]
     fn cast(self) -> TimeDelta {
         TimeDelta::parse(&self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn test_option_cast() {
+        // let a= Some(1_usize);
+        // let b: i32 = a.cast();
+        // assert_eq!(b, 1);
+        let a: i32 = 1_f64.cast();
+        let b: i64 = 1_f64.cast();
     }
 }
