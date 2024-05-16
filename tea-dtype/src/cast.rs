@@ -31,6 +31,16 @@ macro_rules! impl_numeric_cast {
             #[inline] fn cast(self) -> $U { self as $U }
         }
 
+        impl Cast<Option<$U>> for $T {
+            #[inline] fn cast(self) -> Option<$U> {
+                if self.is_none() {
+                    None
+                } else {
+                    Some(self as $U)
+                }
+            }
+        }
+
         impl Cast<$U> for Option<$T> {
             #[inline] fn cast(self) -> $U { self.map(|v| v as $U).unwrap_or_else(<$U as IsNone>::none)}
         }
@@ -89,8 +99,6 @@ macro_rules! impl_numeric_cast {
         impl Cast<TimeDelta> for Option<$T> {
             #[inline] fn cast(self) -> TimeDelta { self.map(|v| v.cast()).unwrap_or(TimeDelta::nat()) }
         }
-
-
     };
 
     ($T: ty => { $( $U: ty ),* } ) => {
