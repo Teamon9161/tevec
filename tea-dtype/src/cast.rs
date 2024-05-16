@@ -73,6 +73,12 @@ macro_rules! impl_numeric_cast {
             }
         }
 
+        impl Cast<bool> for Option<$T> {
+            #[inline] fn cast(self) -> bool {
+                self.expect("can not cast None to bool").cast()
+            }
+        }
+
         #[cfg(feature="time")]
         impl Cast<DateTime> for $T {
             #[inline] fn cast(self) -> DateTime { Cast::<i64>::cast(self).into() }
@@ -286,11 +292,17 @@ mod tests {
         let a = Some(1_usize);
         let a: i32 = a.cast();
         assert_eq!(a, 1);
+
         let b: Option<usize> = None;
         let b: f64 = b.cast();
         assert!(b.is_nan());
+
         let c: Option<usize> = Some(3);
         let c: usize = c.cast();
         assert_eq!(c, 3);
+
+        let d = Some(1usize);
+        let d: bool = d.cast();
+        assert!(d);
     }
 }
