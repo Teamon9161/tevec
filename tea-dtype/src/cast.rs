@@ -90,7 +90,7 @@ impl_numeric_cast!(f64 => { u8, f32, i32, i64, u64, usize, isize  });
 impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
 impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
 // impl_numeric_cast!(char => { char });
-impl_numeric_cast!(nocommon bool => {i32, i64, usize, isize});
+impl_numeric_cast!(nocommon bool => {u8, i32, i64, usize, isize});
 
 impl Cast<String> for bool {
     #[inline]
