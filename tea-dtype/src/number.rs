@@ -2,7 +2,19 @@ use super::cast::Cast;
 use super::isnone::IsNone;
 use num_traits::{MulAdd, Num};
 use std::cmp::PartialOrd;
-use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+use std::ops::{Add, AddAssign, DivAssign, MulAssign, Sub, SubAssign};
+
+/// Kahan summation, see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+#[inline]
+fn kh_sum<T>(sum: T, v: T, c: &mut T) -> T
+where
+    T: Add<Output = T> + Sub<Output = T> + Copy,
+{
+    let y = v - *c;
+    let t = sum + y;
+    *c = (t - sum) - y;
+    t
+}
 
 pub trait Number:
     Copy
@@ -31,16 +43,22 @@ pub trait Number:
     /// return the max value of the data type
     fn max_() -> Self;
 
-    #[inline]
+    #[inline(always)]
+    fn kh_sum(&mut self, v: Self, c: &mut Self) {
+        *self = kh_sum(*self, v, c);
+    }
+
+    #[inline(always)]
     fn ceil(self) -> Self {
         self
     }
 
-    #[inline]
+    #[inline(always)]
     fn floor(self) -> Self {
         self
     }
 
+    #[inline]
     fn min_with(&self, other: &Self) -> Self {
         if other < self {
             *other
@@ -49,6 +67,7 @@ pub trait Number:
         }
     }
 
+    #[inline]
     fn max_with(&self, other: &Self) -> Self {
         if other > self {
             *other
