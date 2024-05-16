@@ -74,8 +74,6 @@ macro_rules! impl_numeric_cast {
     ($T: ty => { $( $U: ty ),* } ) => {
         impl_numeric_cast!(@common_impl $T => { $( $U ),* });
         impl_numeric_cast!(@ $T => { $( $U),* });
-        // impl_numeric_cast!(@ $T => { u8, u16, u32, u64, usize});
-        // impl_numeric_cast!(@ $T => { i8, i16, i32, i64, isize });
     };
 
     (nocommon $T: ty => { $( $U: ty ),* } ) => {
@@ -83,13 +81,14 @@ macro_rules! impl_numeric_cast {
     };
 }
 
-impl_numeric_cast!(u64 => { f32, f64, i32, i64, usize, isize });
-impl_numeric_cast!(i64 => { f32, f64, i32, u64, usize, isize });
-impl_numeric_cast!(i32 => { f32, f64, i64, u64, usize, isize });
-impl_numeric_cast!(f32 => { f64, i32, i64, u64, usize, isize  });
-impl_numeric_cast!(f64 => { f32, i32, i64, u64, usize, isize  });
-impl_numeric_cast!(usize => { f32, f64, i32, i64, u64, isize });
-impl_numeric_cast!(isize => { f32, f64, i32, i64, u64, usize });
+impl_numeric_cast!(u8 => { u64, f32, f64, i32, i64, usize, isize });
+impl_numeric_cast!(u64 => { u8, f32, f64, i32, i64, usize, isize });
+impl_numeric_cast!(i64 => { u8, f32, f64, i32, u64, usize, isize });
+impl_numeric_cast!(i32 => { u8, f32, f64, i64, u64, usize, isize });
+impl_numeric_cast!(f32 => { u8, f64, i32, i64, u64, usize, isize  });
+impl_numeric_cast!(f64 => { u8, f32, i32, i64, u64, usize, isize  });
+impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
+impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
 // impl_numeric_cast!(char => { char });
 impl_numeric_cast!(nocommon bool => {i32, i64, usize, isize});
 
