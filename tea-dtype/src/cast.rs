@@ -42,10 +42,13 @@ impl<T> Cast<T> for T {
 }
 
 macro_rules! impl_numeric_cast {
-    (@ $T: ty => $(#[$cfg:meta])* impl $U: ty ) => {
-        $(#[$cfg])*
+    (@ $T: ty => impl $U: ty ) => {
         impl Cast<$U> for $T {
             #[inline] fn cast(self) -> $U { self as $U }
+        }
+
+        impl Cast<$U> for Option<$T> {
+            #[inline] fn cast(self) -> $U { self.map(|v| v as $U).unwrap_or_else(<$U as IsNone>::none)}
         }
     };
 
@@ -278,11 +281,13 @@ impl Cast<TimeDelta> for String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
     fn test_option_cast() {
-        // let a= Some(1_usize);
-        // let b: i32 = a.cast();
-        // assert_eq!(b, 1);
-        let a: i32 = 1_f64.cast();
-        let b: i64 = 1_f64.cast();
+        let a = Some(1_usize);
+        let a: i32 = a.cast();
+        assert_eq!(a, 1);
+        let b: Option<usize> = None;
+        let b: f64 = b.cast();
+        assert!(b.is_nan());
     }
 }
