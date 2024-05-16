@@ -84,12 +84,12 @@ macro_rules! impl_numeric_cast {
     };
 
     ($T: ty => { $( $U: ty ),* } ) => {
-        // impl Cast<$T> for $T {
-        //     #[inline(always)]
-        //     fn cast(self) -> Self {
-        //         self
-        //     }
-        // }
+        impl Cast<$T> for Option<$T> {
+            #[inline(always)]
+            fn cast(self) -> $T {
+                self.unwrap_or_else(<$T as IsNone>::none)
+            }
+        }
         impl_numeric_cast!(@common_impl $T => { $( $U ),* });
         impl_numeric_cast!(@ $T => { $( $U),* });
     };
@@ -289,5 +289,8 @@ mod tests {
         let b: Option<usize> = None;
         let b: f64 = b.cast();
         assert!(b.is_nan());
+        let c: Option<usize> = Some(3);
+        let c: usize = c.cast();
+        assert_eq!(c, 3);
     }
 }
