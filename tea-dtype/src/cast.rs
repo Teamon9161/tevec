@@ -197,6 +197,28 @@ macro_rules! impl_cast_from_string {
             impl Cast<$T> for &str {
                 #[inline] fn cast(self) -> $T { self.parse().expect("Parse string error") }
             }
+
+            impl Cast<Option<$T>> for String {
+                #[inline]
+                fn cast(self) -> Option<$T> {
+                    if self == "None" {
+                        None
+                    } else {
+                        Some(self.cast())
+                    }
+                }
+            }
+
+            impl Cast<Option<$T>> for &str {
+                #[inline]
+                fn cast(self) -> Option<$T> {
+                    if self == "None" {
+                        None
+                    } else {
+                        Some(self.cast())
+                    }
+                }
+            }
         )*
     };
 }
@@ -218,28 +240,10 @@ impl Cast<String> for DateTime {
 }
 
 #[cfg(feature = "time")]
-const TIME_RULE_VEC: [&str; 9] = [
-    "%Y-%m-%d %H:%M:%S",
-    "%Y-%m-%d %H:%M:%S.%f",
-    "%Y-%m-%d",
-    "%Y%m%d",
-    "%Y%m%d %H%M%S",
-    "%d/%m/%Y",
-    "%d/%m/%Y H%M%S",
-    "%Y%m%d%H%M%S",
-    "%d/%m/%YH%M%S",
-];
-
-#[cfg(feature = "time")]
 impl Cast<DateTime> for String {
     #[inline]
     fn cast(self) -> DateTime {
-        for rule in TIME_RULE_VEC {
-            if let Ok(dt) = DateTime::parse(&self, rule) {
-                return dt;
-            }
-        }
-        panic!("can not parse datetime from string: {self}")
+        self.parse().expect("Parse string to datetime error")
     }
 }
 
@@ -247,12 +251,7 @@ impl Cast<DateTime> for String {
 impl Cast<DateTime> for &str {
     #[inline]
     fn cast(self) -> DateTime {
-        for rule in TIME_RULE_VEC {
-            if let Ok(dt) = DateTime::parse(self, rule) {
-                return dt;
-            }
-        }
-        panic!("can not parse datetime from string: {self}")
+        self.parse().expect("Parse str to datetime error")
     }
 }
 
@@ -284,7 +283,7 @@ impl Cast<DateTime> for TimeDelta {
 impl Cast<TimeDelta> for &str {
     #[inline(always)]
     fn cast(self) -> TimeDelta {
-        TimeDelta::parse(self)
+        TimeDelta::parse(self).expect("Parse str to timedelta error")
     }
 }
 
@@ -292,7 +291,7 @@ impl Cast<TimeDelta> for &str {
 impl Cast<TimeDelta> for String {
     #[inline(always)]
     fn cast(self) -> TimeDelta {
-        TimeDelta::parse(&self)
+        TimeDelta::parse(&self).expect("Parse string to timedelta error")
     }
 }
 

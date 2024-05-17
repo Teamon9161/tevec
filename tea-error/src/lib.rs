@@ -44,6 +44,8 @@ impl std::fmt::Display for ErrInfo {
 pub enum TError {
     #[error("The length of both vec doesn't match, left: {left} right: {right}")]
     LengthMismatch { left: usize, right: usize },
+    #[error("Parse error: {0}")]
+    ParseError(ErrInfo),
     #[error("{0}")]
     Str(ErrInfo),
     #[error("unknown error")]

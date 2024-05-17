@@ -1,8 +1,8 @@
 use crate::convert::*;
 use chrono::Duration;
-use core::panic;
-// use serde::{Deserialize, Serialize};
 use std::hash::Hash;
+use std::str::FromStr;
+use tea_error::{tbail, tensure, TError, TResult};
 
 // #[serde_with::serde_as]
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
@@ -10,6 +10,15 @@ pub struct TimeDelta {
     pub months: i32,
     // #[serde_as(as = "serde_with::DurationSeconds<i64>")]
     pub inner: Duration,
+}
+
+impl FromStr for TimeDelta {
+    type Err = TError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        TimeDelta::parse(s)
+    }
 }
 
 impl TimeDelta {
@@ -27,7 +36,7 @@ impl TimeDelta {
     /// Parse timedelta from string
     ///
     /// for example: "2y1mo-3d5h-2m3s"
-    pub fn parse(duration: &str) -> Self {
+    pub fn parse(duration: &str) -> TResult<Self> {
         let mut nsecs = 0;
         let mut secs = 0;
         let mut months = 0;
@@ -53,9 +62,7 @@ impl TimeDelta {
                         }
                     }
                 }
-                if unit.is_empty() {
-                    panic!("expected a unit in the duration string")
-                }
+                tensure!(!unit.is_empty(), ParseError:"expected a unit in the duration string");
 
                 match unit.as_str() {
                     "ns" => nsecs += n,
@@ -68,16 +75,16 @@ impl TimeDelta {
                     "w" => secs += n * SECS_PER_WEEK,
                     "mo" => months += n as i32,
                     "y" => months += n as i32 * 12,
-                    unit => panic!("unit: '{unit}' not supported"),
+                    unit => tbail!(ParseError:"unit: '{}' not supported", unit),
                 }
                 unit.clear();
             }
         }
         let duration = Duration::seconds(secs) + Duration::nanoseconds(nsecs);
-        TimeDelta {
+        Ok(TimeDelta {
             months,
             inner: duration,
-        }
+        })
     }
 
     #[inline(always)]

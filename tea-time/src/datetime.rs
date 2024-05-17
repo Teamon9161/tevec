@@ -3,14 +3,38 @@ use std::{
     cmp::Ordering,
     hash::Hash,
     ops::{Add, Div, Mul, Neg, Sub},
+    str::FromStr,
 };
 
 use chrono::{DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveTime, Timelike, Utc};
 
 use crate::{convert::*, TimeDelta};
 
+use tea_error::{tbail, terr, TError, TResult};
+
 #[derive(Clone, Copy, Default, Hash, Eq, PartialEq, PartialOrd)]
 pub struct DateTime(pub Option<CrDateTime<Utc>>);
+
+const TIME_RULE_VEC: [&str; 9] = [
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S.%f",
+    "%Y-%m-%d",
+    "%Y%m%d",
+    "%Y%m%d %H%M%S",
+    "%d/%m/%Y",
+    "%d/%m/%Y H%M%S",
+    "%Y%m%d%H%M%S",
+    "%d/%m/%YH%M%S",
+];
+
+impl FromStr for DateTime {
+    type Err = TError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        DateTime::parse(s, None)
+    }
+}
 
 impl DateTime {
     #[inline]
@@ -93,12 +117,19 @@ impl DateTime {
     }
 
     #[inline(always)]
-    pub fn parse(s: &str, fmt: &str) -> Result<Self, String> {
-        Ok(Self(Some(
-            CrDateTime::parse_from_str(s, fmt)
-                .map(|v| v.into())
-                .map_err(|e| format!("{e}"))?,
-        )))
+    pub fn parse(s: &str, fmt: Option<&str>) -> TResult<Self> {
+        if let Some(fmt) = fmt {
+            let cr_dt = CrDateTime::parse_from_str(s, fmt)
+                .map_err(|err| terr!(ParseError:"Failed to parse datetime: {}", err))?;
+            Ok(Self(Some(cr_dt.into())))
+        } else {
+            for fmt in TIME_RULE_VEC.iter() {
+                if let Ok(cr_dt) = CrDateTime::parse_from_str(s, fmt) {
+                    return Ok(Self(Some(cr_dt.into())));
+                }
+            }
+            tbail!(ParseError:"Failed to parse datetime from string: {}", s)
+        }
     }
 
     #[inline]
@@ -314,9 +345,9 @@ impl PartialOrd for TimeDelta {
 // impl ScalarOperand for TimeDelta {}
 // impl ScalarOperand for DateTime {}
 
-impl From<&str> for TimeDelta {
-    #[inline(always)]
-    fn from(s: &str) -> Self {
-        TimeDelta::parse(s)
-    }
-}
+// impl From<&str> for TimeDelta {
+//     #[inline(always)]
+//     fn from(s: &str) -> Self {
+//         TimeDelta::parse(s)
+//     }
+// }

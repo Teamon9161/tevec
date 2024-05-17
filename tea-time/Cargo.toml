@@ -8,3 +8,4 @@ license.workspace = true
 
 [dependencies]
 chrono = "0.4.37"
+tea-error = { path = "../tea-error", default-features = false}
