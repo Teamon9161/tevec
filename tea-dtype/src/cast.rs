@@ -51,9 +51,11 @@ macro_rules! impl_numeric_cast {
     )*};
 
     (@common_impl $T: ty => { $( $U: ty ),* } ) => {
+
         impl Cast<String> for $T {
             #[inline] fn cast(self) -> String { self.to_string() }
         }
+
         impl Cast<bool> for $T {
             #[inline] fn cast(self) -> bool {
                 let value = Cast::<i32>::cast(self);
@@ -67,17 +69,6 @@ macro_rules! impl_numeric_cast {
             }
         }
 
-        #[cfg(feature="time")]
-        impl Cast<DateTime> for $T {
-            #[inline] fn cast(self) -> DateTime { Cast::<i64>::cast(self).into() }
-        }
-
-        #[cfg(feature="time")]
-        impl Cast<TimeDelta> for $T {
-            #[inline] fn cast(self) -> TimeDelta { Cast::<i64>::cast(self).into() }
-        }
-
-
         impl Cast<bool> for Option<$T> {
             #[inline] fn cast(self) -> bool {
                 self.expect("can not cast None to bool").cast()
@@ -88,6 +79,16 @@ macro_rules! impl_numeric_cast {
             #[inline] fn cast(self) -> String {
                 self.map(|v| v.to_string()).unwrap_or("None".to_string())
             }
+        }
+
+        #[cfg(feature="time")]
+        impl Cast<DateTime> for $T {
+            #[inline] fn cast(self) -> DateTime { Cast::<i64>::cast(self).into() }
+        }
+
+        #[cfg(feature="time")]
+        impl Cast<TimeDelta> for $T {
+            #[inline] fn cast(self) -> TimeDelta { Cast::<i64>::cast(self).into() }
         }
 
         #[cfg(feature="time")]
@@ -146,6 +147,11 @@ macro_rules! impl_time_cast {
             impl Cast<$T> for TimeDelta {
                 #[inline] fn cast(self) -> $T { Cast::<i64>::cast(self).cast() }
             }
+
+            // impl Cast<DateTime> for $T {
+            //     #[inline] fn cast(self) -> DateTime { Cast::<Datetime>::cast(self.into_i64()).cast() }
+            // }
+
         )*
 
     };
@@ -172,7 +178,6 @@ impl Cast<i64> for TimeDelta {
     }
 }
 
-
 impl_numeric_cast!(u8 => { u64, f32, f64, i32, i64, usize, isize });
 impl_numeric_cast!(u64 => { u8, f32, f64, i32, i64, usize, isize });
 impl_numeric_cast!(i64 => { u8, f32, f64, i32, u64, usize, isize });
@@ -183,7 +188,6 @@ impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
 impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
 // impl_numeric_cast!(char => { char });
 impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
-
 
 impl_bool_cast!(f32, f64);
 #[cfg(feature = "time")]
