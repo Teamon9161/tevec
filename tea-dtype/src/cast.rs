@@ -117,17 +117,6 @@ macro_rules! impl_numeric_cast {
     };
 }
 
-impl_numeric_cast!(u8 => { u64, f32, f64, i32, i64, usize, isize });
-impl_numeric_cast!(u64 => { u8, f32, f64, i32, i64, usize, isize });
-impl_numeric_cast!(i64 => { u8, f32, f64, i32, u64, usize, isize });
-impl_numeric_cast!(i32 => { u8, f32, f64, i64, u64, usize, isize });
-impl_numeric_cast!(f32 => { u8, f64, i32, i64, u64, usize, isize  });
-impl_numeric_cast!(f64 => { u8, f32, i32, i64, u64, usize, isize  });
-impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
-impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
-// impl_numeric_cast!(char => { char });
-impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
-
 impl Cast<String> for bool {
     #[inline]
     fn cast(self) -> String {
@@ -183,9 +172,22 @@ impl Cast<i64> for TimeDelta {
     }
 }
 
+
+impl_numeric_cast!(u8 => { u64, f32, f64, i32, i64, usize, isize });
+impl_numeric_cast!(u64 => { u8, f32, f64, i32, i64, usize, isize });
+impl_numeric_cast!(i64 => { u8, f32, f64, i32, u64, usize, isize });
+impl_numeric_cast!(i32 => { u8, f32, f64, i64, u64, usize, isize });
+impl_numeric_cast!(f32 => { u8, f64, i32, i64, u64, usize, isize  });
+impl_numeric_cast!(f64 => { u8, f32, i32, i64, u64, usize, isize  });
+impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
+impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
+// impl_numeric_cast!(char => { char });
+impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
+
+
 impl_bool_cast!(f32, f64);
 #[cfg(feature = "time")]
-impl_time_cast!(f32, f64, i32, u64, usize, isize, bool);
+impl_time_cast!(u8, u64, f32, f64, i32, usize, isize, bool);
 
 macro_rules! impl_cast_from_string {
     ($($T: ty),*) => {
