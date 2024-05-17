@@ -44,11 +44,6 @@ pub trait Number:
     fn max_() -> Self;
 
     #[inline(always)]
-    fn kh_sum(&mut self, v: Self, c: &mut Self) {
-        *self = kh_sum(*self, v, c);
-    }
-
-    #[inline(always)]
     fn ceil(self) -> Self {
         self
     }
@@ -59,20 +54,20 @@ pub trait Number:
     }
 
     #[inline]
-    fn min_with(&self, other: &Self) -> Self {
+    fn min_with(self, other: Self) -> Self {
         if other < self {
-            *other
+            other
         } else {
-            *self
+            self
         }
     }
 
     #[inline]
-    fn max_with(&self, other: &Self) -> Self {
+    fn max_with(self, other: Self) -> Self {
         if other > self {
-            *other
+            other
         } else {
-            *self
+            self
         }
     }
 
@@ -118,6 +113,25 @@ pub trait Number:
         Self: Cast<T>,
     {
         Cast::<T>::cast(self)
+    }
+
+    #[inline(always)]
+    fn kh_sum(&mut self, v: Self, c: &mut Self) {
+        *self = kh_sum(*self, v, c);
+    }
+
+    /// if other is nan, then add other to self and n += 1
+    /// else just return self
+    #[inline]
+    fn n_add(self, other: Self, n: &mut usize) -> Self {
+        // note: only check if other is NaN
+        // assume that self is not NaN
+        if other.not_none() {
+            *n += 1;
+            self + other
+        } else {
+            self
+        }
     }
 }
 

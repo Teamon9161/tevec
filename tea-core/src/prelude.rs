@@ -9,6 +9,6 @@ pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number, One, Zero};
 pub use tea_error::*;
 
 #[cfg(feature = "time")]
-pub use tea_dtype::{DateTime, TimeDelta};
+pub use tea_dtype::{DateTime, TimeDelta, TimeUnit};
 
 pub const EPS: f64 = 1e-14;

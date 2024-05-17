@@ -12,4 +12,4 @@ pub use number::Number;
 pub use num_traits::{One, Zero};
 
 #[cfg(feature = "time")]
-pub use tea_time::{DateTime, TimeDelta};
+pub use tea_time::{chrono, DateTime, TimeDelta, TimeUnit};

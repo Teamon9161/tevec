@@ -52,10 +52,7 @@ macro_rules! impl_numeric_cast {
 
     (@common_impl $T: ty => { $( $U: ty ),* } ) => {
 
-        impl Cast<String> for $T {
-            #[inline] fn cast(self) -> String { self.to_string() }
-        }
-
+        // cast for bool type
         impl Cast<bool> for $T {
             #[inline] fn cast(self) -> bool {
                 let value = Cast::<i32>::cast(self);
@@ -73,6 +70,19 @@ macro_rules! impl_numeric_cast {
             #[inline] fn cast(self) -> bool {
                 self.expect("can not cast None to bool").cast()
             }
+        }
+
+        impl Cast<$T> for bool {
+            #[inline] fn cast(self) -> $T { (self as u8).cast() }
+        }
+
+        impl Cast<Option<$T>> for bool {
+            #[inline] fn cast(self) -> Option<$T> { Some((self as u8).cast()) }
+        }
+
+        // cast for string type
+        impl Cast<String> for $T {
+            #[inline] fn cast(self) -> String { self.to_string() }
         }
 
         impl Cast<String> for Option<$T> {
@@ -125,15 +135,29 @@ impl Cast<String> for bool {
     }
 }
 
-macro_rules! impl_bool_cast {
-    ($($T: ty),*) => {
-        $(
-            impl Cast<$T> for bool {
-                #[inline] fn cast(self) -> $T { Cast::<i32>::cast(self).cast() }
-            }
-        )*
-    };
+impl Cast<DateTime> for bool {
+    #[inline]
+    fn cast(self) -> DateTime {
+        panic!("Should not cast bool to datetime")
+    }
 }
+
+impl Cast<TimeDelta> for bool {
+    #[inline]
+    fn cast(self) -> TimeDelta {
+        panic!("Should not cast bool to timedelta")
+    }
+}
+
+// macro_rules! impl_bool_cast {
+//     ($($T: ty),*) => {
+//         $(
+//             impl Cast<$T> for bool {
+//                 #[inline] fn cast(self) -> $T { Cast::<i32>::cast(self).cast() }
+//             }
+//         )*
+//     };
+// }
 
 #[cfg(feature = "time")]
 macro_rules! impl_time_cast {
@@ -143,15 +167,30 @@ macro_rules! impl_time_cast {
                 #[inline] fn cast(self) -> $T { Cast::<i64>::cast(self).cast() }
             }
 
+            impl Cast<Option<$T>> for DateTime {
+                #[inline] fn cast(self) -> Option<$T> {
+                    if self.is_none() {
+                        None
+                    } else {
+                        Some(self.cast())
+                    }
+                 }
+            }
+
 
             impl Cast<$T> for TimeDelta {
                 #[inline] fn cast(self) -> $T { Cast::<i64>::cast(self).cast() }
             }
 
-            // impl Cast<DateTime> for $T {
-            //     #[inline] fn cast(self) -> DateTime { Cast::<Datetime>::cast(self.into_i64()).cast() }
-            // }
-
+            impl Cast<Option<$T>> for TimeDelta {
+                #[inline] fn cast(self) -> Option<$T> {
+                    if self.is_none() {
+                        None
+                    } else {
+                        Some(self.cast())
+                    }
+                 }
+            }
         )*
 
     };
@@ -187,9 +226,9 @@ impl_numeric_cast!(f64 => { u8, f32, i32, i64, u64, usize, isize  });
 impl_numeric_cast!(usize => { u8, f32, f64, i32, i64, u64, isize });
 impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
 // impl_numeric_cast!(char => { char });
-impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
+// impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
 
-impl_bool_cast!(f32, f64);
+// impl_bool_cast!(f32, f64);
 #[cfg(feature = "time")]
 impl_time_cast!(u8, u64, f32, f64, i32, usize, isize, bool);
 

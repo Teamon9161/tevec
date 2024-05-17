@@ -84,7 +84,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     {
         self.vfold(None, |acc, x| match acc.to_opt() {
             None => Some(x.unwrap()),
-            Some(v) => Some(v.max_with(&x.unwrap())),
+            Some(v) => Some(v.max_with(x.unwrap())),
         })
     }
 
@@ -95,7 +95,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     {
         self.vfold(None, |acc, x| match acc {
             None => Some(x.unwrap()),
-            Some(v) => Some(v.min_with(&x.unwrap())),
+            Some(v) => Some(v.min_with(x.unwrap())),
         })
     }
 
@@ -234,7 +234,7 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
     {
         self.into_iter().fold(None, |acc, x| match acc {
             None => Some(x),
-            Some(v) => Some(v.max_with(&x)),
+            Some(v) => Some(v.max_with(x)),
         })
     }
 
@@ -245,7 +245,7 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
     {
         self.into_iter().fold(None, |acc, x| match acc {
             None => Some(x),
-            Some(v) => Some(v.min_with(&x)),
+            Some(v) => Some(v.min_with(x)),
         })
     }
 }

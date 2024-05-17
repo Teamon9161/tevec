@@ -38,7 +38,7 @@ impl FromStr for DateTime {
 
 impl DateTime {
     #[inline]
-    pub fn is_none(&self) -> bool {
+    pub fn is_nat(&self) -> bool {
         self.0.is_none()
     }
 
@@ -143,7 +143,7 @@ impl DateTime {
     }
 
     pub fn duration_trunc(self, duration: TimeDelta) -> Self {
-        if self.is_none() {
+        if self.is_nat() {
             return self;
         }
         let mut dt = self.0.unwrap();
