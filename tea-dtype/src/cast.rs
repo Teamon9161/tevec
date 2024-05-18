@@ -135,6 +135,7 @@ impl Cast<String> for bool {
     }
 }
 
+#[cfg(feature = "time")]
 impl Cast<DateTime> for bool {
     #[inline]
     fn cast(self) -> DateTime {
@@ -142,22 +143,13 @@ impl Cast<DateTime> for bool {
     }
 }
 
+#[cfg(feature = "time")]
 impl Cast<TimeDelta> for bool {
     #[inline]
     fn cast(self) -> TimeDelta {
         panic!("Should not cast bool to timedelta")
     }
 }
-
-// macro_rules! impl_bool_cast {
-//     ($($T: ty),*) => {
-//         $(
-//             impl Cast<$T> for bool {
-//                 #[inline] fn cast(self) -> $T { Cast::<i32>::cast(self).cast() }
-//             }
-//         )*
-//     };
-// }
 
 #[cfg(feature = "time")]
 macro_rules! impl_time_cast {

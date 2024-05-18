@@ -151,8 +151,8 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
 pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
     fn vrank<O: Vec1>(&self, pct: bool, rev: bool) -> O
     where
-        T: IsNone + PartialEq,
-        T::Inner: Number,
+        T: IsNone + PartialEq + PartialOrd,
+        // T::Inner: Number,
         f64: Cast<O::Item>,
         O::Item: Clone + IsNone,
     {
@@ -167,12 +167,12 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         if !rev {
             idx_sorted.sort_unstable_by(|a, b| {
                 let (va, vb) = unsafe { (self.uget(*a), self.uget(*b)) }; // safety: out不超过self的长度
-                va.sort_cmp(vb)
+                va.sort_cmp(&vb)
             });
         } else {
             idx_sorted.sort_unstable_by(|a, b| {
                 let (va, vb) = unsafe { (self.uget(*a), self.uget(*b)) }; // safety: out不超过self的长度
-                va.sort_cmp_rev(vb)
+                va.sort_cmp_rev(&vb)
             });
         }
         // if the first value is none then all the elements are none

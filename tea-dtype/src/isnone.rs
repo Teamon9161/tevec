@@ -42,56 +42,82 @@ where
             .unwrap_or_else(|| U::none())
     }
 
-    /// let None value be largest, only for sorting(from smallest to largest)
     #[inline]
-    fn sort_cmp(self, other: Self) -> Ordering
+    /// let None value be largest, only for sorting(from smallest to largest)
+    fn sort_cmp(&self, other: &Self) -> Ordering
     where
-        Self::Inner: PartialOrd,
+        Self: PartialOrd,
     {
-        if other.is_none() {
-            if self.is_none() {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
-        } else if self.is_none() {
-            Ordering::Greater
+        if other.is_none() || (self < other) {
+            Ordering::Less
         } else {
-            let (va, vb) = (self.unwrap(), other.unwrap());
-            if va > vb {
-                Ordering::Greater
-            } else if va == vb {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
+            Ordering::Greater
         }
     }
 
     #[inline]
-    fn sort_cmp_rev(self, other: Self) -> Ordering
+    /// let None value be largest, only for sorting(from largest to smallest)
+    fn sort_cmp_rev(&self, other: &Self) -> Ordering
     where
-        Self::Inner: PartialOrd,
+        Self: PartialOrd,
     {
-        if other.is_none() {
-            if self.is_none() {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
-        } else if self.is_none() {
-            Ordering::Greater
+        if other.is_none() || (self > other) {
+            Ordering::Less
         } else {
-            let (va, vb) = (self.unwrap(), other.unwrap());
-            if va < vb {
-                Ordering::Greater
-            } else if va == vb {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
+            Ordering::Greater
         }
     }
+
+    // /// let None value be largest, only for sorting(from smallest to largest)
+    // #[inline]
+    // fn vsort_cmp(self, other: Self) -> Ordering
+    // where
+    //     Self::Inner: PartialOrd,
+    // {
+    //     if other.is_none() {
+    //         if self.is_none() {
+    //             Ordering::Equal
+    //         } else {
+    //             Ordering::Less
+    //         }
+    //     } else if self.is_none() {
+    //         Ordering::Greater
+    //     } else {
+    //         let (va, vb) = (self.unwrap(), other.unwrap());
+    //         if va > vb {
+    //             Ordering::Greater
+    //         } else if va == vb {
+    //             Ordering::Equal
+    //         } else {
+    //             Ordering::Less
+    //         }
+    //     }
+    // }
+
+    // #[inline]
+    // fn vsort_cmp_rev(self, other: Self) -> Ordering
+    // where
+    //     Self::Inner: PartialOrd,
+    // {
+    //     if other.is_none() {
+    //         if self.is_none() {
+    //             Ordering::Equal
+    //         } else {
+    //             Ordering::Less
+    //         }
+    //     } else if self.is_none() {
+    //         Ordering::Greater
+    //     } else {
+    //         let (va, vb) = (self.unwrap(), other.unwrap());
+    //         if va < vb {
+    //             Ordering::Greater
+    //         } else if va == vb {
+    //             Ordering::Equal
+    //         } else {
+    //             Ordering::Less
+    //         }
+    //     }
+    // }
 }
 
 pub trait IntoCast: IsNone<Inner = Self> + Clone + Sized {
@@ -325,6 +351,15 @@ macro_rules! impl_not_none {
                     F: Fn(Self::Inner) -> U::Inner
                 {
                     U::from_inner(f(self))
+                }
+
+                #[inline]
+                /// only for sorting(from smallest to largest)
+                fn sort_cmp(&self, other: &Self) -> Ordering
+                where
+                    Self: PartialOrd,
+                {
+                    self.partial_cmp(&other).unwrap()
                 }
             }
         )*

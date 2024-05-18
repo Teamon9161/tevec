@@ -37,7 +37,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     fn vany(self) -> bool
     where
-        T::Inner: BoolType + Copy,
+        T::Inner: BoolType,
     {
         self.vfold(false, |acc, x| acc || x.unwrap().bool_())
     }
@@ -45,7 +45,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     fn vall(self) -> bool
     where
-        T::Inner: BoolType + Copy,
+        T::Inner: BoolType,
     {
         self.vfold(true, |acc, x| acc && x.unwrap().bool_())
     }
@@ -178,7 +178,7 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
     #[inline]
     fn any(self) -> bool
     where
-        Self::Item: BoolType + Copy,
+        Self::Item: BoolType,
     {
         Iterator::any(&mut self.into_iter(), |x| x.bool_())
     }
@@ -186,7 +186,7 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
     #[inline]
     fn all(self) -> bool
     where
-        Self::Item: BoolType + Copy,
+        Self::Item: BoolType,
     {
         Iterator::all(&mut self.into_iter(), |x| x.bool_())
     }

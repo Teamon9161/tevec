@@ -10,7 +10,7 @@ license.workspace = true
 default = []
 # default = ["nd_array", "time", "pl"]
 
-nd_array = ["ndarray"]
+# nd_array = ["ndarray"]
 pl = ["polars", "polars-arrow", "tea-error/polars"]
 time = ["tea-dtype/time"]
 
