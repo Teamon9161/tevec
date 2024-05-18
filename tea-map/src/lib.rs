@@ -152,7 +152,6 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
     fn vrank<O: Vec1>(&self, pct: bool, rev: bool) -> O
     where
         T: IsNone + PartialEq + PartialOrd,
-        // T::Inner: Number,
         f64: Cast<O::Item>,
         O::Item: Clone + IsNone,
     {
@@ -211,11 +210,11 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                         sum_rank += cur_rank;
                         cur_rank += 1;
                     } else if repeat_num == 1 {
-                        // 无重复，可直接得出排名
+                        // no repeat, can get the rank directly
                         out.uset(idx, (cur_rank as f64).cast());
                         cur_rank += 1;
                     } else {
-                        // 当前元素是最后一个重复元素
+                        // current element is the last repeated value
                         sum_rank += cur_rank;
                         cur_rank += 1;
                         for j in 0..repeat_num {
@@ -225,8 +224,8 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                                 (sum_rank.f64() / repeat_num.f64()).cast(),
                             );
                         }
-                        sum_rank = 0; // rank和归零
-                        repeat_num = 1; // 重复计数归一
+                        sum_rank = 0;
+                        repeat_num = 1;
                     }
                 }
                 if nan_flag {
@@ -271,11 +270,11 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                         sum_rank += cur_rank;
                         cur_rank += 1;
                     } else if repeat_num == 1 {
-                        // 无重复，可直接得出排名
+                        // no repeat, can get the rank directly
                         out.uset(idx, (cur_rank as f64 / not_none_count as f64).cast());
                         cur_rank += 1;
                     } else {
-                        // 当前元素是最后一个重复元素
+                        // current element is the last repeated value
                         sum_rank += cur_rank;
                         cur_rank += 1;
                         for j in 0..repeat_num {
@@ -285,8 +284,8 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                                 (sum_rank.f64() / (repeat_num * not_none_count).f64()).cast(),
                             );
                         }
-                        sum_rank = 0; // rank和归零
-                        repeat_num = 1; // 重复计数归一
+                        sum_rank = 0;
+                        repeat_num = 1;
                     }
                 }
                 if nan_flag {

@@ -19,7 +19,7 @@ pub trait Vec1AggValidExt<T: IsNone>: Vec1View<Item = T> + Sized {
     ) -> T::Cast<f64>
     where
         T::Inner: Zero + Number,
-        T: PartialEq,
+        T: PartialEq + PartialOrd,
         f64: Cast<T::Cast<f64>>,
     {
         let min_periods = min_periods.unwrap_or(self.len() / 2);
