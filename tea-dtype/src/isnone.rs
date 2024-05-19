@@ -368,6 +368,104 @@ macro_rules! impl_not_none {
 
 impl_not_none!(bool, u8, i32, i64, isize, u64, usize);
 
+impl IsNone for String {
+    type Inner = String;
+    type Cast<U: IsNone<Inner = U> + Clone> = U;
+    #[inline]
+    fn is_none(&self) -> bool {
+        self == "None"
+    }
+
+    #[inline]
+    fn none() -> Self {
+        "None".to_string()
+    }
+
+    #[inline]
+    fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline(always)]
+    fn from_inner(inner: Self::Inner) -> Self {
+        inner
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        Cast::<U>::cast(inner)
+    }
+
+    #[inline(always)]
+    fn unwrap(self) -> Self::Inner {
+        self
+    }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        U::from_inner(f(self))
+    }
+}
+
+impl<'a> IsNone for &'a str {
+    type Inner = &'a str;
+    type Cast<U: IsNone<Inner = U> + Clone> = U;
+    #[inline]
+    fn is_none(&self) -> bool {
+        *self == "None"
+    }
+
+    #[inline]
+    fn none() -> Self {
+        "None"
+    }
+
+    #[inline]
+    fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline(always)]
+    fn from_inner(inner: Self::Inner) -> Self {
+        inner
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        Cast::<U>::cast(inner)
+    }
+
+    #[inline(always)]
+    fn unwrap(self) -> Self::Inner {
+        self
+    }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        U::from_inner(f(self))
+    }
+}
+
 #[cfg(feature = "time")]
 impl IsNone for DateTime {
     type Inner = DateTime;
