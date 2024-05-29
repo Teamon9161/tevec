@@ -22,13 +22,18 @@ macro_rules! impl_vec1 {
         })*
     };
 
-    (view $($({$N: ident})? $ty: ty),*) => {
+    (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),*) => {
         $(
             impl<T: Clone $(, const $N: usize)?> Vec1View for $ty {
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> T {
                     self.get_unchecked(index).clone()
                 }
+
+                $(#[inline]
+                fn $slice(&self) -> Option<&[T]> {
+                    Some(self)
+                })?
 
                 #[inline]
                 /// this should be a faster implemention than default as
@@ -139,7 +144,7 @@ impl<T: Clone, const N: usize> ToIter for &[T; N] {
 }
 
 impl_vec1!(to_iter Vec<T>, &[T], &Vec<T>);
-impl_vec1!(view Vec<T>, &[T], &Vec<T>, {N} &[T; N], {N} [T; N]);
+impl_vec1!(view --try_as_slice Vec<T>, --try_as_slice &[T], --try_as_slice &Vec<T>, {N} &[T; N], {N} [T; N]);
 
 impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     #[inline]

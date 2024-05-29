@@ -269,7 +269,7 @@ mod tests {
         let data = vec![1., f64::NAN, 3.];
         assert!(Vec1ViewAgg::sum(data.to_iter()).unwrap().is_nan());
         assert_eq!(data.to_iter().vsum(), Some(4.));
-        assert_eq!(data.opt().vsum(), Some(4.));
+        assert_eq!(Vec1ViewAggValid::vsum(&data.opt()), Some(4.));
         assert_eq!(data.opt().vmean(), Some(2.));
     }
 
@@ -316,5 +316,11 @@ mod tests {
         assert_eq!(data.to_iter().all(), false);
         assert_eq!(data.to_iter().vall(), false);
         assert_eq!(data.opt().vall(), false);
+    }
+
+    #[test]
+    fn test_special() {
+        let data = vec![1, 2, 3];
+        assert_eq!(data.sum(), Some(6));
     }
 }

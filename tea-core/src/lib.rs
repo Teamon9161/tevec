@@ -9,6 +9,8 @@ mod linspace;
 mod vec_core;
 
 pub use tea_dtype as dtype;
+#[macro_use]
+pub mod utils;
 
 // #[cfg(test)]
 pub mod testing;

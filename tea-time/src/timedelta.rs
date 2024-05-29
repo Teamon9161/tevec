@@ -24,7 +24,7 @@ impl FromStr for TimeDelta {
 impl From<&str> for TimeDelta {
     #[inline]
     fn from(s: &str) -> Self {
-        TimeDelta::parse(s).expect(format!("Can not parse {} to TimeDelta", s).as_str())
+        TimeDelta::parse(s).unwrap_or_else(|e| panic!("{}", e))
     }
 }
 

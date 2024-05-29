@@ -27,6 +27,11 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
     }
 
     #[inline]
+    fn try_as_slice(&self) -> Option<&[T]> {
+        self.as_slice_memory_order()
+    }
+
+    #[inline]
     /// this should be a faster implemention than default as
     /// we read value directly by ptr
     fn rolling_apply<O: Vec1, F>(
