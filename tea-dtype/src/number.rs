@@ -118,6 +118,7 @@ pub trait Number:
     }
 
     #[inline(always)]
+    #[must_use]
     fn kh_sum(self, v: Self, c: &mut Self) -> Self {
         kh_sum(self, v, c)
     }
