@@ -786,7 +786,7 @@ mod tests {
         assert_eq!(sum, vec![1, 3, 6, 9, 12]);
         assert_eq!(sum2, vec![1, 3, 6, 9, 12]);
         // test valid sum
-        let sum2: Vec<_> = data.to_opt().ts_vsum(3, Some(3));
+        let sum2: Vec<_> = data.opt().ts_vsum(3, Some(3));
         assert_eq!(sum2, vec![None, None, Some(6), Some(9), Some(12)]);
 
         let data = vec![Some(1.), Some(2.), None, Some(4.), Some(5.)];
@@ -807,12 +807,12 @@ mod tests {
             None,
         );
         let out2: Vec<_> = data.ts_vmean(2, Some(1));
-        let out3: Vec<_> = data.to_opt().ts_vmean(2, Some(1));
+        let out3: Vec<_> = data.opt().ts_vmean(2, Some(1));
         let expect = vec![Some(1.), Some(1.), Some(3.), Some(3.5), Some(4.5)];
         assert_eq!(out2, vec![1., 1., 3., 3.5, 4.5]);
         assert_eq!(out3, expect);
 
-        let out: Vec<_> = data.to_opt().ts_vmean(2, Some(2));
+        let out: Vec<_> = data.opt().ts_vmean(2, Some(2));
         assert_vec1d_equal_numeric(&out, &vec![None, None, None, Some(3.5), Some(4.5)], None)
     }
 }

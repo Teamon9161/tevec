@@ -5,6 +5,7 @@ pub use crate::vec_core::{
     TryCollectTrustedToVec, UninitRefMut, UninitVec, Vec1, Vec1Collect, Vec1Mut, Vec1OptCollect,
     Vec1TryCollect, Vec1View,
 };
+// pub use tea_dtype::{BoolType, Cast, INumber, IntoCast, IsNone, Number, One, PNumber, Zero};
 pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number, One, Zero};
 pub use tea_error::*;
 

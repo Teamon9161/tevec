@@ -566,6 +566,55 @@ impl IsNone for TimeDelta {
     }
 }
 
+impl<T> IsNone for Vec<T> {
+    type Inner = Vec<T>;
+    type Cast<U: IsNone<Inner = U> + Clone> = U;
+    #[inline]
+    fn is_none(&self) -> bool {
+        self.is_empty()
+    }
+
+    #[inline]
+    fn none() -> Self {
+        Vec::new()
+    }
+
+    #[inline]
+    fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline(always)]
+    fn from_inner(inner: Self::Inner) -> Self {
+        inner
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        Cast::<U>::cast(inner)
+    }
+
+    #[inline(always)]
+    fn unwrap(self) -> Self::Inner {
+        self
+    }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        U::from_inner(f(self))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Cast, IsNone};

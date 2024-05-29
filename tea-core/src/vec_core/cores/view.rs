@@ -43,7 +43,7 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn to_opt(&self) -> OptIter<Self>
+    fn opt(&self) -> OptIter<Self>
     where
         Self::Item: IsNone,
         Self: Sized,

@@ -265,12 +265,12 @@ mod tests {
         assert_eq!(Vec1ViewAgg::sum(data.to_iter()), Some(15));
         assert_eq!(data.to_iter().mean(), Some(3.));
         assert_eq!(data.to_iter().vsum(), Some(15));
-        assert_eq!(data.to_opt().vmean(), Some(3.));
+        assert_eq!(data.opt().vmean(), Some(3.));
         let data = vec![1., f64::NAN, 3.];
         assert!(Vec1ViewAgg::sum(data.to_iter()).unwrap().is_nan());
         assert_eq!(data.to_iter().vsum(), Some(4.));
-        assert_eq!(data.to_opt().vsum(), Some(4.));
-        assert_eq!(data.to_opt().vmean(), Some(2.));
+        assert_eq!(data.opt().vsum(), Some(4.));
+        assert_eq!(data.opt().vmean(), Some(2.));
     }
 
     #[test]
@@ -278,9 +278,9 @@ mod tests {
         let data = vec![1., 3., f64::NAN, 2., 5.];
         assert_eq!(Vec1ViewAgg::max(data.to_iter()), Some(5.));
         assert_eq!(Vec1ViewAgg::min(data.to_iter()), Some(1.));
-        assert_eq!(data.to_opt().vmax(), Some(5.));
-        assert_eq!(data.to_opt().vmin(), Some(1.));
-        let data: Vec<_> = data.to_opt().collect_trusted_vec1();
+        assert_eq!(data.opt().vmax(), Some(5.));
+        assert_eq!(data.opt().vmin(), Some(1.));
+        let data: Vec<_> = data.opt().collect_trusted_vec1();
         assert_eq!(data.to_iter().vmax(), Some(5.));
         assert_eq!(data.vmin(), Some(1.));
     }
@@ -288,14 +288,14 @@ mod tests {
     #[test]
     fn test_count() {
         let data = vec![1., 2., f64::NAN, 2., f64::NAN, f64::NAN];
-        assert_eq!(data.to_opt().count(), 3);
-        assert_eq!(data.to_opt().count_none(), 3);
+        assert_eq!(data.opt().count(), 3);
+        assert_eq!(data.opt().count_none(), 3);
         assert_eq!(data.to_iter().count_value(1.), 1);
         assert_eq!(data.to_iter().count_value(2.), 2);
         assert_eq!(data.to_iter().vcount_value(1.), 1);
         assert_eq!(data.to_iter().vcount_value(f64::NAN), 3);
-        assert_eq!((data.to_opt().vcount_value(Some(2.))), 2);
-        assert_eq!((data.to_opt().vcount_value(None)), 3);
+        assert_eq!((data.opt().vcount_value(Some(2.))), 2);
+        assert_eq!((data.opt().vcount_value(None)), 3);
     }
 
     #[test]
@@ -303,18 +303,18 @@ mod tests {
         let data = vec![true, false, false, false];
         assert_eq!(data.to_iter().any(), true);
         assert_eq!(data.to_iter().vany(), true);
-        assert_eq!(data.to_opt().vany(), true);
+        assert_eq!(data.opt().vany(), true);
         let data = vec![false, false, false, false];
         assert_eq!(data.to_iter().any(), false);
         assert_eq!(data.to_iter().vany(), false);
-        assert_eq!(data.to_opt().vany(), false);
+        assert_eq!(data.opt().vany(), false);
         let data = vec![true, true, true, true];
         assert_eq!(data.to_iter().all(), true);
         assert_eq!(data.to_iter().vall(), true);
-        assert_eq!(data.to_opt().vall(), true);
+        assert_eq!(data.opt().vall(), true);
         let data = vec![true, false, true, true];
         assert_eq!(data.to_iter().all(), false);
         assert_eq!(data.to_iter().vall(), false);
-        assert_eq!(data.to_opt().vall(), false);
+        assert_eq!(data.opt().vall(), false);
     }
 }

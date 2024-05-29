@@ -296,7 +296,7 @@ mod tests {
         );
         let v = vec![1, 3, 2, 5, 3, 1, 5, 7, 3];
         // test ts_vargmin
-        let res: Vec<_> = v.to_opt().ts_vargmin(3, Some(3));
+        let res: Vec<_> = v.opt().ts_vargmin(3, Some(3));
         assert_eq!(
             res,
             vec![
@@ -312,7 +312,7 @@ mod tests {
             ]
         );
         // test ts_vmin
-        let res: Vec<_> = v.to_opt().ts_vmin(3, Some(3));
+        let res: Vec<_> = v.opt().ts_vmin(3, Some(3));
         assert_eq!(
             res,
             vec![
@@ -343,7 +343,7 @@ mod tests {
         );
         let v = vec![1, 3, 2, 5, 3, 1, 5, 7, 3];
         // test ts_vargmin
-        let res: Vec<_> = v.to_opt().ts_vargmax(3, Some(3));
+        let res: Vec<_> = v.opt().ts_vargmax(3, Some(3));
         assert_eq!(
             res,
             vec![
@@ -359,7 +359,7 @@ mod tests {
             ]
         );
         // test ts_vmin
-        let res: Vec<_> = v.to_opt().ts_vmax(3, Some(3));
+        let res: Vec<_> = v.opt().ts_vmax(3, Some(3));
         assert_eq!(
             res,
             vec![
