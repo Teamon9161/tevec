@@ -1,12 +1,10 @@
-use crate::prelude::{Vec1ViewAgg, Vec1ViewAggValid};
-
 use super::super::{
     iter::{OptIter, ToIter},
     trusted::TrustIter,
     uninit::UninitRefMut,
 };
 use super::own::{Vec1, Vec1Collect};
-use tea_dtype::{Cast, IsNone, Number, Zero};
+use tea_dtype::{Cast, IsNone};
 
 pub trait Vec1View: ToIter {
     /// Get the value at the index
@@ -336,42 +334,6 @@ pub trait Vec1View: ToIter {
         // other windows
         for (start, end) in (window - 1..len).enumerate() {
             unsafe { out.uset(end, f(Some(start), end, self.uget(end))) }
-        }
-    }
-
-    #[inline]
-    /// Returns the sum of all elements in the vector.
-    fn sum(&self) -> Option<Self::Item>
-    where
-        Self::Item: Number,
-    {
-        if let Some(slc) = self.try_as_slice() {
-            let sum = crate::utils::vec_fold(slc, Self::Item::zero, |a, b| a + b);
-            if self.is_empty() {
-                None
-            } else {
-                Some(sum)
-            }
-        } else {
-            self.to_iter().n_sum().1
-        }
-    }
-
-    #[inline]
-    /// Returns the sum of all elements in the vector.
-    fn vsum(&self) -> Option<Self::Item>
-    where
-        Self::Item: Number + IsNone<Inner = Self::Item>,
-    {
-        if let Some(slc) = self.try_as_slice() {
-            let (n, sum) = crate::utils::vec_nfold(slc, Self::Item::zero, Self::Item::n_add);
-            if n < 1 {
-                None
-            } else {
-                Some(sum)
-            }
-        } else {
-            self.to_iter().vsum()
         }
     }
 }

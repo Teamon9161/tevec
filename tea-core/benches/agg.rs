@@ -13,8 +13,8 @@ fn bench_sum(b: &mut Bencher) {
     b.iter(|| data.to_iter().vsum());
 }
 
-#[bench]
-fn bench_sum2(b: &mut Bencher) {
-    let data: Vec<_> = (0..LENGTH).collect();
-    b.iter(|| Vec1View::vsum(&data));
-}
+// #[bench]
+// fn bench_sum2(b: &mut Bencher) {
+//     let data: Vec<_> = (0..LENGTH).collect();
+//     b.iter(|| Vec1View::vsum(&data));
+// }
