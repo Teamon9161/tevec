@@ -23,6 +23,11 @@ where
         Self::Inner: Cast<U::Inner>;
 
     #[inline]
+    fn from_opt(opt: Option<Self::Inner>) -> Self {
+        opt.map_or_else(Self::none, Self::from_inner)
+    }
+
+    #[inline]
     fn unwrap(self) -> Self::Inner {
         self.to_opt().unwrap()
     }
