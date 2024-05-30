@@ -1,8 +1,11 @@
-use super::super::{
-    trusted::{ToTrustIter, TrustedLen},
-    uninit::{UninitRefMut, UninitVec},
-};
 use super::Vec1View;
+use super::{
+    super::{
+        trusted::{ToTrustIter, TrustedLen},
+        uninit::{UninitRefMut, UninitVec},
+    },
+    Vec1Mut,
+};
 use tea_dtype::IsNone;
 use tea_error::*;
 
@@ -65,6 +68,26 @@ pub trait Vec1: Vec1View + Sized {
     {
         let iter = std::iter::repeat(v).take(len);
         Self::collect_from_trusted(iter)
+    }
+
+    /// sort 1d array using a compare function, but might not preserve the order of equal elements.
+    fn sort_unstable_by<'a, F>(&'a mut self, compare: F) -> TResult<()>
+    where
+        Self: Vec1Mut<'a>,
+        Self::Item: Clone,
+        F: FnMut(&Self::Item, &Self::Item) -> std::cmp::Ordering,
+    {
+        if let Some(slc) = self.try_as_slice_mut() {
+            slc.sort_unstable_by(compare);
+            Ok(())
+        } else {
+            let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1();
+            let slc = out_c.try_as_slice_mut().ok_or_else(|| {
+                terr!("This type of 1d vector can not be sorted by the given compare function")
+            })?;
+            slc.sort_unstable_by(compare);
+            self.apply_mut_with(&out_c, |v, vo| *v = vo)
+        }
     }
 }
 

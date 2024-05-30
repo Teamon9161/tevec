@@ -107,6 +107,11 @@ impl<'a, S: DataMut<Elem = T>, T: 'a + Clone> Vec1Mut<'a> for ArrayBase<S, Ix1> 
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.uget_mut(index)
     }
+
+    #[inline]
+    fn try_as_slice_mut(&mut self) -> Option<&mut [Self::Item]> {
+        self.as_slice_mut()
+    }
 }
 
 impl<T: Clone> Vec1 for Array1<T> {

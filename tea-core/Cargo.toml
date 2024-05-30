@@ -7,8 +7,8 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-default = ["ndarray"]
-# default = ["ndarray", "time", "pl"]
+# default = ["ndarray"]
+default = ["ndarray", "time", "pl"]
 
 pl = ["polars", "polars-arrow", "tea-error/polars"]
 time = ["tea-dtype/time"]

@@ -40,7 +40,7 @@ macro_rules! impl_for_ca {
         {
             #[inline]
             unsafe fn uget_mut(&mut self, _index: usize) -> &mut Self::Item {
-                unimplemented!();
+                unimplemented!("get mut is not supported in polars backend");
             }
         })*
     };

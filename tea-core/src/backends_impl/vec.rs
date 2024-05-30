@@ -148,8 +148,13 @@ impl_vec1!(view --try_as_slice Vec<T>, --try_as_slice &[T], --try_as_slice &Vec<
 
 impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     #[inline]
-    unsafe fn uget_mut(&'a mut self, index: usize) -> &'a mut T {
+    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.get_unchecked_mut(index)
+    }
+
+    #[inline]
+    fn try_as_slice_mut(&mut self) -> Option<&mut [Self::Item]> {
+        Some(self.as_mut_slice())
     }
 }
 

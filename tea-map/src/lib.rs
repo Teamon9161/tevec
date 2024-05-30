@@ -164,15 +164,19 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         // argsort at first
         let mut idx_sorted: Vec<_> = (0..len).collect_trusted_to_vec();
         if !rev {
-            idx_sorted.sort_unstable_by(|a, b| {
-                let (va, vb) = unsafe { (self.uget(*a), self.uget(*b)) }; // safety: out不超过self的长度
-                va.sort_cmp(&vb)
-            });
+            idx_sorted
+                .sort_unstable_by(|a, b| {
+                    let (va, vb) = unsafe { (self.uget(*a), self.uget(*b)) }; // safety: out不超过self的长度
+                    va.sort_cmp(&vb)
+                })
+                .unwrap();
         } else {
-            idx_sorted.sort_unstable_by(|a, b| {
-                let (va, vb) = unsafe { (self.uget(*a), self.uget(*b)) }; // safety: out不超过self的长度
-                va.sort_cmp_rev(&vb)
-            });
+            idx_sorted
+                .sort_unstable_by(|a, b| {
+                    let (va, vb) = unsafe { (self.uget(*a), self.uget(*b)) }; // safety: out不超过self的长度
+                    va.sort_cmp_rev(&vb)
+                })
+                .unwrap();
         }
         // if the first value is none then all the elements are none
         if unsafe { self.uget(idx_sorted.uget(0)) }.is_none() {
