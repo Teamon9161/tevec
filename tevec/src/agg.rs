@@ -83,8 +83,8 @@ mod tests {
     #[cfg(all(feature = "rolling", feature = "map"))]
     fn test_half_life() {
         let s = vec![10., 12., 13., 14., 15., 12., 11., 14., 15., 16.];
-        assert_eq!(s.ts_vmean::<Vec<_>>(4, Some(1)).half_life(Some(1)), 3);
+        assert_eq!(s.ts_vmean::<Vec<f64>, _>(4, Some(1)).half_life(Some(1)), 3);
         let s: Vec<f64> = vec![];
-        assert_eq!(s.ts_vmean::<Vec<_>>(4, Some(1)).half_life(Some(1)), 1);
+        assert_eq!(s.ts_vmean::<Vec<f64>, _>(4, Some(1)).half_life(Some(1)), 1);
     }
 }

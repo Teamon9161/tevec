@@ -1,9 +1,9 @@
 use num_traits::Zero;
 use tea_core::prelude::*;
 
-pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
+pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     #[no_out]
-    fn ts_vsum<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vsum<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -11,6 +11,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = T::Inner::zero();
@@ -23,9 +24,9 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     sum += v.unwrap();
                 }
                 let res = if n >= min_periods {
-                    sum.f64().into_cast::<T>()
+                    sum.f64().cast()
                 } else {
-                    f64::NAN.into_cast::<T>()
+                    f64::NAN.cast()
                 };
                 if let Some(v_rm) = v_rm {
                     if v_rm.not_none() {
@@ -40,7 +41,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vmean<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vmean<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -48,6 +49,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
@@ -60,9 +62,9 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     sum += v.unwrap().f64();
                 }
                 let res = if n >= min_periods {
-                    (sum / n as f64).into_cast::<T>()
+                    (sum / n as f64).cast()
                 } else {
-                    f64::NAN.into_cast::<T>()
+                    f64::NAN.cast()
                 };
                 if let Some(v_rm) = v_rm {
                     if v_rm.not_none() {
@@ -77,7 +79,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vewm<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vewm<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -85,6 +87,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         // 错位相减核心公式：
@@ -101,9 +104,9 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     q_x += v.unwrap().f64() - alpha * q_x.f64();
                 }
                 let res = if n >= min_periods {
-                    T::inner_cast(q_x.f64() * alpha / (1. - oma.powi(n as i32)))
+                    q_x.f64() * alpha / (1. - oma.powi(n as i32))
                 } else {
-                    T::inner_cast(f64::NAN)
+                    f64::NAN
                 };
                 if let Some(v_rm) = v_rm {
                     if v_rm.not_none() {
@@ -112,14 +115,14 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         q_x -= v_rm.unwrap().f64() * oma.powi(n as i32);
                     }
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_vwma<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vwma<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -127,6 +130,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
@@ -144,9 +148,9 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                 }
                 let res = if n >= min_periods {
                     let divisor = (n * (n + 1)) >> 1;
-                    T::inner_cast(sum_xt / divisor.f64())
+                    sum_xt / divisor.f64()
                 } else {
-                    T::inner_cast(f64::NAN)
+                    f64::NAN
                 };
                 if let Some(v_rm) = v_rm {
                     if v_rm.not_none() {
@@ -155,14 +159,14 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         sum -= v_rm.unwrap().f64();
                     }
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_vstd<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vstd<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -170,6 +174,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
@@ -192,12 +197,12 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     var -= mean.powi(2);
                     // variance should be greater than 0
                     if var > EPS {
-                        T::inner_cast((var * n_f64 / (n - 1).f64()).sqrt())
+                        (var * n_f64 / (n - 1).f64()).sqrt()
                     } else {
-                        T::inner_cast(0.)
+                        0.
                     }
                 } else {
-                    T::inner_cast(f64::NAN)
+                    f64::NAN
                 };
                 if let Some(v) = v_rm {
                     if v.not_none() {
@@ -207,14 +212,14 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         sum2 -= v * v
                     }
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_vvar<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vvar<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -222,6 +227,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
@@ -243,12 +249,12 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     var -= mean.powi(2);
                     // variance should be greater than 0
                     if var > EPS {
-                        T::inner_cast(var * n_f64 / (n - 1).f64())
+                        var * n_f64 / (n - 1).f64()
                     } else {
-                        T::inner_cast(0.)
+                        0.
                     }
                 } else {
-                    T::inner_cast(f64::NAN)
+                    f64::NAN
                 };
                 if let Some(v) = v_rm {
                     if v.not_none() {
@@ -258,14 +264,14 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         sum2 -= v * v
                     }
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_vskew<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vskew<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -273,6 +279,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(3);
         let mut sum = 0.;
@@ -297,16 +304,16 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     var -= mean.powi(2);
                     if var <= EPS {
                         // 标准差为0， 则偏度为0
-                        T::inner_cast(0.)
+                        0.
                     } else {
                         let std = var.sqrt(); // std
                         let res = sum3 / n_f64; // Ex^3
                         mean /= std; // mean / std
                         let adjust = (n * (n - 1)).f64().sqrt() / (n - 2).f64();
-                        T::inner_cast(adjust * (res / std.powi(3) - 3. * mean - mean.powi(3)))
+                        adjust * (res / std.powi(3) - 3. * mean - mean.powi(3))
                     }
                 } else {
-                    T::inner_cast(f64::NAN)
+                    f64::NAN
                 };
                 if let Some(v) = v_rm {
                     if v.not_none() {
@@ -318,14 +325,14 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         sum3 -= v2 * v;
                     }
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_vkurt<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vkurt<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -333,6 +340,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(4);
         let mut sum = 0.;
@@ -359,7 +367,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                     var -= mean.powi(2);
                     if var <= EPS {
                         // 标准差为0， 则峰度为0
-                        T::inner_cast(0.)
+                        0.
                     } else {
                         let n_f64 = n.f64();
                         let var2 = var * var; // var^2
@@ -369,13 +377,11 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         let out = (ex4 - 4. * mean * ex3) / var2
                             + 6. * mean2_var
                             + 3. * mean2_var.powi(2);
-                        T::inner_cast(
-                            1. / ((n - 2) * (n - 3)).f64()
-                                * ((n.pow(2) - 1).f64() * out - (3 * (n - 1).pow(2)).f64()),
-                        )
+                        1. / ((n - 2) * (n - 3)).f64()
+                            * ((n.pow(2) - 1).f64() * out - (3 * (n - 1).pow(2)).f64())
                     }
                 } else {
-                    T::inner_cast(f64::NAN)
+                    f64::NAN
                 };
                 if let Some(v) = v_rm {
                     if v.not_none() {
@@ -388,7 +394,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
                         sum4 -= v2 * v2;
                     }
                 }
-                res
+                res.cast()
             },
             out,
         )
@@ -397,7 +403,7 @@ pub trait RollingValidFeature<T: IsNone + Clone>: Vec1View<Item = T> {
 
 pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     #[no_out]
-    fn ts_sum<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_sum<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -405,7 +411,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
-        f64: Cast<T::Cast<f64>>,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = T::zero();
@@ -431,7 +437,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_mean<O: Vec1<Item = f64>>(
+    fn ts_mean<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -439,6 +445,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
@@ -457,14 +464,14 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     n -= 1;
                     sum -= v_rm.f64();
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_ewm<O: Vec1<Item = f64>>(
+    fn ts_ewm<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -472,6 +479,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         // 错位相减核心公式：
@@ -495,14 +503,14 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     // 本应是window-1，不过本身window就要自然减一，调整一下顺序
                     q_x -= v_rm.f64() * oma.powi(n as i32);
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_wma<O: Vec1<Item = f64>>(
+    fn ts_wma<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -510,6 +518,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum = 0.;
@@ -534,14 +543,14 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     sum_xt -= sum;
                     sum -= v_rm.f64();
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_std<O: Vec1<Item = f64>>(
+    fn ts_std<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -549,6 +558,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
@@ -582,14 +592,14 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     sum -= v;
                     sum2 -= v * v
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_var<O: Vec1<Item = f64>>(
+    fn ts_var<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -597,6 +607,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(2);
         let mut sum = 0.;
@@ -630,14 +641,14 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     sum -= v;
                     sum2 -= v * v
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_skew<O: Vec1<Item = f64>>(
+    fn ts_skew<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -645,6 +656,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(3);
         let mut sum = 0.;
@@ -687,14 +699,14 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     sum2 -= v2;
                     sum3 -= v2 * v;
                 }
-                res
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_kurt<O: Vec1<Item = f64>>(
+    fn ts_kurt<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -702,6 +714,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     ) -> O
     where
         T: Number,
+        f64: Cast<U>,
     {
         // let window = window.min(self.len());
         let min_periods = min_periods.unwrap_or(window / 2).min(window).max(4);
@@ -753,7 +766,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
                     sum3 -= v2 * v;
                     sum4 -= v2 * v2;
                 }
-                res
+                res.cast()
             },
             out,
         )
@@ -772,31 +785,31 @@ mod tests {
     fn test_ts_sum() {
         // test empty iter
         let data: Vec<i32> = vec![];
-        let sum: Vec<_> = data.ts_sum(3, Some(1));
-        let sum2: Vec<_> = data.ts_vsum(3, None);
+        let sum: Vec<f64> = data.ts_sum(3, Some(1));
+        let sum2: Vec<f64> = data.ts_vsum(3, None);
         assert!(sum.is_empty());
         assert!(sum2.is_empty());
 
         // test when window is greater than length
         let data = vec![1, 2, 3];
-        let sum: Vec<_> = data.ts_sum(5, Some(1));
-        let sum2: Vec<_> = data.ts_vsum(5, Some(1));
+        let sum: Vec<f64> = data.ts_sum(5, Some(1));
+        let sum2: Vec<f64> = data.ts_vsum(5, Some(1));
         assert_eq!(sum, vec![1., 3., 6.]);
         assert_eq!(sum2, vec![1., 3., 6.]);
 
         // test sum
         let data = vec![1, 2, 3, 4, 5];
-        let sum: Vec<_> = data.ts_sum(3, Some(1));
-        let sum2: Vec<_> = data.ts_vsum(3, Some(1));
+        let sum: Vec<f64> = data.ts_sum(3, Some(1));
+        let sum2: Vec<f64> = data.ts_vsum(3, Some(1));
         assert_eq!(sum, vec![1., 3., 6., 9., 12.]);
         assert_eq!(sum2, vec![1., 3., 6., 9., 12.]);
         // test valid sum
-        let sum2: Vec<_> = data.opt().ts_vsum(3, Some(3));
+        let sum2: Vec<Option<f64>> = data.opt().ts_vsum(3, Some(3));
         assert_eq!(sum2, vec![None, None, Some(6.), Some(9.), Some(12.)]);
 
         let data = vec![Some(1.), Some(2.), None, Some(4.), Some(5.)];
-        let sum: Vec<_> = data.ts_vsum(3, Some(1));
-        assert_eq!(sum, vec![Some(1.), Some(3.), Some(3.), Some(6.), Some(9.)]);
+        let sum: Vec<Option<i32>> = data.ts_vsum(3, Some(1));
+        assert_eq!(sum, vec![Some(1), Some(3), Some(3), Some(6), Some(9)]);
     }
 
     #[test]
@@ -811,8 +824,8 @@ mod tests {
             &vec![1., f64::NAN, f64::NAN, f64::NAN, f64::NAN],
             None,
         );
-        let out2: Vec<_> = data.ts_vmean(2, Some(1));
-        let out3: Vec<_> = data.opt().ts_vmean(2, Some(1));
+        let out2: Vec<f64> = data.ts_vmean(2, Some(1));
+        let out3: Vec<Option<f64>> = data.opt().ts_vmean(2, Some(1));
         let expect = vec![Some(1.), Some(1.), Some(3.), Some(3.5), Some(4.5)];
         assert_eq!(out2, vec![1., 1., 3., 3.5, 4.5]);
         assert_eq!(out3, expect);

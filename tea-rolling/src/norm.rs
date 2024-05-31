@@ -48,7 +48,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
     // }
 
     #[no_out]
-    fn ts_vzscore<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vzscore<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -56,6 +56,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let mut sum = 0.;
         let mut sum2 = 0.;
@@ -91,14 +92,14 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
                         sum2 -= v * v
                     };
                 }
-                res.into_cast::<T>()
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_minmaxnorm<O: Vec1<Item = T::Cast<f64>>>(
+    fn ts_vminmaxnorm<O: Vec1<Item = U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -106,6 +107,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let mut max = T::Inner::min_();
         let mut max_idx = 0;
@@ -174,12 +176,12 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
                         (min, min_idx) = (v, end);
                     }
                     if (n >= min_periods) & (max != min) {
-                        ((v - min).f64() / (max - min).f64()).into_cast::<T>()
+                        ((v - min).f64() / (max - min).f64()).cast()
                     } else {
-                        f64::NAN.into_cast::<T>()
+                        f64::NAN.cast()
                     }
                 } else {
-                    f64::NAN.into_cast::<T>()
+                    f64::NAN.cast()
                 };
                 if let Some(start) = start {
                     let v = unsafe { self.uget(start) };
