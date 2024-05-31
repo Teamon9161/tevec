@@ -22,7 +22,6 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
             window,
             |start, end, v| {
                 let v = v.to_opt();
-                dbg!("{}, {}", &min, &min_idx);
                 unsafe {
                     if v.is_some() {
                         n += 1;
