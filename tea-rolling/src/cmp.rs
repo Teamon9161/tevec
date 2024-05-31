@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::cmp::{min, Ordering};
 use tea_core::prelude::*;
 
 pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
@@ -36,12 +36,20 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
                         min = self.uget(start).to_opt();
                         for i in start..=end {
                             let v_ = self.uget(i).to_opt();
-                            if v_ <= min {
-                                (min, min_idx) = (v_, Some(i));
+                            match v_.sort_cmp(&min) {
+                                Ordering::Less | Ordering::Equal => {
+                                    (min, min_idx) = (v_, Some(i));
+                                }
+                                _ => {}
                             }
                         }
-                    } else if v <= min {
-                        (min, min_idx) = (v, Some(end));
+                    } else {
+                        match v.sort_cmp(&min) {
+                            Ordering::Less | Ordering::Equal => {
+                                (min, min_idx) = (v, Some(end));
+                            }
+                            _ => {}
+                        }
                     }
                     let out = if n >= min_periods {
                         min_idx
@@ -94,12 +102,20 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
                         min = self.uget(start).to_opt();
                         for i in start..=end {
                             let v_ = self.uget(i).to_opt();
-                            if v_ <= min {
-                                (min, min_idx) = (v_, Some(i));
+                            match v_.sort_cmp(&min) {
+                                Ordering::Less | Ordering::Equal => {
+                                    (min, min_idx) = (v_, Some(i));
+                                }
+                                _ => {}
                             }
                         }
-                    } else if v <= min {
-                        (min, min_idx) = (v, Some(end));
+                    } else {
+                        match v.sort_cmp(&min) {
+                            Ordering::Less | Ordering::Equal => {
+                                (min, min_idx) = (v, Some(end));
+                            }
+                            _ => {}
+                        }
                     }
                     let out = if n >= min_periods {
                         min.cast()
@@ -150,12 +166,20 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
                         max = self.uget(start).to_opt();
                         for i in start..=end {
                             let v_ = self.uget(i).to_opt();
-                            if v_ >= max {
-                                (max, max_idx) = (v_, Some(i));
+                            match v_.sort_cmp_rev(&max) {
+                                Ordering::Less | Ordering::Equal => {
+                                    (max, max_idx) = (v_, Some(i));
+                                }
+                                _ => {}
                             }
                         }
-                    } else if v >= max {
-                        (max, max_idx) = (v, Some(end));
+                    } else {
+                        match v.sort_cmp_rev(&max) {
+                            Ordering::Less | Ordering::Equal => {
+                                (max, max_idx) = (v, Some(end));
+                            }
+                            _ => {}
+                        }
                     }
                     let out = if n >= min_periods {
                         max_idx
@@ -208,12 +232,20 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
                         max = self.uget(start).to_opt();
                         for i in start..=end {
                             let v_ = self.uget(i).to_opt();
-                            if v_ >= max {
-                                (max, max_idx) = (v_, Some(i));
+                            match v_.sort_cmp_rev(&max) {
+                                Ordering::Less | Ordering::Equal => {
+                                    (max, max_idx) = (v_, Some(i));
+                                }
+                                _ => {}
                             }
                         }
-                    } else if v >= max {
-                        (max, max_idx) = (v, Some(end));
+                    } else {
+                        match v.sort_cmp_rev(&max) {
+                            Ordering::Less | Ordering::Equal => {
+                                (max, max_idx) = (v, Some(end));
+                            }
+                            _ => {}
+                        }
                     }
                     let out = if n >= min_periods {
                         max.cast()

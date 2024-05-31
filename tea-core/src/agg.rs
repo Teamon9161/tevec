@@ -382,6 +382,8 @@ mod tests {
         let data: Vec<_> = data.opt().collect_trusted_vec1();
         assert_eq!(data.to_iter().vmax(), Some(5.));
         assert_eq!(data.vmin(), Some(1.));
+        let data = vec![Some(1.), Some(2.), None, Some(3.)];
+        assert_eq!(data.to_iter().vmin(), Some(1.));
     }
 
     #[test]
