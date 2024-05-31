@@ -6,7 +6,7 @@ pub use crate::vec_core::{
     Vec1TryCollect, Vec1View,
 };
 // pub use tea_dtype::{BoolType, Cast, INumber, IntoCast, IsNone, Number, One, PNumber, Zero};
-pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number, One, Zero};
+pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, MulAdd, Number, One, Zero};
 pub use tea_error::*;
 
 #[cfg(feature = "time")]

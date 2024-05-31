@@ -9,7 +9,7 @@ pub use isnone::{IntoCast, IsNone};
 pub use number::Number;
 
 // re-export
-pub use num_traits::{One, Zero};
+pub use num_traits::{MulAdd, One, Zero};
 
 #[cfg(feature = "time")]
 pub use tea_time::{chrono, DateTime, TimeDelta, TimeUnit};

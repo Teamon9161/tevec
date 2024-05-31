@@ -1,4 +1,3 @@
-use num_traits::Zero;
 use tea_core::prelude::*;
 
 pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {

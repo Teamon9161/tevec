@@ -2,7 +2,7 @@ use tea_core::prelude::*;
 
 pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
     #[no_out]
-    fn ts_vcov<O: Vec1<Item = T::Cast<f64>>, V2: Vec1View<Item = T>>(
+    fn ts_vcov<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
         &self,
         other: &V2,
         window: usize,
@@ -11,6 +11,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum_a = 0.;
@@ -42,14 +43,14 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
                         sum_ab -= va * vb;
                     };
                 }
-                res.into_cast::<T>()
+                res.cast()
             },
             out,
         )
     }
 
     #[no_out]
-    fn ts_vcorr<O: Vec1<Item = T::Cast<f64>>, V2: Vec1View<Item = T>>(
+    fn ts_vcorr<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
         &self,
         other: &V2,
         window: usize,
@@ -58,6 +59,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        f64: Cast<U>,
     {
         let mut sum_a = 0.;
         let mut sum2_a = 0.;
@@ -108,7 +110,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
                         sum_ab -= va * vb;
                     };
                 }
-                res.into_cast::<T>()
+                res.cast()
             },
             out,
         )
@@ -126,8 +128,8 @@ mod tests {
     fn test_cov() {
         let data = vec![1, 5, 3, 2, 5];
         let data2 = vec![2, 5, 4, 3, 6];
-        let out1: Vec<_> = data.ts_vcov(&data2, 3, Some(2));
-        let out2: Vec<_> =
+        let out1: Vec<f64> = data.ts_vcov(&data2, 3, Some(2));
+        let out2: Vec<f64> =
             data.rolling2_custom(&data2, 3, |v1, v2| v1.to_iter().vcov(v2.to_iter(), 2));
         assert_vec1d_equal_numeric(&out1, &out2, None);
         assert_vec1d_equal_numeric(&out1, &vec![f64::NAN, 6., 3., 1.5, 2.333333333333332], None);
@@ -137,8 +139,8 @@ mod tests {
     fn test_corr() {
         let data = vec![1, 5, 3, 2, 5];
         let data2 = vec![2, 5, 4, 3, 6];
-        let out1: Vec<_> = data.ts_vcorr(&data2, 3, Some(2));
-        let out2: Vec<_> = data.rolling2_custom(&data2, 3, |v1, v2| {
+        let out1: Vec<f64> = data.ts_vcorr(&data2, 3, Some(2));
+        let out2: Vec<f64> = data.rolling2_custom(&data2, 3, |v1, v2| {
             v1.to_iter().vcorr_pearson(v2.to_iter(), 2)
         });
         assert_vec1d_equal_numeric(&out1, &out2, None);

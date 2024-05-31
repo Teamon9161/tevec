@@ -65,15 +65,15 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     }
 
     #[inline]
-    fn vmean(self) -> T::Cast<f64>
+    fn vmean(self) -> f64
     where
         T::Inner: Zero + Number,
     {
         let (n, sum) = self.vfold_n(T::Inner::zero(), |acc, x| acc + x);
         if n >= 1 {
-            T::inner_cast(sum.f64() / n as f64)
+            sum.f64() / n as f64
         } else {
-            T::inner_cast(f64::NAN)
+            f64::NAN
         }
     }
 
@@ -364,12 +364,12 @@ mod tests {
         assert_eq!(Vec1ViewAgg::sum(data.to_iter()), Some(15));
         assert_eq!(data.to_iter().mean(), Some(3.));
         assert_eq!(data.to_iter().vsum(), Some(15));
-        assert_eq!(data.opt().vmean(), Some(3.));
+        assert_eq!(data.opt().vmean(), 3.);
         let data = vec![1., f64::NAN, 3.];
         assert!(Vec1ViewAgg::sum(data.to_iter()).unwrap().is_nan());
         assert_eq!(data.to_iter().vsum(), Some(4.));
         assert_eq!(Vec1ViewAggValid::vsum(&data.opt()), Some(4.));
-        assert_eq!(data.opt().vmean(), Some(2.));
+        assert_eq!(data.opt().vmean(), 2.);
     }
 
     #[test]

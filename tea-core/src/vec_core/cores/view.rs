@@ -336,4 +336,66 @@ pub trait Vec1View: ToIter {
             unsafe { out.uset(end, f(Some(start), end, self.uget(end))) }
         }
     }
+
+    #[inline]
+    fn rolling2_apply_idx<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        mut f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        // start, end, value
+        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+    {
+        if let Some(out) = out {
+            self.rolling2_apply_idx_to::<O, _, _>(other, window, f, out);
+            None
+        } else {
+            assert!(window > 0, "window must be greater than 0");
+            let start_iter = std::iter::repeat(None)
+                .take(window - 1)
+                .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
+            Some(
+                self.to_iter()
+                    .zip(other.to_iter())
+                    .zip(start_iter)
+                    .enumerate()
+                    .map(move |(end, ((v, v2), start))| f(start, end, (v, v2)))
+                    .collect_trusted_vec1(),
+            )
+        }
+    }
+
+    #[inline]
+    /// be careful to use this function as it will panic in polars backend.
+    /// use rolling2_apply_idx instead
+    fn rolling2_apply_idx_to<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        mut f: F,
+        mut out: O::UninitRefMut<'_>,
+    ) where
+        // start, end, value
+        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return;
+        }
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                // no value should be removed in the first window
+                out.uset(i, f(None, i, (self.uget(i), other.uget(i))))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe { out.uset(end, f(Some(start), end, (self.uget(end), other.uget(end)))) }
+        }
+    }
 }
