@@ -10,7 +10,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
         out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
-        T::Inner: Number + std::fmt::Debug,
+        T::Inner: Number,
         f64: Cast<U>,
     {
         let window = min(self.len(), window);
