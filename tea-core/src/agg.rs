@@ -77,6 +77,49 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
+    /// mean and variance of the array on a given axis
+    fn vmean_var(self, min_periods: usize) -> (f64, f64)
+    where
+        T::Inner: Number,
+    {
+        let (mut m1, mut m2) = (0., 0.);
+        let n = self.vapply_n(|v| {
+            let v = v.f64();
+            m1 += v;
+            m2 += v * v;
+        });
+        if n < min_periods {
+            return (f64::NAN, f64::NAN);
+        }
+        let n_f64 = n.f64();
+        m1 /= n_f64; // E(x)
+        m2 /= n_f64; // E(x^2)
+        m2 -= m1.powi(2); // variance = E(x^2) - (E(x))^2
+        if m2 <= EPS {
+            (m1, 0.)
+        } else if n >= 2 {
+            (m1, m2 * n_f64 / (n - 1).f64())
+        } else {
+            (f64::NAN, f64::NAN)
+        }
+    }
+
+    #[inline]
+    fn vvar(self, min_periods: usize) -> f64
+    where
+        T::Inner: Number,
+    {
+        self.vmean_var(min_periods).1
+    }
+
+    #[inline]
+    fn vstd(self, min_periods: usize) -> f64
+    where
+        T::Inner: Number,
+    {
+        self.vvar(min_periods).sqrt()
+    }
+
     #[inline]
     fn vmax(self) -> Option<T::Inner>
     where

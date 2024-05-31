@@ -48,7 +48,7 @@ pub trait IterBasic: IntoIterator + Sized {
     }
 
     #[inline]
-    fn vapply<U, F>(self, mut f: F)
+    fn vapply<F>(self, mut f: F)
     where
         F: FnMut(<Self::Item as IsNone>::Inner),
         Self::Item: IsNone,
@@ -58,6 +58,22 @@ pub trait IterBasic: IntoIterator + Sized {
                 f(v.unwrap())
             }
         })
+    }
+
+    #[inline]
+    fn vapply_n<F>(self, mut f: F) -> usize
+    where
+        F: FnMut(<Self::Item as IsNone>::Inner),
+        Self::Item: IsNone,
+    {
+        let mut n = 0;
+        self.into_iter().fold((), |(), v| {
+            if v.not_none() {
+                n += 1;
+                f(v.unwrap())
+            }
+        });
+        n
     }
 }
 
