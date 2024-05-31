@@ -84,7 +84,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         Self: 'a,
         T::Inner: Number + Debug,
         (T::Inner, T::Inner): itertools::traits::HomogeneousTuple<Item = T::Inner>,
-        T2: Clone + IsNone + 'a,
+        T2: IsNone + 'a,
         V2: Vec1View<Item = T>,
         V3: Vec1View<Item = T2>,
     {
@@ -154,7 +154,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         T: IsNone + PartialEq,
         T::Inner: PartialOrd,
         f64: Cast<O::Item>,
-        O::Item: Clone + IsNone,
+        O::Item: IsNone,
     {
         let len = self.len();
         if len == 0 {

@@ -1,6 +1,6 @@
 use tea_core::prelude::*;
 
-pub trait RollingValidBinary<T: IsNone + Clone>: Vec1View<Item = T> {
+pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
     #[no_out]
     fn ts_vcov<O: Vec1<Item = T::Cast<f64>>, V2: Vec1View<Item = T>>(
         &self,
@@ -115,7 +115,7 @@ pub trait RollingValidBinary<T: IsNone + Clone>: Vec1View<Item = T> {
     }
 }
 
-impl<T: IsNone + Clone, I: Vec1View<Item = T>> RollingValidBinary<T> for I {}
+impl<T: IsNone, I: Vec1View<Item = T>> RollingValidBinary<T> for I {}
 
 #[cfg(test)]
 mod tests {

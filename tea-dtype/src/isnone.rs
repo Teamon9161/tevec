@@ -3,12 +3,12 @@ use std::cmp::Ordering;
 #[cfg(feature = "time")]
 use tea_time::{DateTime, TimeDelta};
 
-pub trait IsNone
+pub trait IsNone: Clone
 where
     Self: Sized,
 {
     type Inner: IsNone<Inner = Self::Inner>;
-    type Cast<U: IsNone<Inner = U> + Clone>: IsNone<Inner = U> + Clone;
+    type Cast<U: IsNone<Inner = U>>: IsNone<Inner = U>;
 
     fn is_none(&self) -> bool;
 
@@ -20,7 +20,7 @@ where
 
     fn from_inner(inner: Self::Inner) -> Self;
 
-    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
+    fn inner_cast<U: IsNone<Inner = U>>(inner: U) -> Self::Cast<U>
     where
         Self::Inner: Cast<U::Inner>;
 
@@ -656,9 +656,9 @@ impl IsNone for TimeDelta {
     }
 }
 
-impl<T> IsNone for Vec<T> {
+impl<T: Clone> IsNone for Vec<T> {
     type Inner = Vec<T>;
-    type Cast<U: IsNone<Inner = U> + Clone> = U;
+    type Cast<U: IsNone<Inner = U>> = U;
     #[inline]
     fn is_none(&self) -> bool {
         self.is_empty()

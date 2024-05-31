@@ -178,7 +178,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     where
         T::Inner: Zero + Number,
         f64: Cast<T2>,
-        T2: IsNone + Clone,
+        T2: IsNone,
     {
         let (mut sum_a, mut sum2_a, mut sum_b, mut sum2_b, mut sum_ab) = (0., 0., 0., 0., 0.);
         let mut n = 0;

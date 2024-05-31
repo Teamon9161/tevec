@@ -18,7 +18,7 @@ where
 
 pub trait Number:
     Copy
-    + Clone
+    // + Clone
     + Send
     + Sync
     + IsNone
