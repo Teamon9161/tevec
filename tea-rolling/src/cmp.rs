@@ -10,7 +10,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
         out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
-        T::Inner: Number,
+        T::Inner: Number + std::fmt::Debug,
         f64: Cast<U>,
     {
         let window = min(self.len(), window);
@@ -22,11 +22,13 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
             window,
             |start, end, v| {
                 let v = v.to_opt();
+                dbg!("{}, {}", &min, &min_idx);
                 unsafe {
                     if v.is_some() {
                         n += 1;
                         if min_idx.is_none() {
                             min_idx = Some(end);
+                            min = Some(v.unwrap());
                         }
                     }
                     if min_idx < start {
@@ -140,6 +142,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
                         n += 1;
                         if max_idx.is_none() {
                             max_idx = Some(end);
+                            max = Some(v.unwrap());
                         }
                     }
                     if max_idx < start {
@@ -303,12 +306,15 @@ mod tests {
 
     #[test]
     fn test_ts_vmin() {
+        let v = vec![19, 0, 1, 2, 3, 4, 5];
+        let res: Vec<f64> = v.ts_vargmin(2, Some(1));
+        assert_eq!(res, vec![1., 2., 1., 1., 1., 1., 1.]);
         let v = vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)];
         // test ts_vargmin
         let res: Vec<Option<f64>> = v.ts_vargmin(3, None);
         assert_eq!(res, vec![Some(1.), Some(1.), Some(1.), Some(1.), Some(1.)]);
         // test ts_vmin
-        let res: Vec<Option<f64>> = v.ts_vmin(3, None);
+        let res: Vec<Option<f64>> = v.ts_vmin::<Vec<Option<f64>>, Option<f64>>(3, None);
         assert_eq!(
             res,
             vec![Some(1.), Some(1.), Some(1.0), Some(2.0), Some(3.0)]

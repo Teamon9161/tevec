@@ -13,7 +13,7 @@ const LENGTH: i32 = 10_000_000;
 fn bench_rolling(b: &mut Bencher) {
     let data: Vec<_> = (0..LENGTH).collect();
     // let arr = Arr1::<i32>::from_vec(data);
-    b.iter(|| data.ts_vmean::<Vec<_>>(100, None));
+    b.iter(|| data.ts_vmean::<Vec<f64>, _>(100, None));
 }
 
 // #[bench]

@@ -41,6 +41,12 @@ macro_rules! impl_numeric_cast {
             }
         }
 
+        impl Cast<Option<$U>> for Option<$T> {
+            #[inline] fn cast(self) -> Option<$U> {
+                self.map(|v| v.cast())
+            }
+        }
+
         impl Cast<$U> for Option<$T> {
             #[inline] fn cast(self) -> $U { self.map(|v| v as $U).unwrap_or_else(<$U as IsNone>::none)}
         }
@@ -352,5 +358,9 @@ mod tests {
         let d = Some(1usize);
         let d: bool = d.cast();
         assert!(d);
+
+        let e = Some(2i32);
+        let e: Option<f64> = e.cast();
+        assert_eq!(e, Some(2.0));
     }
 }
