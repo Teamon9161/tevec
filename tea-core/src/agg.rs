@@ -99,6 +99,57 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
         })
     }
 
+    #[inline]
+    fn vargmax(self) -> Option<usize>
+    where
+        T: PartialOrd,
+    {
+        use std::cmp::Ordering;
+        let mut max = None;
+        let mut max_idx = None;
+        let mut current_idx = 0;
+        self.into_iter().for_each(|v| {
+            if let Some(max_value) = &max {
+                // None is smaller than any value
+                if let Some(Ordering::Greater) = v.partial_cmp(max_value) {
+                    max = Some(v);
+                    max_idx = Some(current_idx);
+                }
+            } else if v.not_none() {
+                max = Some(v);
+                max_idx = Some(current_idx);
+            }
+            current_idx += 1;
+        });
+        max_idx
+    }
+
+    #[inline]
+    fn vargmin(self) -> Option<usize>
+    where
+        T: PartialOrd,
+    {
+        use std::cmp::Ordering;
+        let mut min = None;
+        let mut min_idx = None;
+        let mut current_idx = 0;
+        self.into_iter().for_each(|v| {
+            if v.not_none() {
+                if let Some(min_value) = &min {
+                    if let Some(Ordering::Less) = v.partial_cmp(min_value) {
+                        min = Some(v);
+                        min_idx = Some(current_idx);
+                    }
+                } else if v.not_none() {
+                    min = Some(v);
+                    min_idx = Some(current_idx);
+                }
+            }
+            current_idx += 1;
+        });
+        min_idx
+    }
+
     fn vcov<V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T::Cast<f64>
     where
         T::Inner: Zero + Number,
@@ -248,6 +299,54 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
             Some(v) => Some(v.min_with(x)),
         })
     }
+
+    #[inline]
+    fn argmax(self) -> Option<usize>
+    where
+        Self::Item: PartialOrd,
+    {
+        use std::cmp::Ordering;
+        let mut max = None;
+        let mut max_idx = None;
+        let mut current_idx = 0;
+        self.into_iter().for_each(|v| {
+            if let Some(max_value) = &max {
+                if let Some(Ordering::Greater) = v.partial_cmp(max_value) {
+                    max = Some(v);
+                    max_idx = Some(current_idx);
+                }
+            } else {
+                max = Some(v);
+                max_idx = Some(current_idx);
+            }
+            current_idx += 1;
+        });
+        max_idx
+    }
+
+    #[inline]
+    fn argmin(self) -> Option<usize>
+    where
+        Self::Item: PartialOrd,
+    {
+        use std::cmp::Ordering;
+        let mut min = None;
+        let mut min_idx = None;
+        let mut current_idx = 0;
+        self.into_iter().for_each(|v| {
+            if let Some(min_value) = &min {
+                if let Some(Ordering::Less) = v.partial_cmp(min_value) {
+                    min = Some(v);
+                    min_idx = Some(current_idx);
+                }
+            } else {
+                min = Some(v);
+                min_idx = Some(current_idx);
+            }
+            current_idx += 1;
+        });
+        min_idx
+    }
 }
 
 impl<I: IntoIterator> Vec1ViewAgg for I {}
@@ -319,8 +418,14 @@ mod tests {
     }
 
     #[test]
-    fn test_special() {
-        let data = vec![1, 2, 3];
-        assert_eq!(data.sum(), Some(6));
+    fn test_argmax_and_argmin() {
+        let data = vec![2, 1, 3, -3];
+        assert_eq!(data.to_iter().vargmax(), Some(2));
+        assert_eq!(data.to_iter().vargmin(), Some(3));
+        assert_eq!(data.to_iter().argmax(), Some(2));
+        assert_eq!(data.to_iter().argmin(), Some(3));
+        let data = vec![Some(5.), Some(2.), None, Some(1.), Some(-3.), Some(4.)];
+        assert_eq!(data.to_iter().vargmax(), Some(0));
+        assert_eq!(data.to_iter().vargmin(), Some(4));
     }
 }

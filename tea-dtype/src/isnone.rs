@@ -16,6 +16,8 @@ where
 
     fn to_opt(self) -> Option<Self::Inner>;
 
+    fn as_opt(&self) -> Option<&Self::Inner>;
+
     fn from_inner(inner: Self::Inner) -> Self;
 
     fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
@@ -51,12 +53,19 @@ where
     /// let None value be largest, only for sorting(from smallest to largest)
     fn sort_cmp(&self, other: &Self) -> Ordering
     where
-        Self: PartialOrd,
+        Self::Inner: PartialOrd,
     {
-        if other.is_none() || (self < other) {
-            Ordering::Less
-        } else {
-            Ordering::Greater
+        match (self.as_opt(), other.as_opt()) {
+            (Some(va), Some(vb)) => va.partial_cmp(vb).unwrap_or_else(|| {
+                if va.is_none() {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            }),
+            (None, None) => Ordering::Equal,
+            (None, _) => Ordering::Greater,
+            (_, None) => Ordering::Less,
         }
     }
 
@@ -64,67 +73,77 @@ where
     /// let None value be largest, only for sorting(from largest to smallest)
     fn sort_cmp_rev(&self, other: &Self) -> Ordering
     where
-        Self: PartialOrd,
+        Self::Inner: PartialOrd,
     {
-        if other.is_none() || (self > other) {
-            Ordering::Less
-        } else {
-            Ordering::Greater
+        match (self.as_opt(), other.as_opt()) {
+            (Some(va), Some(vb)) => va
+                .partial_cmp(vb)
+                .unwrap_or_else(|| {
+                    if va.is_none() {
+                        Ordering::Less
+                    } else {
+                        Ordering::Greater
+                    }
+                })
+                .reverse(),
+            (None, None) => Ordering::Equal,
+            (None, _) => Ordering::Greater,
+            (_, None) => Ordering::Less,
         }
     }
 
-    /// let None value be largest, only for sorting(from smallest to largest)
-    #[inline]
-    fn sort_cmp_stable(&self, other: &Self) -> Ordering
-    where
-        Self: PartialOrd,
-    {
-        if other.is_none() {
-            if self.is_none() {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
-        } else if self.is_none() {
-            Ordering::Greater
-        } else {
-            self.partial_cmp(other).unwrap_or(Ordering::Equal)
-            // let (va, vb) = (self.unwrap(), other.unwrap());
-            // if va > vb {
-            //     Ordering::Greater
-            // } else if va == vb {
-            //     Ordering::Equal
-            // } else {
-            //     Ordering::Less
-            // }
-        }
-    }
+    // /// let None value be largest, only for sorting(from smallest to largest)
+    // #[inline]
+    // fn sort_cmp_stable(&self, other: &Self) -> Ordering
+    // where
+    //     Self: PartialOrd,
+    // {
+    //     if other.is_none() {
+    //         if self.is_none() {
+    //             Ordering::Equal
+    //         } else {
+    //             Ordering::Less
+    //         }
+    //     } else if self.is_none() {
+    //         Ordering::Greater
+    //     } else {
+    //         self.partial_cmp(other).unwrap_or(Ordering::Equal)
+    //         // let (va, vb) = (self.unwrap(), other.unwrap());
+    //         // if va > vb {
+    //         //     Ordering::Greater
+    //         // } else if va == vb {
+    //         //     Ordering::Equal
+    //         // } else {
+    //         //     Ordering::Less
+    //         // }
+    //     }
+    // }
 
-    #[inline]
-    fn sort_cmp_rev_stable(&self, other: &Self) -> Ordering
-    where
-        Self: PartialOrd,
-    {
-        if other.is_none() {
-            if self.is_none() {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
-        } else if self.is_none() {
-            Ordering::Greater
-        } else {
-            self.partial_cmp(other).unwrap_or(Ordering::Equal).reverse()
-            // let (va, vb) = (self.unwrap(), other.unwrap());
-            // if va < vb {
-            //     Ordering::Greater
-            // } else if va == vb {
-            //     Ordering::Equal
-            // } else {
-            //     Ordering::Less
-            // }
-        }
-    }
+    // #[inline]
+    // fn sort_cmp_rev_stable(&self, other: &Self) -> Ordering
+    // where
+    //     Self: PartialOrd,
+    // {
+    //     if other.is_none() {
+    //         if self.is_none() {
+    //             Ordering::Equal
+    //         } else {
+    //             Ordering::Less
+    //         }
+    //     } else if self.is_none() {
+    //         Ordering::Greater
+    //     } else {
+    //         self.partial_cmp(other).unwrap_or(Ordering::Equal).reverse()
+    //         // let (va, vb) = (self.unwrap(), other.unwrap());
+    //         // if va < vb {
+    //         //     Ordering::Greater
+    //         // } else if va == vb {
+    //         //     Ordering::Equal
+    //         // } else {
+    //         //     Ordering::Less
+    //         // }
+    //     }
+    // }
 }
 
 pub trait IntoCast: IsNone<Inner = Self> + Clone + Sized {
@@ -156,6 +175,15 @@ impl IsNone for f32 {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
         if self.is_none() {
             None
         } else {
@@ -219,6 +247,15 @@ impl IsNone for f64 {
         }
     }
 
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
     #[inline(always)]
     fn from_inner(inner: Self::Inner) -> Self {
         inner
@@ -267,6 +304,11 @@ impl<T: IsNone<Inner = T>> IsNone for Option<T> {
     #[inline(always)]
     fn to_opt(self) -> Option<Self::Inner> {
         self
+    }
+
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
+        self.as_ref()
     }
 
     #[inline]
@@ -323,6 +365,11 @@ macro_rules! impl_not_none {
 
                 #[inline(always)]
                 fn to_opt(self) -> Option<Self::Inner> {
+                    Some(self)
+                }
+
+                #[inline]
+                fn as_opt(&self) -> Option<&Self::Inner> {
                     Some(self)
                 }
 
@@ -397,6 +444,15 @@ impl IsNone for String {
         }
     }
 
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
     #[inline(always)]
     fn from_inner(inner: Self::Inner) -> Self {
         inner
@@ -439,6 +495,15 @@ impl<'a> IsNone for &'a str {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
         if self.is_none() {
             None
         } else {
@@ -496,6 +561,15 @@ impl IsNone for DateTime {
         }
     }
 
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
     #[inline(always)]
     fn from_inner(inner: Self::Inner) -> Self {
         inner
@@ -546,6 +620,15 @@ impl IsNone for TimeDelta {
         }
     }
 
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
     #[inline(always)]
     fn from_inner(inner: Self::Inner) -> Self {
         inner
@@ -588,6 +671,15 @@ impl<T> IsNone for Vec<T> {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
         if self.is_none() {
             None
         } else {

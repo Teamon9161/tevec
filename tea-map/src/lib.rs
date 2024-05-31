@@ -151,7 +151,8 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
 pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
     fn vrank<O: Vec1>(&self, pct: bool, rev: bool) -> O
     where
-        T: IsNone + PartialEq + PartialOrd,
+        T: IsNone + PartialEq,
+        T::Inner: PartialOrd,
         f64: Cast<O::Item>,
         O::Item: Clone + IsNone,
     {
