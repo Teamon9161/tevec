@@ -73,6 +73,11 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
+    #[inline]
+    fn drop_none(self) -> impl Iterator<Item = T> {
+        self.filter(T::not_none)
+    }
+
     fn vcut<'a, V2, V3, T2>(
         self,
         bins: &'a V2,

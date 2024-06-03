@@ -67,7 +67,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     fn vmean(self) -> f64
     where
-        T::Inner: Zero + Number,
+        T::Inner: Number,
     {
         let (n, sum) = self.vfold_n(T::Inner::zero(), |acc, x| acc + x);
         if n >= 1 {
@@ -145,22 +145,25 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     fn vargmax(self) -> Option<usize>
     where
-        T: PartialOrd,
+        T::Inner: PartialOrd,
     {
         use std::cmp::Ordering;
         let mut max = None;
         let mut max_idx = None;
         let mut current_idx = 0;
         self.into_iter().for_each(|v| {
-            if let Some(max_value) = &max {
-                // None is smaller than any value
-                if let Some(Ordering::Greater) = v.partial_cmp(max_value) {
+            if v.not_none() {
+                let v = v.unwrap();
+                if let Some(max_value) = &max {
+                    // None is smaller than any value
+                    if let Some(Ordering::Greater) = v.partial_cmp(max_value) {
+                        max = Some(v);
+                        max_idx = Some(current_idx);
+                    }
+                } else {
                     max = Some(v);
                     max_idx = Some(current_idx);
                 }
-            } else if v.not_none() {
-                max = Some(v);
-                max_idx = Some(current_idx);
             }
             current_idx += 1;
         });
@@ -170,7 +173,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     fn vargmin(self) -> Option<usize>
     where
-        T: PartialOrd,
+        T::Inner: PartialOrd,
     {
         use std::cmp::Ordering;
         let mut min = None;
@@ -178,12 +181,13 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
         let mut current_idx = 0;
         self.into_iter().for_each(|v| {
             if v.not_none() {
+                let v = v.unwrap();
                 if let Some(min_value) = &min {
                     if let Some(Ordering::Less) = v.partial_cmp(min_value) {
                         min = Some(v);
                         min_idx = Some(current_idx);
                     }
-                } else if v.not_none() {
+                } else {
                     min = Some(v);
                     min_idx = Some(current_idx);
                 }
@@ -195,7 +199,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
 
     fn vcov<V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T::Cast<f64>
     where
-        T::Inner: Zero + Number,
+        T::Inner: Number,
     {
         let (mut sum_a, mut sum_b, mut sum_ab) = (0., 0., 0.);
         let mut n = 0;
