@@ -45,6 +45,9 @@ pub trait Number:
     /// return the max value of the data type
     fn max_() -> Self;
 
+    // #[inline(always)]
+    fn abs(self) -> Self;
+
     #[inline(always)]
     fn ceil(self) -> Self {
         self
@@ -180,12 +183,32 @@ macro_rules! impl_number {
             fn floor(self) -> Self {
                 self.floor()
             }
+
+            #[inline]
+            fn abs(self) -> Self {
+                self.abs()
+            }
+
         })*
     };
     // special impl for other type
-    (other $($dtype:ty, $datatype:ident); *) => {
+    (signed $($dtype:ty, $datatype:ident); *) => {
         $(impl Number for $dtype {
             impl_number!(@ base_impl $dtype, $datatype);
+            #[inline]
+            fn abs(self) -> Self {
+                self.abs()
+            }
+        })*
+    };
+    // special impl for other type
+    (unsigned $($dtype:ty, $datatype:ident); *) => {
+        $(impl Number for $dtype {
+            impl_number!(@ base_impl $dtype, $datatype);
+            #[inline]
+            fn abs(self) -> Self {
+                self
+            }
         })*
     };
 }
@@ -197,9 +220,13 @@ impl_number!(
 );
 
 impl_number!(
-    other
+    signed
     i32, I32;
-    i64, I64;
+    i64, I64
+);
+
+impl_number!(
+    unsigned
     u64, U64;
     usize, Usize
 );

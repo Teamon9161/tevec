@@ -1,6 +1,5 @@
 use std::fmt::Debug;
 
-use num_traits::Signed;
 use tea_core::prelude::*;
 
 pub trait MapBasic: TrustedLen
@@ -10,7 +9,7 @@ where
     #[inline]
     fn abs(self) -> impl TrustedLen<Item = Self::Item>
     where
-        Self::Item: Signed,
+        Self::Item: Number,
     {
         self.map(|v| v.abs())
     }
@@ -42,7 +41,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     #[inline]
     fn vabs(self) -> impl TrustedLen<Item = T>
     where
-        T::Inner: Signed,
+        T::Inner: Number,
     {
         self.map(|v| v.map(|v| v.abs()))
     }
