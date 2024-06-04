@@ -10,7 +10,7 @@ macro_rules! match_enum {
 
     ($enum: ident, $exprs: expr, $e: ident, $body: tt) => {
         {
-            match_enum!(
+            $crate::match_enum!(
                 $enum, $exprs, $e, $body,
                 F32, F64, I32, I64, U8, U64, Bool, Usize, Str, String, Object, OptUsize, VecUsize,
                 #[cfg(feature="time")] DateTime,
@@ -20,11 +20,11 @@ macro_rules! match_enum {
     };
 
     ($enum: ident, ($exprs1: expr, $e1: ident, $($arm1: ident),*), ($exprs2: expr, $e2: ident, $($arm2: ident),*), $body: tt) => {
-        match_enum!($enum, $exprs1, $e1, {match_enum!($enum, $exprs2, $e2, $body, $($arm2),*)}, $($arm1),*)
+        $crate::match_enum!($enum, $exprs1, $e1, {$crate::match_enum!($enum, $exprs2, $e2, $body, $($arm2),*)}, $($arm1),*)
     };
 
     ($enum: ident, numeric $($tt: tt)*) => {
-        match_enum!($enum, $($tt)*, F32, F64, I32, I64, U64, Usize, OptUsize)
+        $crate::match_enum!($enum, $($tt)*, F32, F64, I32, I64, U64, Usize, OptUsize)
     }
 }
 

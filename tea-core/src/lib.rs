@@ -20,5 +20,5 @@ pub use polars;
 pub use polars_arrow;
 
 // re-export nd_array backend
-#[cfg(feature = "nd_array")]
+#[cfg(feature = "ndarray")]
 pub use ndarray;

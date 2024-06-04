@@ -4,6 +4,7 @@ pub use tea_core as core;
 pub use tea_dtype as dtype;
 
 #[cfg(feature = "dyn")]
+#[macro_use]
 pub mod dynamic;
 
 #[cfg(feature = "agg")]

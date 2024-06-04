@@ -15,9 +15,9 @@ time = ["tea-dtype/time"]
 
 [dependencies]
 num-traits = {workspace = true}
-tea-error = {path = "../tea-error", default_features = false}
-tea-dtype = {path = "../tea-dtype", default_features = false}
+tea-error = {path = "../tea-error", default-features = false}
+tea-dtype = {path = "../tea-dtype", default-features = false}
 serde = "1.0"
 ndarray = {version = "0.15.6", optional = true}
-polars = {version = "0.40", optional = true, default_features = false}
+polars = {version = "0.40", optional = true, default-features = false}
 polars-arrow = {version = "0.40", optional = true}
