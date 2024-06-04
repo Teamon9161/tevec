@@ -10,10 +10,8 @@ mod vec_core;
 
 pub use tea_dtype as dtype;
 
-// #[cfg(test)]
-pub mod testing;
-
 pub mod prelude;
+pub mod testing;
 
 // re-export polars backend
 #[cfg(feature = "pl")]

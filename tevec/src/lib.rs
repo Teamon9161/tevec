@@ -3,6 +3,9 @@ pub mod prelude;
 pub use tea_core as core;
 pub use tea_dtype as dtype;
 
+#[cfg(feature = "dyn")]
+pub mod dynamic;
+
 #[cfg(feature = "agg")]
 pub mod agg;
 #[cfg(feature = "map")]

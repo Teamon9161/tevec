@@ -1,10 +1,12 @@
 mod bool_type;
 mod cast;
+mod datatype;
 mod isnone;
 mod number;
 
 pub use bool_type::BoolType;
 pub use cast::Cast;
+pub use datatype::{DataType, GetDataType};
 pub use isnone::{IntoCast, IsNone};
 pub use number::Number;
 

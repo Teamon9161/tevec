@@ -8,3 +8,5 @@ pub use tea_map::*;
 
 #[cfg(feature = "agg")]
 pub use super::agg::{CorrMethod, Vec1AggValidExt};
+#[cfg(feature = "dyn")]
+pub use super::dynamic::DynTrustIter;

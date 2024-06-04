@@ -10,6 +10,7 @@ license.workspace = true
 [features]
 default = ["time"]
 time = ["tea-time"]
+dyn = []
 
 [dependencies]
 tea-time = {path = "../tea-time", optional = true}

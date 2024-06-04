@@ -5,11 +5,11 @@ pub use crate::vec_core::{
     TryCollectTrustedToVec, UninitRefMut, UninitVec, Vec1, Vec1Collect, Vec1Mut, Vec1OptCollect,
     Vec1TryCollect, Vec1View,
 };
-// pub use tea_dtype::{BoolType, Cast, INumber, IntoCast, IsNone, Number, One, PNumber, Zero};
-pub use tea_dtype::{BoolType, Cast, IntoCast, IsNone, MulAdd, Number, One, Zero};
+pub use tea_dtype::{
+    BoolType, Cast, DataType, GetDataType, IntoCast, IsNone, MulAdd, Number, One, Zero,
+};
 pub use tea_error::*;
 
 #[cfg(feature = "time")]
 pub use tea_dtype::{DateTime, TimeDelta, TimeUnit};
-
 pub const EPS: f64 = 1e-14;
