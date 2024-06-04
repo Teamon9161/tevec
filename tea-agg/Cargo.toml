@@ -1,0 +1,10 @@
+[package]
+name = "tea-agg"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+tea-core = { path = "../tea-core", default-features = false }

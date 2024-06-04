@@ -2,7 +2,7 @@ use crate::prelude::{IterBasic, EPS};
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number};
 
-pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
+pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     /// count the number of valid elements in the vector.
     fn count(self) -> usize {
@@ -263,7 +263,7 @@ pub trait Vec1ViewAggValid<T: IsNone>: IntoIterator<Item = T> + Sized {
     }
 }
 
-pub trait Vec1ViewAgg: IntoIterator + Sized {
+pub trait AggBasic: IntoIterator + Sized {
     #[inline]
     fn count_value(self, value: Self::Item) -> usize
     where
@@ -396,8 +396,8 @@ pub trait Vec1ViewAgg: IntoIterator + Sized {
     }
 }
 
-impl<I: IntoIterator> Vec1ViewAgg for I {}
-impl<I: IntoIterator<Item = T>, T: IsNone> Vec1ViewAggValid<T> for I {}
+impl<I: IntoIterator> AggBasic for I {}
+impl<I: IntoIterator<Item = T>, T: IsNone> AggValidBasic<T> for I {}
 
 #[cfg(test)]
 mod tests {
@@ -406,24 +406,24 @@ mod tests {
     #[test]
     fn test_sum() {
         let data: Vec<i32> = vec![];
-        assert_eq!(Vec1ViewAgg::sum(data.to_iter()), None);
+        assert_eq!(AggBasic::sum(data.to_iter()), None);
         let data = vec![1, 2, 3, 4, 5];
-        assert_eq!(Vec1ViewAgg::sum(data.to_iter()), Some(15));
+        assert_eq!(AggBasic::sum(data.to_iter()), Some(15));
         assert_eq!(data.to_iter().mean(), Some(3.));
         assert_eq!(data.to_iter().vsum(), Some(15));
         assert_eq!(data.opt().vmean(), 3.);
         let data = vec![1., f64::NAN, 3.];
-        assert!(Vec1ViewAgg::sum(data.to_iter()).unwrap().is_nan());
+        assert!(AggBasic::sum(data.to_iter()).unwrap().is_nan());
         assert_eq!(data.to_iter().vsum(), Some(4.));
-        assert_eq!(Vec1ViewAggValid::vsum(&data.opt()), Some(4.));
+        assert_eq!(AggValidBasic::vsum(&data.opt()), Some(4.));
         assert_eq!(data.opt().vmean(), 2.);
     }
 
     #[test]
     fn test_cmp() {
         let data = vec![1., 3., f64::NAN, 2., 5.];
-        assert_eq!(Vec1ViewAgg::max(data.to_iter()), Some(5.));
-        assert_eq!(Vec1ViewAgg::min(data.to_iter()), Some(1.));
+        assert_eq!(AggBasic::max(data.to_iter()), Some(5.));
+        assert_eq!(AggBasic::min(data.to_iter()), Some(1.));
         assert_eq!(data.opt().vmax(), Some(5.));
         assert_eq!(data.opt().vmin(), Some(1.));
         let data: Vec<_> = data.opt().collect_trusted_vec1();

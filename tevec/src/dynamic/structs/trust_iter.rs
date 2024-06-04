@@ -1,6 +1,4 @@
-// use tea_dtype::GetDataType;
 use crate::prelude::*;
-// use crate::prelude::TrustedLen;
 
 pub trait TransmuteDtype {
     type Output<U>;
@@ -127,3 +125,10 @@ impl_from!(
     #[cfg(feature = "time")]
     (TimeDelta, TimeDelta, timedelta)
 );
+
+#[macro_export]
+macro_rules! match_trust_iter {
+    ($($tt: tt)*) => {
+        $crate::match_enum!(DynTrustIter, $($tt)*)
+    };
+}

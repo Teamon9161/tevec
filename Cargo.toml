@@ -5,6 +5,7 @@ members = [
     "tea-core",
     "tea-dtype",
     # "tea-time",
+    "tea-agg",
     "tea-map",
     "tea-rolling", 
     "tea-macros", 

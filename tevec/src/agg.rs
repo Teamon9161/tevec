@@ -1,4 +1,7 @@
+pub use tea_agg::*;
+
 use tea_core::prelude::*;
+
 #[cfg(feature = "map")]
 use tea_map::*;
 

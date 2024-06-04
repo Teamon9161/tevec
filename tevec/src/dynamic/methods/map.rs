@@ -1,10 +1,14 @@
-// use crate::dynamic;
-// use crate::map::*;
-// use crate::match_enum;
-// use crate::prelude::*;
+use crate::match_trust_iter;
+use crate::prelude::*;
 
-// impl DynTrustIter {
-//     pub fn abs(self) -> Self {
-//         match_enum!(DynTrustIter, numeric self, e, {e.abs().into()})
-//     }
-// }
+impl DynTrustIter {
+    #[inline]
+    pub fn vabs(self) -> Self {
+        match_trust_iter!(numeric self, e, {e.vabs().into()})
+    }
+
+    #[inline]
+    pub fn abs(self) -> Self {
+        match_trust_iter!(pure numeric self, e, {e.abs().into()})
+    }
+}

@@ -23,37 +23,58 @@ macro_rules! match_enum {
         $crate::match_enum!($enum, $exprs1, $e1, {$crate::match_enum!($enum, $exprs2, $e2, $body, $($arm2),*)}, $($arm1),*)
     };
 
+    // match pure numeric dtype
+    ($enum: ident, pure numeric $($tt: tt)*) => {
+        $crate::match_enum!($enum, $($tt)*, F32, F64, I32, I64, U64, Usize)
+    };
+
+    // match numeric dtype
     ($enum: ident, numeric $($tt: tt)*) => {
         $crate::match_enum!($enum, $($tt)*, F32, F64, I32, I64, U64, Usize, OptUsize)
-    }
-}
+    };
 
-// #[macro_export]
-// macro_rules! match_arrok {
-//     (numeric $($tt: tt)*) => {
-//         match_all!(ArrOk, $($tt)*,
-//             F32, F64, I32, I64, U64, Usize,
-//             // OptUsize,
-//         )
-//     };
-//     (int $($tt: tt)*) => {match_all!(ArrOk, $($tt)*, I32, I64, Usize)};
-//     (float $($tt: tt)*) => {match_all!(ArrOk, $($tt)*, F32, F64)};
-//     (bool $($tt: tt)*) => {match_all!(ArrOk, $($tt)*, Bool)};
-//     (hash $($tt: tt)*) => {match_all!(ArrOk, $($tt)*, I32, I64, U64, Usize, String, Str, #[cfg(feature="time")] DateTime, Bool, U8, U64)};
-//     (tphash $($tt: tt)*) => {match_all!(ArrOk, $($tt)*, F32, F64, I32, I64, U64, Usize, String, Str, #[cfg(feature="time")] DateTime, Bool, U8, U64)};
-//     (castable $($tt: tt)*) => {match_all!(
-//         ArrOk, $($tt)*,
-//         F32, F64, I32, I64, U64, Usize, String,
-//         Bool, OptUsize,
-//         #[cfg(feature="time")] DateTime,
-//         #[cfg(feature="time")] TimeDelta,
-//     )};
-//     (nostr $($tt: tt)*) => {match_all!(
-//         ArrOk, $($tt)*,
-//         F32, F64, I32, I64, U64, Usize, String, U8, Bool, OptUsize, VecUsize, Object,
-//         #[cfg(feature="time")] DateTime,
-//         #[cfg(feature="time")] TimeDelta,
-//     )};
-//     (pyelement $($tt: tt)*) => {match_all!(ArrOk, $($tt)*, F32, F64, I32, I64, U64, Usize, Bool, Object)};
-//     ($($tt: tt)*) => {match_all!(ArrOk, $($tt)*)};
-// }
+    // match int like dtype
+    ($enum: ident, int $($tt: tt)*) => {
+        $crate::match_enum!($enum, $($tt)*, I32, I64, U64, Usize, OptUsize)
+    };
+
+    // match float like dtype
+    ($enum: ident, float $($tt: tt)*) => {
+        $crate::match_enum!($enum, $($tt)*, F32, F64)
+    };
+
+    // match bool like dtype
+    ($enum: ident, bool $($tt: tt)*) => {
+        $crate::match_enum!($enum, $($tt)*, Bool)
+    };
+
+    // match hashable dtype
+    ($enum: ident, hash $($tt: tt)*) => {
+        $crate::match_enum!(
+            $enum, $($tt)*,
+             F32, F64, I32, I64, U64, Usize,
+             String, Str, Bool, U8,
+             #[cfg(feature="time")] DateTime
+        )
+    };
+
+    // match non-reference dtype(no str)
+    ($enum: ident, own $($tt: tt)*) => {
+        $crate::match_enum!(
+            $enum, $($tt)*,
+            F32, F64, I32, I64, U64, Usize, OptUsize, VecUsize,
+            Object, String, Bool, U8,
+            #[cfg(feature="time")] DateTime,
+            #[cfg(feature="time")] TimeDelta,
+        )
+    };
+
+    // match dtype that can be used in python
+    ($enum: ident, pyelement $($tt: tt)*) => {
+        $crate::match_enum!(
+            $enum, $($tt)*,
+            F32, F64, I32, I64, U64, Usize, Bool, Object,
+        )
+    };
+
+}

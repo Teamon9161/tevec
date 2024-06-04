@@ -1,4 +1,4 @@
-pub use super::agg::{Vec1ViewAgg, Vec1ViewAggValid};
+pub use super::agg::{AggBasic, AggValidBasic};
 pub use super::create::Vec1Create;
 pub use crate::vec_core::{
     CollectTrustedToVec, IntoIter, IterBasic, OptIter, ToIter, ToTrustIter, TrustIter, TrustedLen,

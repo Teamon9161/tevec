@@ -253,7 +253,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                 }
             }
         } else {
-            let not_none_count = Vec1ViewAggValid::count(self.to_iter());
+            let not_none_count = AggValidBasic::count(self.to_iter());
             unsafe {
                 for i in 0..len - 1 {
                     // safe because max of i = len-2 and len >= 2
