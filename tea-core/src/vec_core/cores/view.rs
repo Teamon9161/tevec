@@ -32,7 +32,7 @@ pub trait Vec1View: ToIter {
     where
         Self::Item: Cast<U>,
     {
-        TrustIter::new(self.to_iterator().map(|v| v.cast()), self.len())
+        TrustIter::new(self.to_iter().map(|v| v.cast()), self.len())
     }
 
     #[inline]

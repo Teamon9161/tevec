@@ -2,6 +2,12 @@ use std::fmt::Debug;
 
 use tea_core::prelude::*;
 
+#[derive(Clone, Debug)]
+pub enum Keep {
+    First,
+    Last,
+}
+
 pub trait MapBasic: TrustedLen
 where
     Self: Sized,
@@ -148,6 +154,65 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     out.ok_or_else(|| terr!(func = cut, "value: {:?} not in bins", value))
                 }
             })))
+        }
+    }
+
+    fn vsorted_unique_idx<'a>(self, keep: Keep) -> Box<dyn Iterator<Item = usize> + 'a>
+    where
+        T::Inner: PartialEq + 'a + std::fmt::Debug,
+        Self: 'a,
+    {
+        match keep {
+            Keep::First => {
+                let mut last_value = None;
+                let out = self.into_iter().enumerate().filter_map(move |(i, v)| {
+                    if v.not_none() {
+                        let v = v.unwrap();
+                        if last_value == Some(v.clone()) {
+                            None
+                        } else {
+                            last_value = Some(v);
+                            Some(i)
+                        }
+                    } else {
+                        None
+                    }
+                });
+                Box::new(out)
+            }
+            Keep::Last => {
+                let mut iter = self.into_iter();
+                let first_element = iter.next();
+                let mut last_value = if let Some(v) = first_element {
+                    if v.not_none() {
+                        Some(v.unwrap())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+                let out = iter
+                    .map(|v| v.to_opt())
+                    .chain(std::iter::once(None))
+                    .enumerate()
+                    .filter_map(move |(i, v)| {
+                        if v.not_none() {
+                            let v = v.unwrap();
+                            if last_value == Some(v.clone()) {
+                                None
+                            } else {
+                                last_value = Some(v);
+                                Some(i)
+                            }
+                        } else {
+                            let out = if last_value.is_some() { Some(i) } else { None };
+                            last_value = None;
+                            out
+                        }
+                    });
+                Box::new(out)
+            }
         }
     }
 }
@@ -315,6 +380,120 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         }
         unsafe { out.assume_init() }
     }
+
+    /// return -1 if there are not enough valid elements
+    /// sort: whether to sort the result by the size of the element
+    fn varg_partition<'a>(
+        &'a self,
+        kth: usize,
+        sort: bool,
+        rev: bool,
+    ) -> Box<dyn TrustedLen<Item = i32> + 'a>
+    where
+        T::Inner: Number,
+        T: 'a,
+    {
+        let n = AggValidBasic::count(self.to_iter());
+        // fast path for n <= kth + 1
+        if n <= kth + 1 {
+            if !sort {
+                return Box::new(
+                    self.to_iter()
+                        .enumerate()
+                        .filter_map(|(i, v)| if v.not_none() { Some(i as i32) } else { None })
+                        .chain(std::iter::repeat(-1))
+                        .take(kth + 1)
+                        .to_trust(kth + 1),
+                );
+            } else {
+                let mut idx_sorted: Vec<_> = Vec1Create::range(None, self.len() as i32, None);
+                if !rev {
+                    idx_sorted
+                        .sort_unstable_by(|a: &i32, b: &i32| {
+                            let (va, vb) =
+                                unsafe { (self.uget((*a) as usize), self.uget((*b) as usize)) }; // safety: out不超过self的长度
+                            va.sort_cmp(&vb)
+                        })
+                        .unwrap()
+                } else {
+                    idx_sorted
+                        .sort_unstable_by(|a: &i32, b: &i32| {
+                            let (va, vb) =
+                                unsafe { (self.uget((*a) as usize), self.uget((*b) as usize)) }; // safety: out不超过self的长度
+                            va.sort_cmp_rev(&vb)
+                        })
+                        .unwrap()
+                }
+                return Box::new(
+                    idx_sorted
+                        .into_iter()
+                        .chain(std::iter::repeat(-1))
+                        .take(kth + 1)
+                        .to_trust(kth + 1),
+                );
+            }
+        }
+        let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+        let slc = out_c.try_as_slice_mut().unwrap();
+        let mut idx_sorted: Vec<_> = Vec1Create::range(None, slc.len() as i32, None);
+        if !rev {
+            let sort_func = |a: &i32, b: &i32| {
+                let (va, vb) = unsafe { (self.uget((*a) as usize), self.uget((*b) as usize)) }; // safety: out不超过self的长度
+                va.sort_cmp(&vb)
+            };
+            idx_sorted.select_nth_unstable_by(kth, sort_func);
+            idx_sorted.truncate(kth + 1);
+            if sort {
+                idx_sorted.sort_unstable_by(sort_func).unwrap();
+            }
+            Box::new(idx_sorted.into_iter().to_trust(kth + 1))
+        } else {
+            let sort_func = |a: &i32, b: &i32| {
+                let (va, vb) = unsafe { (self.uget((*a) as usize), self.uget((*b) as usize)) }; // safety: out不超过self的长度
+                va.sort_cmp_rev(&vb)
+            };
+            idx_sorted.select_nth_unstable_by(kth, sort_func);
+            idx_sorted.truncate(kth + 1);
+            if sort {
+                idx_sorted.sort_unstable_by(sort_func).unwrap();
+            }
+            Box::new(idx_sorted.into_iter().to_trust(kth + 1))
+        }
+    }
+    /// sort: whether to sort the result by the size of the element
+    fn vpartition<'a>(
+        &'a self,
+        kth: usize,
+        sort: bool,
+        rev: bool,
+    ) -> Box<dyn TrustedLen<Item = T> + 'a>
+    where
+        T::Inner: PartialOrd,
+        T: 'a,
+    {
+        let n = AggValidBasic::count(self.to_iter());
+        if n <= kth + 1 {
+            if !sort {
+                return Box::new(self.to_iter());
+            } else {
+                let mut vec: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+                if !rev {
+                    vec.sort_unstable_by(|a, b| a.sort_cmp(b)).unwrap();
+                } else {
+                    vec.sort_unstable_by(|a, b| a.sort_cmp_rev(b)).unwrap();
+                }
+                return Box::new(vec.into_iter());
+            }
+        }
+        let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+        let sort_func = if !rev { T::sort_cmp } else { T::sort_cmp_rev };
+        out_c.select_nth_unstable_by(kth, sort_func);
+        out_c.truncate(kth + 1);
+        if sort {
+            out_c.sort_unstable_by(sort_func).unwrap();
+        }
+        Box::new(out_c.into_iter().to_trust(kth + 1))
+    }
 }
 
 impl<I: TrustedLen> MapBasic for I {}
@@ -389,5 +568,41 @@ mod test {
             .try_collect_vec1();
         assert!(res.is_err());
         Ok(())
+    }
+
+    #[test]
+    fn test_sorted_unique() {
+        let v = vec![1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6];
+        let res: Vec<_> = v.to_iter().vsorted_unique_idx(Keep::First).collect();
+        assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
+        let res: Vec<_> = v.to_iter().vsorted_unique_idx(Keep::Last).collect();
+        assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
+        let v = vec![6, 6, 5, 5, 5, 4, 3, 3, 3, 3, 2, 2, 1];
+        let v2: Vec<_> = v.to_opt_iter().chain(None).collect();
+        let res: Vec<_> = v2.to_iter().vsorted_unique_idx(Keep::First).collect();
+        assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
+        let res: Vec<_> = v2.to_iter().vsorted_unique_idx(Keep::Last).collect();
+        assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
+        let v3: Vec<_> = v
+            .iter_cast::<f64>()
+            .chain(std::iter::once(f64::NAN))
+            .collect();
+        let res: Vec<_> = v3.to_iter().vsorted_unique_idx(Keep::First).collect();
+        assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
+        let res: Vec<_> = v3.to_iter().vsorted_unique_idx(Keep::Last).collect();
+        assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
+    }
+
+    #[test]
+    fn test_arg_partition() {
+        let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
+        let res: Vec<_> = v.varg_partition(3, true, false).collect();
+        assert_eq!(res, vec![0, 3, 8, 1]);
+        let res: Vec<_> = v.vpartition(3, true, false).collect();
+        assert_eq!(res, vec![1, 1, 1, 3]);
+        let res: Vec<_> = v.varg_partition(3, true, true).collect();
+        assert_eq!(res, vec![7, 6, 5, 2]);
+        let res: Vec<_> = v.vpartition(3, true, true).collect();
+        assert_eq!(res, vec![32, 7, 6, 5]);
     }
 }
