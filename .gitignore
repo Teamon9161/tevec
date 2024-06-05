@@ -2,4 +2,4 @@
 *.lock
 teapy-master
 tea-test
-tea-lazy
+# tea-lazy

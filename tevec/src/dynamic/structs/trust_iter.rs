@@ -92,6 +92,7 @@ macro_rules! impl_from {
 
         impl<T: GetDataType, I: TrustedLen<Item=T> + 'static> From<I> for DynTrustIter {
             #[allow(unreachable_patterns)]
+            #[inline]
             fn from(iter: I) -> Self {
                 match T::dtype() {
                     $(

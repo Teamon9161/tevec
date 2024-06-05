@@ -1,0 +1,15 @@
+[package]
+name = "tea-lazy"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[features]
+default = ["map"]
+map = ["tevec/map"]
+
+[dependencies]
+tevec = { path = "../tevec", default-features = false, features = ["dyn"] }
+# tea-map = { path = "../tea-map", default-features = false, optional = true}
