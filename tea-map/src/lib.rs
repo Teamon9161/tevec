@@ -78,6 +78,34 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
+    // fn vdiff<'a>(self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
+    // where
+    //     T: Clone + 'a + Sub,
+    //     Self: Clone + 'a,
+    // {
+    //     let len = self.len();
+    //     let n_abs = n.unsigned_abs() as usize;
+    //     let value = value.unwrap_or_else(|| T::none());
+    //     if len <= n_abs {
+    //         return Box::new(std::iter::repeat(value).take(len));
+    //     }
+    //     match n {
+    //         n if n > 0 => Box::new(TrustIter::new(
+    //             std::iter::repeat(value)
+    //                 .take(n_abs)
+    //                 .chain(self.clone().take(len - n_abs))
+    //                 .zip(self)
+    //                 .map(|(a, b)| b - a),
+    //             len,
+    //         )),
+    //         n if n < 0 => Box::new(TrustIter::new(
+    //             self.skip(n_abs).chain(std::iter::repeat(value).take(n_abs)),
+    //             len,
+    //         )),
+    //         _ => Box::new(self),
+    //     }
+    // }
+
     #[inline]
     fn drop_none(self) -> impl Iterator<Item = T> {
         self.filter(T::not_none)
@@ -594,7 +622,7 @@ mod test {
     }
 
     #[test]
-    fn test_arg_partition() {
+    fn test_partition() {
         let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
         let res: Vec<_> = v.varg_partition(3, true, false).collect();
         assert_eq!(res, vec![0, 3, 8, 1]);
