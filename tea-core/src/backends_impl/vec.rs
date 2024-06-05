@@ -126,22 +126,22 @@ impl<T: Clone, const N: usize> ToIter for [T; N] {
     }
 }
 
-impl<T: Clone, const N: usize> ToIter for &[T; N] {
-    type Item = T;
+// impl<T: Clone, const N: usize> ToIter for &[T; N] {
+//     type Item = T;
 
-    #[inline]
-    fn len(&self) -> usize {
-        N
-    }
+//     #[inline]
+//     fn len(&self) -> usize {
+//         N
+//     }
 
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
-    where
-        T: 'a,
-    {
-        TrustIter::new(self.iter().cloned(), self.len())
-    }
-}
+//     #[inline]
+//     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+//     where
+//         T: 'a,
+//     {
+//         TrustIter::new(self.iter().cloned(), self.len())
+//     }
+// }
 
 impl_vec1!(
     to_iter
@@ -157,7 +157,7 @@ impl_vec1!(
     // --try_as_slice &[T],
     // --try_as_slice &mut [T],
     // --try_as_slice &Vec<T>,
-    {N} &[T; N],
+    // {N} &[T; N],
     {N} [T; N]
 );
 

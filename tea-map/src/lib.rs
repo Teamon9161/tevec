@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, ops::Sub};
 
 use tea_core::prelude::*;
 
@@ -64,47 +64,20 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
             return Box::new(std::iter::repeat(value).take(len));
         }
         match n {
-            n if n > 0 => Box::new(TrustIter::new(
+            n if n > 0 => Box::new(
                 std::iter::repeat(value)
                     .take(n_abs)
-                    .chain(self.take(len - n_abs)),
-                len,
-            )),
-            n if n < 0 => Box::new(TrustIter::new(
-                self.skip(n_abs).chain(std::iter::repeat(value).take(n_abs)),
-                len,
-            )),
+                    .chain(self.take(len - n_abs))
+                    .to_trust(len),
+            ),
+            n if n < 0 => Box::new(
+                self.skip(n_abs)
+                    .chain(std::iter::repeat(value).take(n_abs))
+                    .to_trust(len),
+            ),
             _ => Box::new(self),
         }
     }
-
-    // fn vdiff<'a>(self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
-    // where
-    //     T: Clone + 'a + Sub,
-    //     Self: Clone + 'a,
-    // {
-    //     let len = self.len();
-    //     let n_abs = n.unsigned_abs() as usize;
-    //     let value = value.unwrap_or_else(|| T::none());
-    //     if len <= n_abs {
-    //         return Box::new(std::iter::repeat(value).take(len));
-    //     }
-    //     match n {
-    //         n if n > 0 => Box::new(TrustIter::new(
-    //             std::iter::repeat(value)
-    //                 .take(n_abs)
-    //                 .chain(self.clone().take(len - n_abs))
-    //                 .zip(self)
-    //                 .map(|(a, b)| b - a),
-    //             len,
-    //         )),
-    //         n if n < 0 => Box::new(TrustIter::new(
-    //             self.skip(n_abs).chain(std::iter::repeat(value).take(n_abs)),
-    //             len,
-    //         )),
-    //         _ => Box::new(self),
-    //     }
-    // }
 
     #[inline]
     fn drop_none(self) -> impl Iterator<Item = T> {
@@ -246,6 +219,87 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
 }
 
 pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
+    fn vdiff<'a>(&'a self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
+    where
+        T: Clone + Sub<Output = T> + Zero + 'a,
+        Self: 'a,
+    {
+        let len = self.len();
+        let n_abs = n.unsigned_abs() as usize;
+        let value = value.unwrap_or_else(|| T::none());
+        if len <= n_abs {
+            return Box::new(std::iter::repeat(value).take(len));
+        }
+        match n {
+            n if n > 0 => Box::new(
+                std::iter::repeat(value)
+                    .take(n_abs)
+                    .chain(self.to_iter().take(len - n_abs))
+                    .zip(self.to_iter())
+                    .map(|(a, b)| b - a)
+                    .to_trust(len),
+            ),
+            n if n < 0 => Box::new(
+                self.to_iter()
+                    .skip(n_abs)
+                    .zip(self.to_iter())
+                    .map(|(a, b)| b - a)
+                    .chain(std::iter::repeat(value).take(n_abs))
+                    .to_trust(len),
+            ),
+            _ => Box::new(std::iter::repeat(T::zero()).take(len).to_trust(len)),
+        }
+    }
+
+    fn vpct_change<'a>(&'a self, n: i32) -> Box<dyn TrustedLen<Item = f64> + 'a>
+    where
+        T: Clone + Cast<f64> + 'a,
+        // T::Inner: Number,
+        Self: 'a,
+    {
+        let len = self.len();
+        let n_abs = n.unsigned_abs() as usize;
+        if len <= n_abs {
+            return Box::new(std::iter::repeat(f64::NAN).take(len));
+        }
+        match n {
+            n if n > 0 => Box::new(
+                std::iter::repeat(f64::NAN)
+                    .take(n_abs)
+                    .chain(self.to_iter().take(len - n_abs).map(|v| v.cast()))
+                    .zip(self.to_iter())
+                    .map(|(a, b)| {
+                        if a.not_none() && b.not_none() && (a != 0.) {
+                            b.cast() / a - 1.
+                        } else {
+                            f64::NAN
+                        }
+                    })
+                    .to_trust(len),
+            ),
+            n if n < 0 => Box::new(
+                self.to_iter()
+                    .skip(n_abs)
+                    .zip(self.to_iter())
+                    .map(|(a, b)| {
+                        if a.not_none() && b.not_none() {
+                            let a: f64 = a.cast();
+                            if a != 0. {
+                                b.cast() / a - 1.
+                            } else {
+                                f64::NAN
+                            }
+                        } else {
+                            f64::NAN
+                        }
+                    })
+                    .chain(std::iter::repeat(f64::NAN).take(n_abs))
+                    .to_trust(len),
+            ),
+            _ => Box::new(std::iter::repeat(0.).take(len).to_trust(len)),
+        }
+    }
+
     fn vrank<O: Vec1>(&self, pct: bool, rev: bool) -> O
     where
         T: IsNone + PartialEq,
@@ -559,6 +613,30 @@ mod test {
             .vshift(0, Some(0))
             .collect_trusted_to_vec();
         assert_eq!(res, vec![3, 4, 5, 0, 0]);
+    }
+
+    #[test]
+    fn test_diff() {
+        let v: Vec<f64> = vec![];
+        let res: Vec<_> = v.vdiff(2, None).collect_trusted_vec1();
+        assert_eq!(res, vec![]);
+        let v = vec![4., 1., 12., 4.];
+        let res: Vec<_> = v.vdiff(1, None).collect_trusted_vec1();
+        assert_vec1d_equal_numeric(&res, &vec![f64::NAN, -3., 11., -8.], None);
+        let res: Vec<_> = v.vdiff(-1, Some(0.)).collect_trusted_vec1();
+        assert_eq!(res, vec![3., -11., 8., 0.]);
+    }
+
+    #[test]
+    fn test_pct_change() {
+        let v: Vec<f64> = vec![];
+        let res: Vec<_> = v.vpct_change(2).collect_trusted_vec1();
+        assert_eq!(res, vec![]);
+        let v = vec![1., 2., 3., 4.5];
+        let res: Vec<_> = v.vpct_change(1).collect_trusted_vec1();
+        assert_vec1d_equal_numeric(&res, &vec![f64::NAN, 1., 0.5, 0.5], None);
+        let res: Vec<_> = v.vpct_change(-1).collect_trusted_vec1();
+        assert_vec1d_equal_numeric(&res, &vec![-0.5, -1. / 3., -1. / 3., f64::NAN], None);
     }
 
     #[test]
