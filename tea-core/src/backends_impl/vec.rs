@@ -3,7 +3,7 @@ use std::mem::MaybeUninit;
 use crate::prelude::*;
 
 macro_rules! impl_vec1 {
-    (to_iter $($ty: ty),*) => {
+    (to_iter $($ty: ty),* $(,)?) => {
         $(impl<T: Clone> ToIter for $ty {
             type Item = T;
 
@@ -22,7 +22,7 @@ macro_rules! impl_vec1 {
         })*
     };
 
-    (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),*) => {
+    (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
         $(
             impl<T: Clone $(, const $N: usize)?> Vec1View for $ty {
                 #[inline]
@@ -143,8 +143,40 @@ impl<T: Clone, const N: usize> ToIter for &[T; N] {
     }
 }
 
-impl_vec1!(to_iter Vec<T>, &[T], &Vec<T>);
-impl_vec1!(view --try_as_slice Vec<T>, --try_as_slice &[T], --try_as_slice &Vec<T>, {N} &[T; N], {N} [T; N]);
+impl_vec1!(
+    to_iter
+    Vec<T>,
+    [T],
+    // &[T],
+    // &Vec<T>
+);
+impl_vec1!(
+    view
+    --try_as_slice Vec<T>,
+    --try_as_slice [T],
+    // --try_as_slice &[T],
+    // --try_as_slice &mut [T],
+    // --try_as_slice &Vec<T>,
+    {N} &[T; N],
+    {N} [T; N]
+);
+
+// impl<T: Clone> ToIter for &mut [T] {
+//     type Item = T;
+
+//     #[inline]
+//     fn len(&self) -> usize {
+//         (**self).len()
+//     }
+
+//     #[inline]
+//     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+//     where
+//         T: 'a,
+//     {
+//         TrustIter::new(self.iter().cloned(), self.len())
+//     }
+// }
 
 impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     #[inline]
@@ -237,7 +269,12 @@ mod tests {
 
     #[test]
     fn test_get() {
-        let data = vec![1, 2, 3, 4, 5];
+        let mut data = vec![1, 2, 3, 4, 5];
+        {
+            let view_mut: &mut [_] = &mut data;
+            assert_eq!(ToIter::len(view_mut), 5);
+            assert_eq!(Vec1View::get(view_mut, 2), 3);
+        }
         let view = &data;
         assert_eq!(ToIter::len(&data), 5);
         assert_eq!(ToIter::len(&[1, 2]), 2);

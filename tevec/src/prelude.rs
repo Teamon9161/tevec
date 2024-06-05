@@ -7,6 +7,6 @@ pub use tea_rolling::*;
 pub use tea_map::*;
 
 #[cfg(feature = "agg")]
-pub use super::agg::{CorrMethod, Vec1AggValidExt};
+pub use super::agg::*;
 #[cfg(feature = "dyn")]
 pub use super::dynamic::DynTrustIter;

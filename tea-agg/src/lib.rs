@@ -1,3 +1,7 @@
+mod vec_valid;
+
+pub use vec_valid::*;
+
 use tea_core::prelude::*;
 
 pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {

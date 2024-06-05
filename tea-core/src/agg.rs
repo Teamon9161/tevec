@@ -10,6 +10,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     }
 
     #[inline]
+    /// find the first valid element in the iterator.
+    fn vfirst(self) -> Option<T> {
+        self.into_iter().find(|v| v.not_none())
+    }
+
+    #[inline]
+    /// find the last valid element in the iterator.
+    fn vlast(self) -> Option<T>
+    where
+        Self::IntoIter: DoubleEndedIterator,
+    {
+        self.into_iter().rev().find(|v| v.not_none())
+    }
+
+    #[inline]
     fn count_none(self) -> usize {
         let mut n = 0;
         self.into_iter().for_each(|v| {
@@ -279,6 +294,23 @@ pub trait AggBasic: IntoIterator + Sized {
         Self::Item: BoolType,
     {
         Iterator::any(&mut self.into_iter(), |x| x.bool_())
+    }
+
+    #[inline]
+    /// Returns the first element of the iterator.
+    /// If the iterator is empty, returns None.
+    fn first(self) -> Option<Self::Item> {
+        self.into_iter().next()
+    }
+
+    #[inline]
+    /// Returns the last element of the iterator.
+    /// If the iterator is empty, returns None.
+    fn last(self) -> Option<Self::Item>
+    where
+        Self::IntoIter: DoubleEndedIterator,
+    {
+        self.into_iter().rev().first()
     }
 
     #[inline]
