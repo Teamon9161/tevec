@@ -131,6 +131,18 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         self.bfill_mask(T::is_none, value)
     }
 
+    #[inline]
+    /// Fill value where the mask is true
+    fn vfill_mask<F: Fn(&T) -> bool>(self, mask_func: F, value: T) -> impl TrustedLen<Item = T> {
+        self.map(move |v| if mask_func(&v) { value.clone() } else { v })
+    }
+
+    #[inline]
+    /// Fill value where T is none
+    fn vfill(self, value: T) -> impl TrustedLen<Item = T> {
+        self.vfill_mask(T::is_none, value)
+    }
+
     fn vshift<'a>(self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
     where
         T: Clone + 'a,
@@ -687,6 +699,8 @@ mod test {
         assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., f64::NAN], None);
         let res: Vec<_> = v.to_iter().bfill(Some(0.)).collect();
         assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., 0.], None);
+        let res: Vec<_> = v.to_iter().vfill(0.).collect();
+        assert_vec1d_equal_numeric(&res, &vec![0., 1., 2., 0., 3., 0.], None);
     }
 
     #[test]
