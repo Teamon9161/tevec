@@ -6,6 +6,7 @@ use super::super::{
 };
 use super::own::{Vec1, Vec1Collect};
 use tea_dtype::{Cast, IsNone};
+use tea_error::{tbail, TResult};
 
 pub trait Vec1View: ToIter {
     /// Get the value at the index
@@ -86,11 +87,12 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn get(&self, index: usize) -> Self::Item {
+    fn get(&self, index: usize) -> TResult<Self::Item> {
         if index < self.len() {
-            unsafe { self.uget(index) }
+            Ok(unsafe { self.uget(index) })
         } else {
-            panic!("Index out of bounds")
+            // panic!("Index out of bounds")
+            tbail!(idx_out index, self.len())
         }
     }
 

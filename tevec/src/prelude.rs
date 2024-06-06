@@ -9,4 +9,7 @@ pub use tea_map::*;
 #[cfg(feature = "agg")]
 pub use super::agg::*;
 #[cfg(feature = "dyn")]
-pub use super::dynamic::DynTrustIter;
+pub use super::dynamic::*;
+
+#[cfg(feature = "dyn")]
+pub use crate::{d_vec, dt_iter};

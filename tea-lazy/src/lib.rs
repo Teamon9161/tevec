@@ -1,49 +1,35 @@
-use std::sync::Arc;
-use tevec::prelude::*;
+mod data;
+mod expr;
+mod methods;
+mod node;
 
-pub enum Data {
-    TrustIter(DynTrustIter),
-}
-
-impl From<DynTrustIter> for Data {
-    #[inline]
-    fn from(iter: DynTrustIter) -> Self {
-        Data::TrustIter(iter)
-    }
-}
-
-pub struct MapExpr {
-    pub name: &'static str,
-    pub func: Arc<dyn Fn(DynTrustIter) -> TResult<Data>>,
-}
-
-impl MapExpr {
-    #[inline]
-    pub fn eval(&self, input: Data) -> TResult<Data> {
-        match input {
-            Data::TrustIter(iter) => (self.func)(iter),
-        }
-    }
-}
+pub use data::{Context, Data};
+pub use expr::{s, Expr};
+pub use node::{MapNode, Node, SelectNode};
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::sync::Arc;
+    use tevec::prelude::*;
     #[test]
     fn test_basic() -> TResult<()> {
-        let e = MapExpr {
-            name: "abs",
-            func: Arc::new(|iter| Ok(iter.abs().into())),
+        let ctx = Context {
+            data: vec![d_vec![-1.0, 2.0, -3.0].into(), dt_iter![2.].into()],
         };
-        let input: DynTrustIter = vec![-1.0, 2.0, -3.0].into_iter().into();
-        let res = e.eval(input.into())?;
+        let expr = s(0).abs().abs();
+        let res = expr.eval(&ctx)?;
         match res {
-            Data::TrustIter(iter) => {
-                let data: Vec<f64> = iter.f64()?.collect_trusted_vec1();
-                assert_eq!(data, vec![1.0, 2.0, 3.0]);
+            Data::Vec(vec) => {
+                assert_eq!(
+                    Arc::try_unwrap(vec).expect("Result is shared").f64()?,
+                    vec![1.0, 2.0, 3.0]
+                );
             }
+            _ => unreachable!("Result should be a vec"),
         }
+        let expr = s(1).abs().abs();
+        assert!(expr.eval(&ctx).is_err());
         Ok(())
     }
 }

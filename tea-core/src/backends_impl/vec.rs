@@ -273,13 +273,13 @@ mod tests {
         {
             let view_mut: &mut [_] = &mut data;
             assert_eq!(ToIter::len(view_mut), 5);
-            assert_eq!(Vec1View::get(view_mut, 2), 3);
+            assert_eq!(Vec1View::get(view_mut, 2).unwrap(), 3);
         }
         let view = &data;
         assert_eq!(ToIter::len(&data), 5);
         assert_eq!(ToIter::len(&[1, 2]), 2);
-        assert_eq!(view.get(0), 1);
-        assert_eq!([1, 2].get(0), 1);
+        assert_eq!(view.get(0).unwrap(), 1);
+        assert_eq!([1, 2].get(0).unwrap(), 1);
         let slice = view.as_slice();
         assert_eq!(unsafe { slice.uget(2) }, 3);
     }

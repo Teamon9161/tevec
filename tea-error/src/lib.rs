@@ -44,6 +44,8 @@ impl std::fmt::Display for ErrInfo {
 pub enum TError {
     #[error("The length of both vec doesn't match, left: {left} right: {right}")]
     LengthMismatch { left: usize, right: usize },
+    #[error("Index out of bounds: index: {idx}, length: {len}")]
+    IdxOut { idx: usize, len: usize },
     #[error("Parse error: {0}")]
     ParseError(ErrInfo),
     #[error("{0}")]
@@ -80,6 +82,9 @@ macro_rules! terr {
     };
     ($err: expr) => {
         $crate::terr!(Str: $err)
+    };
+    (idx_out $idx: expr, $len: expr) => {
+        $crate::TError::IdxOut { idx: $idx, len: $len }
     };
     (lm, $left: expr, $right: expr) => {
         $crate::__private::must_use(

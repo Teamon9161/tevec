@@ -1,7 +1,7 @@
 use crate::match_trust_iter;
 use crate::prelude::*;
 
-impl DynTrustIter {
+impl<'a> DynTrustIter<'a> {
     #[inline]
     pub fn vabs(self) -> Self {
         match_trust_iter!(numeric self, e, {e.vabs().into()})

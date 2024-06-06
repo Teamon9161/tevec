@@ -23,6 +23,13 @@ macro_rules! match_enum {
         $crate::match_enum!($enum, $exprs1, $e1, {$crate::match_enum!($enum, $exprs2, $e2, $body, $($arm2),*)}, $($arm1),*)
     };
 
+    // match dtype that support dynamic(currently str and Object doesn't support)
+    ($enum: ident, dynamic $($tt: tt)*) => {
+        $crate::match_enum!($enum, $($tt)*, F32, F64, I32, I64, U8, U64, Bool, Usize, String, OptUsize, VecUsize,
+        #[cfg(feature="time")] DateTime,
+        #[cfg(feature="time")] TimeDelta,)
+    };
+
     // match pure numeric dtype
     ($enum: ident, pure numeric $($tt: tt)*) => {
         $crate::match_enum!($enum, $($tt)*, F32, F64, I32, I64, U64, Usize)
@@ -76,5 +83,4 @@ macro_rules! match_enum {
             F32, F64, I32, I64, U64, Usize, Bool, Object,
         )
     };
-
 }
