@@ -10,6 +10,6 @@ pub mod dynamic;
 #[cfg(feature = "agg")]
 pub mod agg;
 #[cfg(feature = "map")]
-pub use tea_map as map;
+pub mod map;
 #[cfg(feature = "rolling")]
 pub use tea_rolling as rolling;

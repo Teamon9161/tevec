@@ -7,7 +7,7 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-default = []
+default = ["map", "agg"]
 # default = ["map", "dyn"]
 # default = ["agg", "map", "rolling", "pl", "dyn"]
 dyn = []

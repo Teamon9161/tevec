@@ -10,6 +10,7 @@ pub enum QuantileMethod {
 
 pub trait VecAggValidExt<T: IsNone>: Vec1View<Item = T> {
     /// Calculate the quantile of the vector.
+    /// return error if q is not between 0 and 1.
     fn vquantile(&self, q: f64, method: QuantileMethod) -> TResult<f64>
     where
         T: Cast<f64>,

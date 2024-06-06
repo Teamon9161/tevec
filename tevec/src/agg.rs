@@ -13,7 +13,7 @@ pub enum CorrMethod {
     Spearman,
 }
 
-pub trait Vec1AggValidExt<T: IsNone>: Vec1View<Item = T> + Sized {
+pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
     fn vcorr<V2: Vec1View<Item = T>>(
         &self,
         other: &V2,
@@ -24,6 +24,7 @@ pub trait Vec1AggValidExt<T: IsNone>: Vec1View<Item = T> + Sized {
         T::Inner: Zero + Number,
         T: PartialEq + PartialOrd,
         f64: Cast<T::Cast<f64>>,
+        Self: MapValidVec<T>,
     {
         let min_periods = min_periods.unwrap_or(self.len() / 2);
         match method {
@@ -77,10 +78,11 @@ pub trait Vec1AggValidExt<T: IsNone>: Vec1View<Item = T> + Sized {
     }
 }
 
-impl<V: Vec1View<Item = T>, T: IsNone> Vec1AggValidExt<T> for V {}
+impl<V: Vec1View<Item = T>, T: IsNone> AggValidFinal<T> for V {}
 
 #[cfg(test)]
 mod tests {
+    #[cfg(all(feature = "rolling", feature = "map"))]
     use crate::prelude::*;
     #[test]
     #[cfg(all(feature = "rolling", feature = "map"))]
