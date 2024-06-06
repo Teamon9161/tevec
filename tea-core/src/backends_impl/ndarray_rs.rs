@@ -12,7 +12,7 @@ impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = T>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
     where
         T: 'a,
     {

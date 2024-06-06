@@ -1,7 +1,7 @@
 pub use super::agg::{AggBasic, AggValidBasic};
 pub use super::create::Vec1Create;
 pub use crate::vec_core::{
-    CollectTrustedToVec, IntoIter, IterBasic, OptIter, ToIter, ToTrustIter, TrustIter, TrustedLen,
+    CollectTrustedToVec, IterBasic, OptIter, TIterator, ToIter, ToTrustIter, TrustIter, TrustedLen,
     TryCollectTrustedToVec, UninitRefMut, UninitVec, Vec1, Vec1Collect, Vec1Mut, Vec1OptCollect,
     Vec1TryCollect, Vec1View,
 };

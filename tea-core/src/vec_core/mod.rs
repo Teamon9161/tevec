@@ -5,8 +5,8 @@ mod trusted;
 mod uninit;
 
 pub use cores::*;
-pub use iter::{IntoIter, OptIter, ToIter};
-pub use iter_traits::IterBasic;
+pub use iter::{OptIter, ToIter};
+pub use iter_traits::{IterBasic, TIterator};
 pub use trusted::{
     CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen, TryCollectTrustedToVec,
 };

@@ -8,6 +8,17 @@ pub enum Keep {
     Last,
 }
 
+/// the method to use when fill none
+/// Ffill: use forward value to fill none.
+/// Bfill: use backward value to fill none.
+/// Vfill: use a specified value to fill none
+#[derive(Copy, Clone)]
+pub enum FillMethod {
+    Ffill,
+    Bfill,
+    Vfill,
+}
+
 pub trait MapBasic: TrustedLen
 where
     Self: Sized,
@@ -50,6 +61,74 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         T::Inner: Number,
     {
         self.map(|v| v.map(|v| v.abs()))
+    }
+
+    /// Forward fill value where the mask is true
+    fn ffill_mask<F: Fn(&T) -> bool>(
+        self,
+        mask_func: F,
+        value: Option<T>,
+    ) -> impl TrustedLen<Item = T> {
+        let mut last_valid: Option<T> = None;
+        let f = move |v: T| {
+            if mask_func(&v) {
+                if let Some(lv) = last_valid.as_ref() {
+                    lv.clone()
+                } else if let Some(value) = &value {
+                    value.clone()
+                } else {
+                    T::none()
+                }
+            } else {
+                // v is valid, update last_valid
+                last_valid = Some(v.clone());
+                v
+            }
+        };
+        self.map(f)
+    }
+
+    #[inline]
+    fn ffill(self, value: Option<T>) -> impl TrustedLen<Item = T> {
+        self.ffill_mask(T::is_none, value)
+    }
+
+    /// Backward fill value where the mask is true
+    fn bfill_mask<F: Fn(&T) -> bool>(
+        self,
+        mask_func: F,
+        value: Option<T>,
+    ) -> impl TrustedLen<Item = T>
+    where
+        Self: DoubleEndedIterator<Item = T>,
+    {
+        let mut last_valid: Option<T> = None;
+        let f = move |v: T| {
+            if mask_func(&v) {
+                if let Some(lv) = last_valid.as_ref() {
+                    lv.clone()
+                } else if let Some(value) = &value {
+                    value.clone()
+                } else {
+                    T::none()
+                }
+            } else {
+                // v is valid, update last_valid
+                last_valid = Some(v.clone());
+                v
+            }
+        };
+        // if we use `self.rev().map(f).rev()` here, we will get a wrong result
+        // so collect the result to a vec and then return rev iterator
+        self.rev().map(f).collect_trusted_to_vec().into_iter().rev()
+    }
+
+    #[inline]
+    fn bfill(self, value: Option<T>) -> impl TrustedLen<Item = T>
+    where
+        Self: DoubleEndedIterator<Item = T>,
+    {
+        self.bfill_mask(T::is_none, value)
     }
 
     fn vshift<'a>(self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
@@ -595,6 +674,19 @@ mod test {
         let v = vec![Some(1), Some(-2), None, Some(-4), Some(5)];
         let res: Vec<_> = v.to_iter().vabs().collect_trusted_vec1();
         assert_eq!(res, vec![Some(1), Some(2), None, Some(4), Some(5)]);
+    }
+
+    #[test]
+    fn test_fill() {
+        let v = vec![f64::NAN, 1., 2., f64::NAN, 3., f64::NAN];
+        let res: Vec<_> = v.to_iter().ffill(None).collect();
+        assert_vec1d_equal_numeric(&res, &vec![f64::NAN, 1., 2., 2., 3., 3.], None);
+        let res: Vec<_> = v.to_iter().ffill(Some(0.)).collect();
+        assert_vec1d_equal_numeric(&res, &vec![0., 1., 2., 2., 3., 3.], None);
+        let res: Vec<_> = v.to_iter().bfill(None).collect();
+        assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., f64::NAN], None);
+        let res: Vec<_> = v.to_iter().bfill(Some(0.)).collect();
+        assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., 0.], None);
     }
 
     #[test]

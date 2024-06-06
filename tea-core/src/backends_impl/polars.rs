@@ -13,7 +13,7 @@ macro_rules! impl_for_ca {
             }
 
             #[inline]
-            fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item=Self::Item>>
+            fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item=Self::Item>>
             where Self::Item: 'a
             {
                 TrustIter::new(self.into_iter(), self.len())

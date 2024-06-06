@@ -13,7 +13,7 @@ macro_rules! impl_vec1 {
             }
 
             #[inline]
-            fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+            fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
             where
                 T: 'a,
             {
@@ -118,7 +118,7 @@ impl<T: Clone, const N: usize> ToIter for [T; N] {
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         T: 'a,
     {

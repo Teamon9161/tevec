@@ -1,5 +1,3 @@
-// pub use std::iter::TrustedLen;
-
 #[cfg(feature = "pl")]
 use polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
 use std::iter::Scan;

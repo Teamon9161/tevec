@@ -1,5 +1,6 @@
 use super::super::{
     iter::{OptIter, ToIter},
+    iter_traits::TIterator,
     trusted::TrustIter,
     uninit::UninitRefMut,
 };
@@ -20,7 +21,7 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn to_iter<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+    fn to_iter<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         Self::Item: 'a,
     {
@@ -28,7 +29,7 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = U>>
+    fn iter_cast<U>(&self) -> TrustIter<impl TIterator<Item = U>>
     where
         Self::Item: Cast<U>,
     {
@@ -36,7 +37,7 @@ pub trait Vec1View: ToIter {
     }
 
     #[inline]
-    fn opt_iter_cast<U>(&self) -> TrustIter<impl Iterator<Item = Option<U>>>
+    fn opt_iter_cast<U>(&self) -> TrustIter<impl TIterator<Item = Option<U>>>
     where
         Self::Item: IsNone,
         <Self::Item as IsNone>::Inner: Cast<U>,
@@ -59,7 +60,7 @@ pub trait Vec1View: ToIter {
     #[inline]
     fn to_opt_iter<'a>(
         &'a self,
-    ) -> TrustIter<impl Iterator<Item = Option<<Self::Item as IsNone>::Inner>>>
+    ) -> TrustIter<impl TIterator<Item = Option<<Self::Item as IsNone>::Inner>>>
     where
         Self::Item: IsNone + 'a,
     {

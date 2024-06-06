@@ -1,4 +1,4 @@
-use super::{TrustIter, TrustedLen, Vec1View};
+use super::{TIterator, TrustIter, Vec1View};
 use tea_dtype::IsNone;
 
 pub trait ToIter {
@@ -6,7 +6,7 @@ pub trait ToIter {
 
     fn len(&self) -> usize;
 
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         Self: 'a,
         Self::Item: 'a;
@@ -17,7 +17,7 @@ pub trait ToIter {
     }
 
     #[inline]
-    fn map<U, F>(&self, f: F) -> TrustIter<impl Iterator<Item = U>>
+    fn map<U, F>(&self, f: F) -> TrustIter<impl TIterator<Item = U>>
     where
         F: FnMut(Self::Item) -> U,
     {
@@ -25,31 +25,19 @@ pub trait ToIter {
     }
 }
 
-pub trait IntoIter: TrustedLen {
-    // fn len(&self) -> usize;
+// pub trait IntoIter: TrustedLen {
+//     fn into_iterator(self) -> TrustIter<Self>
+//     where
+//         Self: Sized;
+// }
 
-    fn into_iterator(self) -> TrustIter<Self>
-    where
-        Self: Sized;
-
-    // #[inline(always)]
-    // fn is_empty(&self) -> bool {
-    //     self.len() == 0
-    // }
-}
-
-impl<I: Iterator + TrustedLen> IntoIter for I {
-    // #[inline]
-    // fn len(&self) -> usize {
-    //     self.size_hint().1.unwrap()
-    // }
-
-    #[inline]
-    fn into_iterator(self) -> TrustIter<I> {
-        let len = self.len();
-        TrustIter::new(self.into_iter(), len)
-    }
-}
+// impl<I: Iterator + TrustedLen> IntoIter for I {
+//     #[inline]
+//     fn into_iterator(self) -> TrustIter<I> {
+//         let len = self.len();
+//         TrustIter::new(self.into_iter(), len)
+//     }
+// }
 
 pub struct OptIter<'a, V: Vec1View> {
     pub view: &'a V,
@@ -67,7 +55,7 @@ where
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         Self: 'a,
     {
@@ -87,7 +75,7 @@ where
     }
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
+    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         Self: 'a,
     {
