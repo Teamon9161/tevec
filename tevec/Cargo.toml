@@ -7,10 +7,10 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-default = []
-# default = ["map", "dyn"]
+# default = []
+default = ["map", "dyn"]
 # default = ["agg", "map", "rolling", "pl", "dyn"]
-dyn = []
+dyn = ["dry"]
 
 # ops
 rolling = ["tea-rolling"]
@@ -25,6 +25,7 @@ ndarray = ["tea-core/ndarray"]
 time = ["tea-dtype/time", "tea-core/time"]
 
 [dependencies]
+dry = { version = "0.1", optional = true, features = ["nightly"] }
 tea-dtype = { path = "../tea-dtype", default-features = false }
 tea-core = { path = "../tea-core", default-features = false }
 tea-rolling = { path = "../tea-rolling", default-features = false, optional = true }

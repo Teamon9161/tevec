@@ -22,8 +22,8 @@ pub fn s(idx: i32) -> Expr {
 
 impl Expr {
     #[inline]
-    pub fn chain(mut self, node: BaseNode) -> Self {
-        self.nodes.push(Node::Base(node));
+    pub fn chain<N: Into<Node>>(mut self, node: N) -> Self {
+        self.nodes.push(node.into());
         self
     }
 

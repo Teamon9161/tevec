@@ -31,12 +31,13 @@ impl Expr {
         self.chain(node)
     }
 
-    // pub fn shift(self, n: Expr, value: Option<Expr>) -> Self {
+    // pub fn vshift(self, n: Expr, value: Option<Expr>) -> Self {
     //     let node = CtxNode {
     //         name: "shift",
     //         func: Arc::new(move |data, ctx| {
     //             let n = n.eval(ctx)?;
-    //             let value = value.map(|v| v.eval(ctx));
+    //             let value = value.map(|v| v.eval(ctx).unwrap());
+    //             todo!()
     //         }),
     //     };
     //     self.chain(node)

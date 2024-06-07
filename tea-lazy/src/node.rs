@@ -1,8 +1,9 @@
 use super::data::{Context, Data};
+use derive_more::From;
 use std::sync::Arc;
 use tevec::prelude::*;
 
-#[derive(Clone)]
+#[derive(From, Clone)]
 pub enum Node {
     Select(SelectNode),
     Base(BaseNode),

@@ -12,4 +12,6 @@ pub use super::agg::*;
 pub use super::dynamic::*;
 
 #[cfg(feature = "dyn")]
+pub use crate::match_enum;
+#[cfg(feature = "dyn")]
 pub use crate::{d_vec, dt_iter};

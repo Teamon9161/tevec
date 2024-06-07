@@ -1,8 +1,9 @@
+use derive_more::From;
 use std::sync::Arc;
 
 use tevec::prelude::*;
 
-#[derive(Clone)]
+#[derive(From, Clone)]
 pub enum Data<'a> {
     TrustIter(Arc<DynTrustIter<'a>>),
     Scalar(Arc<Scalar>),
@@ -13,21 +14,6 @@ impl<'a> From<DynTrustIter<'a>> for Data<'a> {
     #[inline]
     fn from(iter: DynTrustIter<'a>) -> Self {
         Data::TrustIter(Arc::new(iter))
-    }
-}
-
-impl<'a> From<Arc<DynTrustIter<'a>>> for Data<'a> {
-    #[inline]
-    fn from(iter: Arc<DynTrustIter<'a>>) -> Self {
-        Data::TrustIter(iter)
-    }
-}
-
-impl<'a, T: GetDataType + 'a> From<Box<dyn TrustedLen<Item = T> + 'a>> for Data<'a> {
-    #[inline]
-    fn from(iter: Box<dyn TrustedLen<Item = T> + 'a>) -> Self {
-        let iter: DynTrustIter<'a> = iter.into();
-        iter.into()
     }
 }
 
@@ -43,13 +29,6 @@ impl From<DynVec> for Data<'_> {
     #[inline]
     fn from(vec: DynVec) -> Self {
         Data::Vec(Arc::new(vec))
-    }
-}
-
-impl From<Arc<DynVec>> for Data<'_> {
-    #[inline]
-    fn from(vec: Arc<DynVec>) -> Self {
-        Data::Vec(vec)
     }
 }
 
@@ -85,13 +64,6 @@ impl From<Scalar> for Data<'_> {
     #[inline]
     fn from(vec: Scalar) -> Self {
         Data::Scalar(Arc::new(vec))
-    }
-}
-
-impl From<Arc<Scalar>> for Data<'_> {
-    #[inline]
-    fn from(vec: Arc<Scalar>) -> Self {
-        Data::Scalar(vec)
     }
 }
 

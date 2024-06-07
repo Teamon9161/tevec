@@ -1,4 +1,4 @@
-use crate::{match_enum, prelude::*};
+use crate::prelude::*;
 
 // trait ScalarElement {}
 
@@ -117,17 +117,19 @@ macro_rules! match_scalar {
     };
 }
 
-impl Cast<f64> for Scalar {
-    #[inline]
-    fn cast(self) -> f64 {
-        crate::match_enum!(
-            Scalar,
-            self,
-            F32(v) | F64(v) => v as f64
-        )
-        .unwrap()
-    }
-}
+// impl Cast<f64> for Scalar {
+//     #[inline]
+//     fn cast(self) -> f64 {
+//         match_enum!(
+//             @@Scalar,
+//             self;
+//             // F32(v) | F64(v) => {Ok(v as f64)},
+//             numeric(_v) => Err(terr!()),
+//             String(_v) => {Err(terr!())},
+//         )
+//         .unwrap()
+//     }
+// }
 
 impl Scalar {
     #[inline]
@@ -144,41 +146,41 @@ impl Scalar {
     #[inline]
     #[allow(unreachable_patterns, clippy::should_implement_trait)]
     pub fn into_iter(self) -> TResult<DynTrustIter<'static>> {
-        match_scalar!(dynamic self, v, {std::iter::once(v).into()})
+        match_scalar!(self; dynamic(v) => Ok(std::iter::once(v).into()),)
     }
 
     #[inline]
     pub fn cast_i32(self) -> TResult<i32> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 
     #[inline]
     pub fn cast_i64(self) -> TResult<i64> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 
     #[inline]
     pub fn cast_f32(self) -> TResult<f32> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 
     #[inline]
     pub fn cast_f64(self) -> TResult<f64> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 
     #[inline]
     pub fn cast_bool(self) -> TResult<bool> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 
     #[inline]
     pub fn cast_usize(self) -> TResult<usize> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 
     #[inline]
     pub fn cast_optusize(self) -> TResult<Option<usize>> {
-        match_scalar!(numeric self, v, {v.cast()})
+        match_scalar!(self; numeric(v) => Ok(v.cast()),)
     }
 }
