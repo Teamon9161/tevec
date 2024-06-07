@@ -5,7 +5,7 @@ mod node;
 
 pub use data::{Context, Data};
 pub use expr::{s, Expr};
-pub use node::{MapNode, Node, SelectNode};
+pub use node::{BaseNode, CtxNode, Node, SelectNode};
 
 #[cfg(test)]
 mod tests {

@@ -1,3 +1,5 @@
+// mod match_enum;
+
 extern crate proc_macro;
 
 use proc_macro::TokenStream;

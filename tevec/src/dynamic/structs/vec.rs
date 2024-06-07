@@ -104,13 +104,13 @@ macro_rules! d_vec {
 impl DynVec {
     #[inline]
     #[allow(unreachable_patterns)]
-    pub fn to_iter(&self) -> DynTrustIter {
+    pub fn to_iter(&self) -> TResult<DynTrustIter> {
         match_vec!(dynamic self, v, { v.to_iter().into() })
     }
 
     #[inline]
     #[allow(unreachable_patterns, clippy::should_implement_trait)]
-    pub fn into_iter(self) -> DynTrustIter<'static> {
+    pub fn into_iter(self) -> TResult<DynTrustIter<'static>> {
         match_vec!(dynamic self, v, { v.into_iter().into() })
     }
 }

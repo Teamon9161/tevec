@@ -4,8 +4,10 @@ use tevec::prelude::*;
 
 #[derive(Clone)]
 pub enum Node {
-    Map(MapNode),
     Select(SelectNode),
+    Base(BaseNode),
+    // Base2(Base2Node),
+    Context(CtxNode),
 }
 
 #[derive(Clone)]
@@ -35,34 +37,21 @@ impl From<i32> for SelectNode {
 }
 
 #[derive(Clone)]
-pub struct MapNode {
+pub struct BaseNode {
     pub name: &'static str,
-    pub func: Arc<dyn Fn(DynTrustIter) -> TResult<Data>>,
+    pub func: Arc<dyn Fn(Data) -> TResult<Data>>,
 }
 
-impl MapNode {
-    #[inline]
-    pub fn eval<'a, 'b>(&'a self, input: Data<'b>) -> TResult<Data<'b>> {
-        match input {
-            Data::TrustIter(iter) => {
-                if let Ok(iter) = Arc::try_unwrap(iter) {
-                    (self.func)(iter)
-                } else {
-                    tbail!("cannot iter iterator as it is still shared")
-                }
-            }
-            Data::Vec(vec) => {
-                match Arc::try_unwrap(vec) {
-                    Ok(vec) => (self.func)(vec.into_iter()),
-                    Err(vec) => {
-                        // the data is still shared
-                        // this should only happen when the data is stored in a context
-                        // so it is safe to reference data
-                        let iter: DynTrustIter<'b> = unsafe { std::mem::transmute(vec.to_iter()) };
-                        (self.func)(iter)
-                    }
-                }
-            }
-        }
-    }
+// #[derive(Clone)]
+// pub struct Base2Node {
+//     pub name: &'static str,
+//     pub func: Arc<dyn for<'a> Fn(Data<'a>, Data<'a>) -> TResult<Data<'a>>>,
+// }
+
+#[derive(Clone)]
+#[allow(clippy::type_complexity)]
+// the node also require context to execute other expressions
+pub struct CtxNode {
+    pub name: &'static str,
+    pub func: Arc<dyn for<'a> Fn(Data<'a>, &Context) -> TResult<Data<'a>>>,
 }

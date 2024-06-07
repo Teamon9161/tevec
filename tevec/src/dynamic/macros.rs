@@ -1,10 +1,36 @@
 #[macro_export]
+macro_rules! match_arm {
+    (numeric, $enum: ident, $e: ident, $body: tt) => {
+        $crate::match_arm!($enum, $e, $body, F32, F64, I32, I64, U64, Usize, OptUsize)
+    };
+    ($enum: ident, $e: ident, $body: tt, $($(#[$meta: meta])? $arm: ident),*) => {
+        $(
+            $enum::$arm($e) => Ok($body),
+        )*
+    };
+}
+
+#[macro_export]
 macro_rules! match_enum {
     // select the match arm
     ($enum: ident, $exprs: expr, $e: ident, $body: tt, $($(#[$meta: meta])? $arm: ident),* $(,)?) => {
         match $exprs {
-            $($(#[$meta])? $enum::$arm($e) => $body,)*
-            _ => unimplemented!("Not supported dtype for {:?}", stringify!($e))
+            $($(#[$meta])? $enum::$arm($e) => Ok($body),)*
+            _ => Err(terr!("Not supported arm for enum {:?}", stringify!($enum)))
+            // _ => unimplemented!("Not supported dtype for {:?}", stringify!($e))
+        }
+    };
+
+    ( $enum: ident, $expr:expr , $( $(#[$meta: meta])? $( $pat:pat_param )|+ => $expr_arm:expr ),+ ) => {
+        {
+            use $enum::*;
+            match $expr {
+                $(
+                    $(#[$meta])?
+                    $( $pat => Ok($expr_arm), )+
+                )+
+                _ => Err(terr!("Not supported arm in match enum"))
+            }
         }
     };
 

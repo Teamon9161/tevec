@@ -4,7 +4,7 @@ use tevec::prelude::*;
 
 use crate::{Context, Data};
 
-use super::node::{MapNode, Node};
+use super::node::{BaseNode, Node};
 
 pub struct Expr {
     pub name: Option<String>,
@@ -22,8 +22,8 @@ pub fn s(idx: i32) -> Expr {
 
 impl Expr {
     #[inline]
-    pub fn chain_map(mut self, node: MapNode) -> Self {
-        self.nodes.push(Node::Map(node));
+    pub fn chain(mut self, node: BaseNode) -> Self {
+        self.nodes.push(Node::Base(node));
         self
     }
 
@@ -37,11 +37,17 @@ impl Expr {
                     Node::Select(n) => {
                         data = Some(n.select(ctx)?);
                     }
-                    Node::Map(n) => {
+                    Node::Base(n) => {
                         data =
-                            Some(n.eval(data.ok_or_else(|| {
+                            Some((n.func)(data.ok_or_else(|| {
                                 terr!("Should select something to map as first")
                             })?)?);
+                    }
+                    Node::Context(n) => {
+                        data = Some((n.func)(
+                            data.ok_or_else(|| terr!("Should select something to map as first"))?,
+                            ctx,
+                        )?);
                     }
                 }
             }
@@ -49,12 +55,13 @@ impl Expr {
             match data {
                 Data::TrustIter(iter) => {
                     if let Ok(iter) = Arc::try_unwrap(iter) {
-                        let out: DynVec = iter.collect_vec();
+                        let out: DynVec = iter.collect_vec()?;
                         Ok(out.into())
                     } else {
                         tbail!("cannot collect iterator as it is still shared")
                     }
                 }
+                Data::Scalar(s) => Ok(s.into()),
                 Data::Vec(_) => Ok(unsafe { std::mem::transmute::<Data<'a>, Data<'static>>(data) }), // safe as Vec doesn't contain any references
             }
         };

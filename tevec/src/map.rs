@@ -71,9 +71,12 @@ impl<V: Vec1View<Item = T>, T: IsNone> MapValidFinal<T> for V {}
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "agg")]
     use super::*;
+    #[cfg(feature = "agg")]
     use tea_core::testing::assert_vec1d_equal_numeric;
     #[test]
+    #[cfg(feature = "agg")]
     fn test_winsorize() -> TResult<()> {
         use super::*;
         let epsilon = Some(1e-10);

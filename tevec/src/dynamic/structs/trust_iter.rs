@@ -13,7 +13,7 @@ impl<'a, T> TransmuteDtype for Box<dyn TrustedLen<Item = T> + 'a> {
     }
 }
 
-type TvIter<'a, T> = Box<dyn TrustedLen<Item = T> + 'a>;
+pub type TvIter<'a, T> = Box<dyn TrustedLen<Item = T> + 'a>;
 
 pub enum DynTrustIter<'a> {
     Bool(TvIter<'a, bool>),
@@ -39,7 +39,7 @@ unsafe impl Sync for DynTrustIter<'_> {}
 impl<'a> DynTrustIter<'a> {
     #[inline]
     #[allow(unreachable_patterns)]
-    pub fn collect_vec(self) -> DynVec {
+    pub fn collect_vec(self) -> TResult<DynVec> {
         crate::match_trust_iter!(dynamic self, i, { i.collect_trusted_to_vec().into() })
     }
 
@@ -151,7 +151,7 @@ macro_rules! dt_iter {
     ($($tt: tt)*) => {
         {
             let vec: DynVec = vec![ $($tt)* ].into();
-            vec.into_iter()
+            vec.into_iter().unwrap()
         }
     };
 }
