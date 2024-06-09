@@ -10,7 +10,6 @@ members = [
     "tea-rolling",
     "tea-macros",
     "tea-error",
-    "tea-lazy",
 ]
 
 [workspace.package]

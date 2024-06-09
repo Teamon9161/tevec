@@ -10,7 +10,7 @@ license.workspace = true
 default = []
 # default = ["map", "dyn", "ndarray"]
 # default = ["agg", "map", "rolling", "pl", "dyn"]
-dyn = ["tea-macros"]
+# dyn = ["tea-macros"]
 
 # ops
 rolling = ["tea-rolling"]
@@ -31,7 +31,7 @@ tea-core = { path = "../tea-core", default-features = false }
 tea-rolling = { path = "../tea-rolling", default-features = false, optional = true }
 tea-map = { path = "../tea-map", default-features = false, optional = true }
 tea-agg = { path = "../tea-agg", default-features = false, optional = true }
-tea-macros = { path = "../tea-macros", optional = true }
+# tea-macros = { path = "../tea-macros", optional = true }
 derive_more = { version = "0.99", default-features = false, features = [
     "from",
 ] }
