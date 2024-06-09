@@ -6,7 +6,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, ReturnType};
+use syn::{parse_macro_input, parse_quote, Data, DeriveInput, FnArg, ItemFn, ReturnType};
 
 #[allow(clippy::vec_box)]
 pub(crate) fn parse_params(sig: &syn::Signature) -> Vec<Box<syn::Pat>> {
@@ -69,4 +69,35 @@ pub fn no_out(attr: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
     let out = no_output_transform(attr, input_fn);
     TokenStream::from(out)
+}
+
+#[proc_macro_derive(GetDtype)]
+pub fn derive_get_data_type(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let data_type_impls = if let Data::Enum(data_enum) = input.data {
+        data_enum.variants.into_iter().map(|variant| {
+            let ident = &variant.ident;
+            quote! {
+                Self::#ident(_) => DataType::#ident,
+            }
+        })
+    } else {
+        panic!("GetDtype can only be derived for enums");
+    };
+
+    let expanded = quote! {
+        impl #impl_generics GetDtype for #name #ty_generics #where_clause {
+            fn dtype(&self) -> DataType
+            {
+                match self {
+                    #(#data_type_impls)*
+                }
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
 }

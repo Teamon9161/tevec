@@ -16,7 +16,7 @@ pub fn assert_vec1d_equal_numeric<
 {
     assert_eq!(v1.len(), v2.len());
     let epsilon = epsilon.unwrap_or(EPS);
-    for (x, y) in v1.to_iter().zip(v2.to_iter()) {
+    for (x, y) in v1.titer().zip(v2.titer()) {
         if x.is_none() && y.is_none() {
             continue;
         } else if x.is_none() || y.is_none() {

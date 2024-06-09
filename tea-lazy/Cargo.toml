@@ -14,4 +14,7 @@ map = ["tevec/map"]
 derive_more = { version = "0.99", default-features = false, features = [
     "from",
 ] }
-tevec = { path = "../tevec", default-features = false, features = ["dyn"] }
+tevec = { path = "../tevec", default-features = false, features = [
+    "dyn",
+    "ndarray",
+] }

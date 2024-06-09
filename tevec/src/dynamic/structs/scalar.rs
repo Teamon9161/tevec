@@ -1,4 +1,6 @@
+#![allow(unreachable_patterns)]
 use crate::prelude::*;
+use tea_macros::GetDtype;
 
 // trait ScalarElement {}
 
@@ -29,7 +31,7 @@ use crate::prelude::*;
 //     }
 // }
 
-#[derive(Debug, Clone)]
+#[derive(GetDtype, Debug, Clone)]
 pub enum Scalar {
     Bool(bool),
     F32(f32),
@@ -62,16 +64,6 @@ macro_rules! impl_from {
                     }
             })*
         }
-
-        // $(
-        //     $(#[$meta])?
-        //     impl Cast<$ty> for Scalar {
-        //         #[inline]
-        //         fn cast(self) -> $ty {
-        //             $crate::match_scalar!(numeric self, v, {v.cast()}).unwrap()
-        //         }
-        //     }
-        // )*
 
         impl<T: GetDataType> From<T> for Scalar {
             #[allow(unreachable_patterns)]
@@ -117,38 +109,37 @@ macro_rules! match_scalar {
     };
 }
 
-// impl Cast<f64> for Scalar {
-//     #[inline]
-//     fn cast(self) -> f64 {
-//         match_enum!(
-//             @@Scalar,
-//             self;
-//             // F32(v) | F64(v) => {Ok(v as f64)},
-//             numeric(_v) => Err(terr!()),
-//             String(_v) => {Err(terr!())},
-//         )
-//         .unwrap()
-//     }
-// }
-
 impl Scalar {
     #[inline]
-    #[allow(unreachable_patterns, clippy::should_implement_trait)]
-    pub fn to_iter(&self) -> TResult<DynTrustIter> {
+    #[allow(clippy::should_implement_trait)]
+    pub fn titer(&self) -> TResult<DynTrustIter> {
         if let Scalar::VecUsize(v) = self {
             // clone vector is expensive, so we use reference instead
-            Ok(v.to_iter().into())
+            Ok(v.titer().into())
         } else {
-            self.clone().into_iter()
+            self.clone().into_titer()
         }
     }
 
     #[inline]
-    #[allow(unreachable_patterns, clippy::should_implement_trait)]
-    pub fn into_iter(self) -> TResult<DynTrustIter<'static>> {
+    #[allow(clippy::should_implement_trait)]
+    pub fn into_titer(self) -> TResult<DynTrustIter<'static>> {
         match_scalar!(self; dynamic(v) => Ok(std::iter::once(v).into()),)
     }
 
+    #[inline]
+    pub fn cheap_clone(&self) -> Option<Self> {
+        match_scalar!(
+            self;
+            numeric(v) => Ok((*v).into()),
+            U8(v) => Ok((*v).into()),
+            Bool(v) => Ok((*v).into()),
+            String(v) => Ok(v.clone().into()),
+            #[cfg(feature = "time")] DateTime(v) => Ok((*v).into()),
+            #[cfg(feature = "time")] TimeDelta(v) => Ok((*v).into()),
+        )
+        .ok()
+    }
     #[inline]
     pub fn cast_i32(self) -> TResult<i32> {
         match_scalar!(self; numeric(v) => Ok(v.cast()),)
@@ -182,5 +173,59 @@ impl Scalar {
     #[inline]
     pub fn cast_optusize(self) -> TResult<Option<usize>> {
         match_scalar!(self; numeric(v) => Ok(v.cast()),)
+    }
+}
+
+macro_rules! impl_cast {
+    ($($(#[$meta: meta])? $real: ty),*) => {
+        $(
+            $(#[$meta])?
+            impl Cast<$real> for Scalar {
+                #[inline]
+                fn cast(self) -> $real {
+                    match_scalar!(self; cast(v) => Ok(v.cast()),).unwrap()
+                }
+            }
+        )*
+    };
+}
+
+impl_cast!(
+    bool,
+    f32,
+    f64,
+    i32,
+    i64,
+    u8,
+    u64,
+    usize,
+    String,
+    Option<usize>,
+    #[cfg(feature = "time")]
+    DateTime,
+    #[cfg(feature = "time")]
+    TimeDelta
+);
+
+impl Cast<Vec<usize>> for Scalar {
+    #[inline]
+    #[allow(unreachable_patterns)]
+    fn cast(self) -> Vec<usize> {
+        match_scalar!(
+            self;
+            cast(v) => {Ok(vec![v.cast()])},
+            VecUsize(v) => Ok(v.cast()),
+        )
+        .unwrap()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_get_dtype() {
+        let s = Scalar::F64(1.0);
+        assert_eq!(s.dtype(), DataType::F64);
     }
 }

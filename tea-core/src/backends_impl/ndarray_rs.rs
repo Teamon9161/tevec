@@ -3,16 +3,18 @@ use std::mem::MaybeUninit;
 use crate::prelude::*;
 use ndarray::{Array1, ArrayBase, ArrayViewMut1, Data, DataMut, Ix1};
 
-impl<S: Data<Elem = T>, T: Clone> ToIter for ArrayBase<S, Ix1> {
-    type Item = T;
-
+impl<S: Data<Elem = T>, T> GetLen for ArrayBase<S, Ix1> {
     #[inline]
     fn len(&self) -> usize {
         self.len()
     }
+}
+
+impl<S: Data<Elem = T>, T: Clone> TIter for ArrayBase<S, Ix1> {
+    type Item = T;
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
     where
         T: 'a,
     {
@@ -97,6 +99,30 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View for ArrayBase<S, Ix1> {
         } else {
             let mut out = O::uninit(len);
             self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
+            Some(unsafe { out.assume_init() })
+        }
+    }
+
+    #[inline]
+    /// this should be a faster implemention than default as
+    /// we read value directly by ptr
+    fn rolling2_apply_idx<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+    {
+        let len = self.len();
+        if let Some(out) = out {
+            self.rolling2_apply_idx_to::<O, _, _>(other, window, f, out);
+            None
+        } else {
+            let mut out = O::uninit(len);
+            self.rolling2_apply_idx_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
             Some(unsafe { out.assume_init() })
         }
     }
@@ -188,8 +214,8 @@ mod tests {
     fn test_basic() {
         let data = Array1::from(vec![1, 2, 3, 4, 5]);
         let view = data.view();
-        assert_eq!(ToIter::len(&data), 5);
-        assert_eq!(Vec1View::get(&view, 0), 1);
+        assert_eq!(GetLen::len(&data), 5);
+        assert_eq!(Vec1View::get(&view, 0).unwrap(), 1);
     }
 
     #[test]

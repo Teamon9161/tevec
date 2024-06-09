@@ -4,22 +4,26 @@ use crate::prelude::*;
 
 macro_rules! impl_vec1 {
     (to_iter $($ty: ty),* $(,)?) => {
-        $(impl<T: Clone> ToIter for $ty {
-            type Item = T;
-
-            #[inline]
-            fn len(&self) -> usize {
-                (*self).len()
+        $(
+            impl<T> GetLen for $ty {
+                #[inline]
+                fn len(&self) -> usize {
+                    (*self).len()
+                }
             }
 
-            #[inline]
-            fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
-            where
-                T: 'a,
-            {
-                TrustIter::new(self.iter().cloned(), self.len())
+            impl<T: Clone> TIter for $ty {
+                type Item = T;
+
+                #[inline]
+                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+                where
+                    T: 'a,
+                {
+                    TrustIter::new(self.iter().cloned(), self.len())
+                }
             }
-        })*
+        )*
     };
 
     (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
@@ -104,21 +108,47 @@ macro_rules! impl_vec1 {
                         Some(unsafe { out.assume_init() })
                     }
                 }
+
+                #[inline]
+                /// this should be a faster implemention than default as
+                /// we read value directly by ptr
+                fn rolling2_apply_idx<O: Vec1,V2: Vec1View, F>(
+                    &self,
+                    other: &V2,
+                    window: usize,
+                    f: F,
+                    out: Option<O::UninitRefMut<'_>>,
+                ) -> Option<O>
+                where
+                F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+                {
+                    let len = self.len();
+                    if let Some(out) = out {
+                        self.rolling2_apply_idx_to::<O, _, _>(other, window, f, out);
+                        None
+                    } else {
+                        let mut out = O::uninit(len);
+                        self.rolling2_apply_idx_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
+                        Some(unsafe { out.assume_init() })
+                    }
+                }
             }
         )*
     };
 }
 
-impl<T: Clone, const N: usize> ToIter for [T; N] {
-    type Item = T;
-
+impl<T, const N: usize> GetLen for [T; N] {
     #[inline]
     fn len(&self) -> usize {
         N
     }
+}
+
+impl<T: Clone, const N: usize> TIter for [T; N] {
+    type Item = T;
 
     #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         T: 'a,
     {
@@ -126,57 +156,40 @@ impl<T: Clone, const N: usize> ToIter for [T; N] {
     }
 }
 
-// impl<T: Clone, const N: usize> ToIter for &[T; N] {
-//     type Item = T;
-
-//     #[inline]
-//     fn len(&self) -> usize {
-//         N
-//     }
-
-//     #[inline]
-//     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
-//     where
-//         T: 'a,
-//     {
-//         TrustIter::new(self.iter().cloned(), self.len())
-//     }
-// }
-
 impl_vec1!(
     to_iter
     Vec<T>,
     [T],
-    // &[T],
-    // &Vec<T>
 );
+
+// impl<T: Clone> IntoTIter for Vec<T> {
+//     #[inline]
+//     fn into_titer(self) -> TrustIter<Self::IntoIter> {
+//         let len = self.len();
+//         self.into_iter().to_trust(len)
+//     }
+// }
+
+// impl<'a, T> IntoTIter for &'a [T] {
+//     fn into_titer(self) -> TrustIter<Self::IntoIter> {
+//         let len = self.len();
+//         self.into_iter().to_trust(len)
+//     }
+// }
+
+// impl<'a, T> IntoTIter for &'a mut [T] {
+//     fn into_titer(self) -> TrustIter<Self::IntoIter> {
+//         let len = self.len();
+//         self.into_iter().to_trust(len)
+//     }
+// }
+
 impl_vec1!(
     view
     --try_as_slice Vec<T>,
     --try_as_slice [T],
-    // --try_as_slice &[T],
-    // --try_as_slice &mut [T],
-    // --try_as_slice &Vec<T>,
-    // {N} &[T; N],
     {N} [T; N]
 );
-
-// impl<T: Clone> ToIter for &mut [T] {
-//     type Item = T;
-
-//     #[inline]
-//     fn len(&self) -> usize {
-//         (**self).len()
-//     }
-
-//     #[inline]
-//     fn to_iterator<'a>(&'a self) -> TrustIter<impl Iterator<Item = Self::Item>>
-//     where
-//         T: 'a,
-//     {
-//         TrustIter::new(self.iter().cloned(), self.len())
-//     }
-// }
 
 impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
     #[inline]
@@ -255,6 +268,13 @@ impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
     }
 }
 
+impl<T> GetLen for &mut [MaybeUninit<T>] {
+    #[inline]
+    fn len(&self) -> usize {
+        (**self).len()
+    }
+}
+
 impl<T> UninitRefMut<T> for &mut [MaybeUninit<T>] {
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
@@ -272,12 +292,12 @@ mod tests {
         let mut data = vec![1, 2, 3, 4, 5];
         {
             let view_mut: &mut [_] = &mut data;
-            assert_eq!(ToIter::len(view_mut), 5);
+            assert_eq!(GetLen::len(view_mut), 5);
             assert_eq!(Vec1View::get(view_mut, 2).unwrap(), 3);
         }
         let view = &data;
-        assert_eq!(ToIter::len(&data), 5);
-        assert_eq!(ToIter::len(&[1, 2]), 2);
+        assert_eq!(GetLen::len(&data), 5);
+        assert_eq!(GetLen::len(&[1, 2]), 2);
         assert_eq!(view.get(0).unwrap(), 1);
         assert_eq!([1, 2].get(0).unwrap(), 1);
         let slice = view.as_slice();
@@ -335,7 +355,7 @@ mod tests {
     #[test]
     fn test_rolling_custom() {
         let data = vec![1, 2, 3, 4, 5];
-        let out: Vec<_> = data.rolling_custom(3, |s| s.to_iter().vsum().unwrap());
+        let out: Vec<_> = data.rolling_custom(3, |s| s.titer().vsum().unwrap());
         assert_eq!(out, vec![1, 3, 6, 9, 12]);
     }
 }

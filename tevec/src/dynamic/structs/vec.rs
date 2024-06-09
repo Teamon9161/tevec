@@ -1,19 +1,21 @@
+#![allow(unreachable_patterns)]
 use super::TransmuteDtype;
 use crate::prelude::*;
+use tea_macros::GetDtype;
 
-impl<T> TransmuteDtype for Vec<T> {
-    type Output<U> = Vec<U>;
+impl<T, U> TransmuteDtype<U> for Vec<T> {
+    type Output = Vec<U>;
 
     #[inline]
     /// # Safety
     ///
     /// the caller must ensure T and U is actually the same type
-    unsafe fn into_dtype<U>(self) -> Self::Output<U> {
+    unsafe fn into_dtype(self) -> Self::Output {
         std::mem::transmute(self)
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(GetDtype, Debug, Clone)]
 pub enum DynVec {
     Bool(Vec<bool>),
     F32(Vec<f32>),
@@ -55,7 +57,7 @@ macro_rules! impl_from {
                     $(
                         $(#[$meta])? DataType::$arm => {
                             // safety: we have checked the type
-                            unsafe{DynVec::$arm(vec.into_dtype::<$ty>().into())}
+                            unsafe{DynVec::$arm(vec.into_dtype().into())}
                         },
                     )*
                     type_ => unimplemented!("Create Vector from type {:?} is not implemented", type_),
@@ -103,14 +105,28 @@ macro_rules! d_vec {
 
 impl DynVec {
     #[inline]
-    #[allow(unreachable_patterns)]
-    pub fn to_iter(&self) -> TResult<DynTrustIter> {
-        match_vec!(self; dynamic(v) => Ok(v.to_iter().into()),)
+    pub fn len(&self) -> usize {
+        match_vec!(self; dynamic(v) => Ok(v.len()),).unwrap()
     }
 
     #[inline]
-    #[allow(unreachable_patterns, clippy::should_implement_trait)]
-    pub fn into_iter(self) -> TResult<DynTrustIter<'static>> {
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    #[inline]
+    pub fn get(&self, index: usize) -> TResult<Scalar> {
+        match_vec!(self; dynamic(v) => v.get(index).map(|v| v.into()),)
+    }
+
+    #[inline]
+    pub fn titer(&self) -> TResult<DynTrustIter> {
+        match_vec!(self; dynamic(v) => Ok(v.titer().into()),)
+    }
+
+    #[inline]
+    #[allow(clippy::should_implement_trait)]
+    pub fn into_titer(self) -> TResult<DynTrustIter<'static>> {
         match_vec!(self; dynamic(v) => Ok(v.into_iter().into()),)
     }
 }

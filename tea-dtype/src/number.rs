@@ -45,7 +45,6 @@ pub trait Number:
     /// return the max value of the data type
     fn max_() -> Self;
 
-    // #[inline(always)]
     fn abs(self) -> Self;
 
     #[inline(always)]

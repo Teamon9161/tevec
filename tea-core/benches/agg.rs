@@ -10,7 +10,7 @@ const LENGTH: i32 = 10_000_000;
 #[bench]
 fn bench_sum(b: &mut Bencher) {
     let data: Vec<_> = (0..LENGTH).collect();
-    b.iter(|| data.to_iter().vsum());
+    b.iter(|| data.titer().vsum());
 }
 
 // #[bench]

@@ -22,9 +22,9 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<Item = T> {
             q
         );
         use QuantileMethod::*;
-        let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+        let mut out_c: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
         let slc = out_c.try_as_slice_mut().unwrap();
-        let n = AggValidBasic::count(self.to_iter());
+        let n = AggValidBasic::count(self.titer());
         // fast path for special cases
         if n == 0 {
             return Ok(f64::NAN);
@@ -37,7 +37,7 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<Item = T> {
             let (i, j) = (q_idx.floor().usize(), q_idx.ceil().usize());
             let (head, m, _tail) = slc.select_nth_unstable_by(j, |va, vb| va.sort_cmp(vb));
             if i != j {
-                let vi: f64 = head.to_iter().vmax().map(|v| v.f64()).cast();
+                let vi: f64 = head.titer().vmax().map(|v| v.f64()).cast();
                 (q, i, j, vi, m.clone().cast())
             } else {
                 return Ok(m.clone().cast());
@@ -49,7 +49,7 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<Item = T> {
             let (i, j) = (q_idx.floor().usize(), q_idx.ceil().usize());
             let (head, m, _tail) = slc.select_nth_unstable_by(j, |va, vb| va.sort_cmp_rev(vb));
             if i != j {
-                let vi: f64 = head.to_iter().vmin().map(|v| v.f64()).cast();
+                let vi: f64 = head.titer().vmin().map(|v| v.f64()).cast();
                 match method {
                     Lower => {
                         return Ok(m.clone().cast());

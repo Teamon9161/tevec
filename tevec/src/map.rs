@@ -53,7 +53,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<Item = T> {
             Sigma => {
                 // default method is clip mean - 3 * std, mean + 3 * std
                 let method_params = method_params.unwrap_or(3.);
-                let (mean, var) = self.to_iter().vmean_var(2);
+                let (mean, var) = self.titer().vmean_var(2);
                 if mean.not_none() && var.not_none() && var > EPS {
                     let std = var.sqrt();
                     let min = mean - method_params * std;

@@ -28,7 +28,7 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
     {
         let min_periods = min_periods.unwrap_or(self.len() / 2);
         match method {
-            CorrMethod::Pearson => self.to_iter().vcorr_pearson(other.to_iter(), min_periods),
+            CorrMethod::Pearson => self.titer().vcorr_pearson(other.titer(), min_periods),
             #[cfg(feature = "map")]
             CorrMethod::Spearman => {
                 let v1_rank = self.vrank::<Vec<f64>>(false, false);
@@ -50,8 +50,8 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
         let min_periods = min_periods.unwrap_or(self.len() / 2);
         loop {
             n = 2usize.pow(i);
-            let s_shift = self.to_iter().vshift(n as i32, None);
-            let corr: f64 = self.to_iter().vcorr_pearson(s_shift, min_periods);
+            let s_shift = self.titer().vshift(n as i32, None);
+            let corr: f64 = self.titer().vcorr_pearson(s_shift, min_periods);
             if (corr <= 0.5) || corr.is_nan() {
                 break;
             } else {
@@ -63,8 +63,8 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
         while n - last_n > 1 {
             life = (n + last_n) / 2;
             let corr: f64 = self
-                .to_iter()
-                .vcorr_pearson(self.to_iter().vshift(life as i32, None), min_periods);
+                .titer()
+                .vcorr_pearson(self.titer().vshift(life as i32, None), min_periods);
             if corr < 0.5 {
                 (last_n, n) = (last_n, life);
             } else if corr > 0.5 {

@@ -1,5 +1,5 @@
 use super::super::{
-    iter::{OptIter, ToIter},
+    iter::{OptIter, TIter},
     iter_traits::TIterator,
     trusted::TrustIter,
     uninit::UninitRefMut,
@@ -8,7 +8,7 @@ use super::own::{Vec1, Vec1Collect};
 use tea_dtype::{Cast, IsNone};
 use tea_error::{tbail, TResult};
 
-pub trait Vec1View: ToIter {
+pub trait Vec1View: TIter {
     /// Get the value at the index
     ///
     /// # Safety
@@ -21,20 +21,20 @@ pub trait Vec1View: ToIter {
         None
     }
 
-    #[inline]
-    fn to_iter<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
-    where
-        Self::Item: 'a,
-    {
-        self.to_iterator()
-    }
+    // #[inline]
+    // fn viter<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    // where
+    //     Self::Item: 'a,
+    // {
+    //     self.viter()
+    // }
 
     #[inline]
     fn iter_cast<U>(&self) -> TrustIter<impl TIterator<Item = U>>
     where
         Self::Item: Cast<U>,
     {
-        TrustIter::new(self.to_iter().map(|v| v.cast()), self.len())
+        TrustIter::new(self.titer().map(|v| v.cast()), self.len())
     }
 
     #[inline]
@@ -44,7 +44,7 @@ pub trait Vec1View: ToIter {
         <Self::Item as IsNone>::Inner: Cast<U>,
     {
         TrustIter::new(
-            self.to_iterator().map(|v| v.to_opt().map(Cast::<U>::cast)),
+            self.titer().map(|v| v.to_opt().map(Cast::<U>::cast)),
             self.len(),
         )
     }
@@ -65,7 +65,7 @@ pub trait Vec1View: ToIter {
     where
         Self::Item: IsNone + 'a,
     {
-        TrustIter::new(self.to_iterator().map(|v| v.to_opt()), self.len())
+        TrustIter::new(self.titer().map(|v| v.to_opt()), self.len())
     }
 
     /// if the value is valid, return it, otherwise return None
@@ -92,7 +92,7 @@ pub trait Vec1View: ToIter {
             Ok(unsafe { self.uget(index) })
         } else {
             // panic!("Index out of bounds")
-            tbail!(idx_out index, self.len())
+            tbail!(io(index, self.len()))
         }
     }
 
@@ -161,10 +161,10 @@ pub trait Vec1View: ToIter {
             assert!(window > 0, "window must be greater than 0");
             let remove_value_iter = std::iter::repeat(None)
                 .take(window - 1)
-                .chain(self.to_iterator().map(Some));
+                .chain(self.titer().map(Some));
             Some(
                 remove_value_iter
-                    .zip(self.to_iter())
+                    .zip(self.titer())
                     .map(move |(v_remove, v)| f(v_remove, v))
                     .collect_trusted_vec1(),
             )
@@ -230,10 +230,10 @@ pub trait Vec1View: ToIter {
             assert!(window > 0, "window must be greater than 0");
             let remove_value_iter = std::iter::repeat(None)
                 .take(window - 1)
-                .chain(self.to_iter().zip(other.to_iter()).map(Some));
+                .chain(self.titer().zip(other.titer()).map(Some));
             Some(
                 remove_value_iter
-                    .zip(self.to_iter().zip(other.to_iter()))
+                    .zip(self.titer().zip(other.titer()))
                     .map(move |(v_remove, v)| f(v_remove, v))
                     .collect_trusted_vec1(),
             )
@@ -301,7 +301,7 @@ pub trait Vec1View: ToIter {
                 .take(window - 1)
                 .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
             Some(
-                self.to_iter()
+                self.titer()
                     .zip(start_iter)
                     .enumerate()
                     .map(move |(end, (v, start))| f(start, end, v))
@@ -361,8 +361,8 @@ pub trait Vec1View: ToIter {
                 .take(window - 1)
                 .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
             Some(
-                self.to_iter()
-                    .zip(other.to_iter())
+                self.titer()
+                    .zip(other.titer())
                     .zip(start_iter)
                     .enumerate()
                     .map(move |(end, ((v, v2), start))| f(start, end, (v, v2)))
@@ -400,5 +400,88 @@ pub trait Vec1View: ToIter {
         for (start, end) in (window - 1..len).enumerate() {
             unsafe { out.uset(end, f(Some(start), end, (self.uget(end), other.uget(end)))) }
         }
+    }
+}
+
+impl<I: TIter> TIter for std::sync::Arc<I> {
+    type Item = I::Item;
+
+    #[inline]
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = I::Item>>
+    where
+        I::Item: 'a,
+    {
+        (**self).titer()
+    }
+}
+
+impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
+    #[inline]
+    unsafe fn uget(&self, index: usize) -> Self::Item {
+        (**self).uget(index)
+    }
+
+    #[inline]
+    fn try_as_slice(&self) -> Option<&[Self::Item]> {
+        (**self).try_as_slice()
+    }
+
+    #[inline]
+    fn rolling_apply<O: Vec1, F>(
+        &self,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        Self::Item: Clone,
+        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    {
+        (**self).rolling_apply(window, f, out)
+    }
+
+    #[inline]
+    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        Self::Item: Clone,
+        V2::Item: Clone,
+        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+    {
+        (**self).rolling2_apply(other, window, f, out)
+    }
+
+    #[inline]
+    fn rolling_apply_idx<O: Vec1, F>(
+        &self,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        // start, end, value
+        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+    {
+        (**self).rolling_apply_idx(window, f, out)
+    }
+
+    #[inline]
+    fn rolling2_apply_idx<O: Vec1, V2: Vec1View, F>(
+        &self,
+        other: &V2,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        // start, end, value
+        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+    {
+        (**self).rolling2_apply_idx(other, window, f, out)
     }
 }

@@ -5,10 +5,26 @@ use tevec::prelude::*;
 
 #[derive(From, Clone)]
 pub enum Node {
+    Lit(LitNode),
     Select(SelectNode),
     Base(BaseNode),
     // Base2(Base2Node),
     Context(CtxNode),
+}
+
+#[derive(Clone)]
+pub struct LitNode {
+    pub value: Arc<Scalar>,
+}
+
+impl LitNode {
+    #[inline]
+    // we clone the scalar each time we evaluate it
+    // so we return a Data which has arbitrary lifetime
+    pub fn eval<'a>(&self) -> TResult<Data<'a>> {
+        let res = (*self.value).clone();
+        Ok(res.into())
+    }
 }
 
 #[derive(Clone)]
@@ -17,7 +33,7 @@ pub struct SelectNode {
 }
 
 impl SelectNode {
-    pub fn select<'a>(&self, ctx: &'a Context) -> TResult<Data<'a>> {
+    pub fn select<'b>(&self, ctx: &Context<'b>) -> TResult<Data<'b>> {
         let idx = if self.idx < 0 {
             ctx.len() as i32 + self.idx
         } else {

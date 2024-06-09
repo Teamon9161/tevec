@@ -438,15 +438,15 @@ mod tests {
     #[test]
     fn test_sum() {
         let data: Vec<i32> = vec![];
-        assert_eq!(AggBasic::sum(data.to_iter()), None);
+        assert_eq!(AggBasic::sum(data.titer()), None);
         let data = vec![1, 2, 3, 4, 5];
-        assert_eq!(AggBasic::sum(data.to_iter()), Some(15));
-        assert_eq!(data.to_iter().mean(), Some(3.));
-        assert_eq!(data.to_iter().vsum(), Some(15));
+        assert_eq!(AggBasic::sum(data.titer()), Some(15));
+        assert_eq!(data.titer().mean(), Some(3.));
+        assert_eq!(data.titer().vsum(), Some(15));
         assert_eq!(data.opt().vmean(), 3.);
         let data = vec![1., f64::NAN, 3.];
-        assert!(AggBasic::sum(data.to_iter()).unwrap().is_nan());
-        assert_eq!(data.to_iter().vsum(), Some(4.));
+        assert!(AggBasic::sum(data.titer()).unwrap().is_nan());
+        assert_eq!(data.titer().vsum(), Some(4.));
         assert_eq!(AggValidBasic::vsum(&data.opt()), Some(4.));
         assert_eq!(data.opt().vmean(), 2.);
     }
@@ -454,15 +454,15 @@ mod tests {
     #[test]
     fn test_cmp() {
         let data = vec![1., 3., f64::NAN, 2., 5.];
-        assert_eq!(AggBasic::max(data.to_iter()), Some(5.));
-        assert_eq!(AggBasic::min(data.to_iter()), Some(1.));
+        assert_eq!(AggBasic::max(data.titer()), Some(5.));
+        assert_eq!(AggBasic::min(data.titer()), Some(1.));
         assert_eq!(data.opt().vmax(), Some(5.));
         assert_eq!(data.opt().vmin(), Some(1.));
         let data: Vec<_> = data.opt().collect_trusted_vec1();
-        assert_eq!(data.to_iter().vmax(), Some(5.));
+        assert_eq!(data.titer().vmax(), Some(5.));
         assert_eq!(data.vmin(), Some(1.));
         let data = vec![Some(1.), Some(2.), None, Some(3.)];
-        assert_eq!(data.to_iter().vmin(), Some(1.));
+        assert_eq!(data.titer().vmin(), Some(1.));
     }
 
     #[test]
@@ -470,10 +470,10 @@ mod tests {
         let data = vec![1., 2., f64::NAN, 2., f64::NAN, f64::NAN];
         assert_eq!(data.opt().count(), 3);
         assert_eq!(data.opt().count_none(), 3);
-        assert_eq!(data.to_iter().count_value(1.), 1);
-        assert_eq!(data.to_iter().count_value(2.), 2);
-        assert_eq!(data.to_iter().vcount_value(1.), 1);
-        assert_eq!(data.to_iter().vcount_value(f64::NAN), 3);
+        assert_eq!(data.titer().count_value(1.), 1);
+        assert_eq!(data.titer().count_value(2.), 2);
+        assert_eq!(data.titer().vcount_value(1.), 1);
+        assert_eq!(data.titer().vcount_value(f64::NAN), 3);
         assert_eq!((data.opt().vcount_value(Some(2.))), 2);
         assert_eq!((data.opt().vcount_value(None)), 3);
     }
@@ -481,32 +481,32 @@ mod tests {
     #[test]
     fn test_bool() {
         let data = vec![true, false, false, false];
-        assert_eq!(data.to_iter().any(), true);
-        assert_eq!(data.to_iter().vany(), true);
+        assert_eq!(data.titer().any(), true);
+        assert_eq!(data.titer().vany(), true);
         assert_eq!(data.opt().vany(), true);
         let data = vec![false, false, false, false];
-        assert_eq!(data.to_iter().any(), false);
-        assert_eq!(data.to_iter().vany(), false);
+        assert_eq!(data.titer().any(), false);
+        assert_eq!(data.titer().vany(), false);
         assert_eq!(data.opt().vany(), false);
         let data = vec![true, true, true, true];
-        assert_eq!(data.to_iter().all(), true);
-        assert_eq!(data.to_iter().vall(), true);
+        assert_eq!(data.titer().all(), true);
+        assert_eq!(data.titer().vall(), true);
         assert_eq!(data.opt().vall(), true);
         let data = vec![true, false, true, true];
-        assert_eq!(data.to_iter().all(), false);
-        assert_eq!(data.to_iter().vall(), false);
+        assert_eq!(data.titer().all(), false);
+        assert_eq!(data.titer().vall(), false);
         assert_eq!(data.opt().vall(), false);
     }
 
     #[test]
     fn test_argmax_and_argmin() {
         let data = vec![2, 1, 3, -3];
-        assert_eq!(data.to_iter().vargmax(), Some(2));
-        assert_eq!(data.to_iter().vargmin(), Some(3));
-        assert_eq!(data.to_iter().argmax(), Some(2));
-        assert_eq!(data.to_iter().argmin(), Some(3));
+        assert_eq!(data.titer().vargmax(), Some(2));
+        assert_eq!(data.titer().vargmin(), Some(3));
+        assert_eq!(data.titer().argmax(), Some(2));
+        assert_eq!(data.titer().argmin(), Some(3));
         let data = vec![Some(5.), Some(2.), None, Some(1.), Some(-3.), Some(4.)];
-        assert_eq!(data.to_iter().vargmax(), Some(0));
-        assert_eq!(data.to_iter().vargmin(), Some(4));
+        assert_eq!(data.titer().vargmax(), Some(0));
+        assert_eq!(data.titer().vargmin(), Some(4));
     }
 }

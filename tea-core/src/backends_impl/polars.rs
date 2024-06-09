@@ -4,21 +4,25 @@ use polars_arrow::legacy::utils::CustomIterTools;
 
 macro_rules! impl_for_ca {
     (to_iter, $real: ty => $($ForType: ty),*) => {
-        $(impl ToIter for $ForType {
-            type Item = Option<$real>;
+        $(
+            // impl GetLen for $ForType {
+            //     #[inline]
+            //     fn len(&self) -> usize {
+            //         (*self).len()
+            //     }
+            // }
 
-            #[inline]
-            fn len(&self) -> usize {
-                (*self).len()
-            }
+            impl TIter for $ForType {
+                type Item = Option<$real>;
 
-            #[inline]
-            fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item=Self::Item>>
-            where Self::Item: 'a
-            {
-                TrustIter::new(self.into_iter(), self.len())
+                #[inline]
+                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item=Self::Item>>
+                where Self::Item: 'a
+                {
+                    TrustIter::new(self.into_iter(), self.len())
+                }
             }
-        })*
+        )*
     };
 
     (view $($ForType: ty),*) => {
@@ -123,6 +127,13 @@ macro_rules! impl_for_ca {
 
         )*
     };
+}
+
+impl<T: PolarsDataType> GetLen for ChunkedArray<T> {
+    #[inline]
+    fn len(&self) -> usize {
+        self.len()
+    }
 }
 
 impl_for_ca!(

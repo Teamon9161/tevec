@@ -51,10 +51,10 @@ mod test {
     #[test]
     fn test_abs() {
         let v = vec![1, -2, 3, -4, 5];
-        let res: Vec<_> = v.to_iter().abs().vabs().collect_trusted_vec1();
+        let res: Vec<_> = v.titer().abs().vabs().collect_trusted_vec1();
         assert_eq!(res, vec![1, 2, 3, 4, 5]);
         let v = vec![Some(1), Some(-2), None, Some(-4), Some(5)];
-        let res: Vec<_> = v.to_iter().vabs().collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vabs().collect_trusted_vec1();
         assert_eq!(res, vec![Some(1), Some(2), None, Some(4), Some(5)]);
     }
 
@@ -62,14 +62,14 @@ mod test {
     fn test_shift() {
         // test shift on empty vec
         let v: Vec<f64> = vec![];
-        let res: Vec<_> = v.to_iter().vshift(2, None).collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vshift(2, None).collect_trusted_vec1();
         assert_eq!(res, vec![]);
         let v = vec![1., 2., 3., 4., 5.];
-        let res: Vec<_> = v.to_iter().vshift(2, None).collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vshift(2, None).collect_trusted_vec1();
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, f64::NAN, 1., 2., 3.], None);
         let v = vec![1, 2, 3, 4, 5];
         let res: Vec<_> = v
-            .to_iter()
+            .titer()
             .vshift(-2, Some(0))
             .vshift(0, Some(0))
             .collect_trusted_to_vec();

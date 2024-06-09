@@ -17,15 +17,15 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
             n if n > 0 => Box::new(
                 std::iter::repeat(value)
                     .take(n_abs)
-                    .chain(self.to_iter().take(len - n_abs))
-                    .zip(self.to_iter())
+                    .chain(self.titer().take(len - n_abs))
+                    .zip(self.titer())
                     .map(|(a, b)| b - a)
                     .to_trust(len),
             ),
             n if n < 0 => Box::new(
-                self.to_iter()
+                self.titer()
                     .skip(n_abs)
-                    .zip(self.to_iter())
+                    .zip(self.titer())
                     .map(|(a, b)| b - a)
                     .chain(std::iter::repeat(value).take(n_abs))
                     .to_trust(len),
@@ -48,8 +48,8 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
             n if n > 0 => Box::new(
                 std::iter::repeat(f64::NAN)
                     .take(n_abs)
-                    .chain(self.to_iter().take(len - n_abs).map(|v| v.cast()))
-                    .zip(self.to_iter())
+                    .chain(self.titer().take(len - n_abs).map(|v| v.cast()))
+                    .zip(self.titer())
                     .map(|(a, b)| {
                         if a.not_none() && b.not_none() && (a != 0.) {
                             b.cast() / a - 1.
@@ -60,9 +60,9 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                     .to_trust(len),
             ),
             n if n < 0 => Box::new(
-                self.to_iter()
+                self.titer()
                     .skip(n_abs)
-                    .zip(self.to_iter())
+                    .zip(self.titer())
                     .map(|(a, b)| {
                         if a.not_none() && b.not_none() {
                             let a: f64 = a.cast();
@@ -182,7 +182,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                 }
             }
         } else {
-            let not_none_count = AggValidBasic::count(self.to_iter());
+            let not_none_count = AggValidBasic::count(self.titer());
             unsafe {
                 for i in 0..len - 1 {
                     // safe because max of i = len-2 and len >= 2
@@ -257,12 +257,12 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         T::Inner: Number,
         T: 'a,
     {
-        let n = AggValidBasic::count(self.to_iter());
+        let n = AggValidBasic::count(self.titer());
         // fast path for n <= kth + 1
         if n <= kth + 1 {
             if !sort {
                 return Box::new(
-                    self.to_iter()
+                    self.titer()
                         .enumerate()
                         .filter_map(|(i, v)| if v.not_none() { Some(i as i32) } else { None })
                         .chain(std::iter::repeat(-1))
@@ -297,7 +297,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                 );
             }
         }
-        let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+        let mut out_c: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
         let slc = out_c.try_as_slice_mut().unwrap();
         let mut idx_sorted: Vec<_> = Vec1Create::range(None, slc.len() as i32, None);
         if !rev {
@@ -335,12 +335,12 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         T::Inner: PartialOrd,
         T: 'a,
     {
-        let n = AggValidBasic::count(self.to_iter());
+        let n = AggValidBasic::count(self.titer());
         if n <= kth + 1 {
             if !sort {
-                return Box::new(self.to_iter());
+                return Box::new(self.titer());
             } else {
-                let mut vec: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+                let mut vec: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
                 if !rev {
                     vec.sort_unstable_by(|a, b| a.sort_cmp(b)).unwrap();
                 } else {
@@ -349,7 +349,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
                 return Box::new(vec.into_iter());
             }
         }
-        let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1(); // clone the array
+        let mut out_c: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
         let sort_func = if !rev { T::sort_cmp } else { T::sort_cmp_rev };
         out_c.select_nth_unstable_by(kth, sort_func);
         out_c.truncate(kth + 1);

@@ -1,20 +1,22 @@
 use super::TransmuteDtype;
 use crate::prelude::*;
+use tea_macros::GetDtype;
 
-impl<'a, T> TransmuteDtype for Box<dyn TrustedLen<Item = T> + 'a> {
-    type Output<U> = Box<dyn TrustedLen<Item = U> + 'a>;
+impl<'a, T, U> TransmuteDtype<U> for Box<dyn TrustedLen<Item = T> + 'a> {
+    type Output = Box<dyn TrustedLen<Item = U> + 'a>;
 
     #[inline]
     /// # Safety
     ///
     /// the caller must ensure T and U is actually the same type
-    unsafe fn into_dtype<U>(self) -> Self::Output<U> {
+    unsafe fn into_dtype(self) -> Self::Output {
         std::mem::transmute(self)
     }
 }
 
 pub type TvIter<'a, T> = Box<dyn TrustedLen<Item = T> + 'a>;
 
+#[derive(GetDtype)]
 pub enum DynTrustIter<'a> {
     Bool(TvIter<'a, bool>),
     F32(TvIter<'a, f32>),
@@ -42,26 +44,6 @@ impl<'a> DynTrustIter<'a> {
     pub fn collect_vec(self) -> TResult<DynVec> {
         crate::match_trust_iter!(self; dynamic(i) => Ok(i.collect_trusted_to_vec().into()),)
     }
-
-    // pub fn dtype(&self) -> DataType {
-    //     match self {
-    //         DynTrustIter::Bool(_) => DataType::Bool,
-    //         DynTrustIter::F32(_) => DataType::F32,
-    //         DynTrustIter::F64(_) => DataType::F64,
-    //         DynTrustIter::I32(_) => DataType::I32,
-    //         DynTrustIter::I64(_) => DataType::I64,
-    //         DynTrustIter::U8(_) => DataType::U8,
-    //         DynTrustIter::U64(_) => DataType::U64,
-    //         DynTrustIter::Usize(_) => DataType::Usize,
-    //         DynTrustIter::String(_) => DataType::String,
-    //         DynTrustIter::OptUsize(_) => DataType::OptUsize,
-    //         DynTrustIter::VecUsize(_) => DataType::VecUsize,
-    //         #[cfg(feature = "time")]
-    //         DynTrustIter::DateTime(_) => DataType::DateTime,
-    //         #[cfg(feature = "time")]
-    //         DynTrustIter::TimeDelta(_) => DataType::TimeDelta,
-    //     }
-    // }
 
     // pub fn cast_to(self, dtype: DataType) -> TResult<DynTrustIter<'a>> {
     //     let res: DynTrustIter = match dtype {
@@ -110,7 +92,7 @@ macro_rules! impl_from {
                         $(#[$meta])? DataType::$arm => {
                             let iter: TvIter<'a, T> = Box::new(iter);
                             // safety: we have checked the type
-                            unsafe{DynTrustIter::<'a>::$arm(iter.into_dtype::<$ty>().into())}
+                            unsafe{DynTrustIter::<'a>::$arm(iter.into_dtype().into())}
                         },
                     )*
                     type_ => unimplemented!("Create TrustIter from type {:?} is not implemented", type_),
@@ -151,7 +133,7 @@ macro_rules! dt_iter {
     ($($tt: tt)*) => {
         {
             let vec: DynVec = vec![ $($tt)* ].into();
-            vec.into_iter().unwrap()
+            vec.into_titer().unwrap()
         }
     };
 }

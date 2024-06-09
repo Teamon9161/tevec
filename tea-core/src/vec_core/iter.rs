@@ -1,87 +1,84 @@
-use super::{TIterator, TrustIter, Vec1View};
+use super::{GetLen, TIterator, TrustIter, Vec1View};
 use tea_dtype::IsNone;
 
-pub trait ToIter {
+/// A trait indicating that a type can be referenced to a Trusted and DoubleEnded iterator.
+pub trait TIter: GetLen {
     type Item;
 
-    fn len(&self) -> usize;
-
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         Self: 'a,
         Self::Item: 'a;
-
-    #[inline]
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
 
     #[inline]
     fn map<U, F>(&self, f: F) -> TrustIter<impl TIterator<Item = U>>
     where
         F: FnMut(Self::Item) -> U,
     {
-        TrustIter::new(self.to_iterator().map(f), self.len())
+        TrustIter::new(self.titer().map(f), self.len())
     }
 }
 
-// pub trait IntoIter: TrustedLen {
-//     fn into_iterator(self) -> TrustIter<Self>
-//     where
-//         Self: Sized;
-// }
+/// A trait indicating that a type can be converted into a Trusted and DoubleEnded iterator.
+pub trait IntoTIter: IntoIterator {
+    fn into_titer(self) -> TrustIter<Self::IntoIter>
+    where
+        Self: Sized;
+}
 
-// impl<I: Iterator + TrustedLen> IntoIter for I {
-//     #[inline]
-//     fn into_iterator(self) -> TrustIter<I> {
-//         let len = self.len();
-//         TrustIter::new(self.into_iter(), len)
-//     }
-// }
+impl<I: IntoIterator + GetLen> IntoTIter for I {
+    #[inline]
+    fn into_titer(self) -> TrustIter<Self::IntoIter> {
+        let len = self.len();
+        TrustIter::new(self.into_iter(), len)
+    }
+}
 
 pub struct OptIter<'a, V: Vec1View> {
     pub view: &'a V,
 }
 
-impl<V: Vec1View> ToIter for OptIter<'_, V>
+impl<V: Vec1View> GetLen for OptIter<'_, V> {
+    #[inline]
+    fn len(&self) -> usize {
+        self.view.len()
+    }
+}
+
+impl<V: Vec1View> TIter for OptIter<'_, V>
 where
     V::Item: IsNone,
 {
     type Item = Option<<V::Item as IsNone>::Inner>;
 
     #[inline]
-    fn len(&self) -> usize {
-        self.view.len()
-    }
-
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
     where
         Self: 'a,
     {
-        TrustIter::new(self.view.to_iterator().map(|v| v.to_opt()), self.len())
+        TrustIter::new(self.view.titer().map(|v| v.to_opt()), self.len())
     }
 }
 
-impl<V: Vec1View> ToIter for &OptIter<'_, V>
-where
-    V::Item: IsNone,
-{
-    type Item = Option<<V::Item as IsNone>::Inner>;
+// impl<V: Vec1View> ToIter for &OptIter<'_, V>
+// where
+//     V::Item: IsNone,
+// {
+//     type Item = Option<<V::Item as IsNone>::Inner>;
 
-    #[inline]
-    fn len(&self) -> usize {
-        self.view.len()
-    }
+//     #[inline]
+//     fn len(&self) -> usize {
+//         self.view.len()
+//     }
 
-    #[inline]
-    fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
-    where
-        Self: 'a,
-    {
-        TrustIter::new(self.view.to_iterator().map(|v| v.to_opt()), self.len())
-    }
-}
+//     #[inline]
+//     fn to_iterator<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+//     where
+//         Self: 'a,
+//     {
+//         TrustIter::new(self.view.to_iterator().map(|v| v.to_opt()), self.len())
+//     }
+// }
 
 impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V> {
     #[inline]
@@ -90,12 +87,12 @@ impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V> {
     }
 }
 
-impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for &OptIter<'a, V> {
-    #[inline]
-    unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
-        self.view.uget(index).to_opt()
-    }
-}
+// impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for &OptIter<'a, V> {
+//     #[inline]
+//     unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
+//         self.view.uget(index).to_opt()
+//     }
+// }
 
 impl<'a, V: Vec1View> IntoIterator for &OptIter<'a, V>
 where
@@ -105,6 +102,6 @@ where
     type IntoIter = TrustIter<impl Iterator<Item = Self::Item>>;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.to_iter()
+        self.titer()
     }
 }

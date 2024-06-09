@@ -13,7 +13,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     where
         T::Inner: Number,
     {
-        self.map(|v| v.map(|v| v.abs()))
+        self.map(|v| v.vabs())
     }
 
     /// Forward fill value where the mask is true
@@ -201,14 +201,14 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
             }
             vec![T::Inner::min_()]
                 .into_iter()
-                .chain(bins.to_iter().map(IsNone::unwrap))
+                .chain(bins.titer().map(IsNone::unwrap))
                 .chain(vec![T::Inner::max_()])
                 .collect()
         } else {
             if labels.len() + 1 != bins.len() {
                 tbail!(func=cut, "Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
             }
-            bins.to_iter().map(IsNone::unwrap).collect_trusted_vec1()
+            bins.titer().map(IsNone::unwrap).collect_trusted_vec1()
         };
         if right {
             Ok(Box::new(self.map(move |value| {
@@ -218,9 +218,9 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     let value = value.unwrap();
                     let mut out = None;
                     for (bound, label) in bins
-                        .to_iter()
+                        .titer()
                         .tuple_windows::<(T::Inner, T::Inner)>()
-                        .zip(labels.to_iter())
+                        .zip(labels.titer())
                     {
                         if (bound.0 < value) && (value <= bound.1) {
                             out = Some(label.clone());
@@ -238,9 +238,9 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     let value = value.unwrap();
                     let mut out = None;
                     for (bound, label) in bins
-                        .to_iter()
+                        .titer()
                         .tuple_windows::<(T::Inner, T::Inner)>()
-                        .zip(labels.to_iter())
+                        .zip(labels.titer())
                     {
                         if (bound.0 <= value) && (value < bound.1) {
                             out = Some(label.clone());
@@ -323,29 +323,29 @@ mod test {
     #[test]
     fn test_clip() {
         let v = vec![1, 2, 3, 4, 5];
-        let res: Vec<_> = v.to_iter().vclip(2, 4).collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vclip(2, 4).collect_trusted_vec1();
         assert_eq!(res, vec![2, 2, 3, 4, 4]);
         let v = vec![1., 2., 3., 4., 5.];
-        let res: Vec<_> = v.to_iter().vclip(2., f64::NAN).collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vclip(2., f64::NAN).collect_trusted_vec1();
         assert_eq!(&res, &vec![2., 2., 3., 4., 5.]);
-        let res: Vec<_> = v.to_iter().vclip(f64::NAN, 4.).collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vclip(f64::NAN, 4.).collect_trusted_vec1();
         assert_eq!(&res, &vec![1., 2., 3., 4., 4.]);
-        let res: Vec<_> = v.to_iter().vclip(f64::NAN, f64::NAN).collect_trusted_vec1();
+        let res: Vec<_> = v.titer().vclip(f64::NAN, f64::NAN).collect_trusted_vec1();
         assert_eq!(&res, &vec![1., 2., 3., 4., 5.]);
     }
 
     #[test]
     fn test_fill() {
         let v = vec![f64::NAN, 1., 2., f64::NAN, 3., f64::NAN];
-        let res: Vec<_> = v.to_iter().ffill(None).collect();
+        let res: Vec<_> = v.titer().ffill(None).collect();
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, 1., 2., 2., 3., 3.], None);
-        let res: Vec<_> = v.to_iter().ffill(Some(0.)).collect();
+        let res: Vec<_> = v.titer().ffill(Some(0.)).collect();
         assert_vec1d_equal_numeric(&res, &vec![0., 1., 2., 2., 3., 3.], None);
-        let res: Vec<_> = v.to_iter().bfill(None).collect();
+        let res: Vec<_> = v.titer().bfill(None).collect();
         assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., f64::NAN], None);
-        let res: Vec<_> = v.to_iter().bfill(Some(0.)).collect();
+        let res: Vec<_> = v.titer().bfill(Some(0.)).collect();
         assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., 0.], None);
-        let res: Vec<_> = v.to_iter().fill(0.).collect();
+        let res: Vec<_> = v.titer().fill(0.).collect();
         assert_vec1d_equal_numeric(&res, &vec![0., 1., 2., 0., 3., 0.], None);
     }
 
@@ -355,20 +355,20 @@ mod test {
         let bins = vec![2, 5, 8];
         let labels = vec![1, 2, 3, 4];
         let res1: Vec<_> = v
-            .to_iter()
+            .titer()
             .vcut(&bins, &labels, true, true)?
             .try_collect_vec1()?;
         assert_eq!(res1, vec![1, 2, 2, 1, 2, 3, 3, 4, 1]);
         let res2: Vec<_> = v
-            .to_iter()
+            .titer()
             .vcut(&bins, &labels, false, true)?
             .try_collect_trusted_vec1()?;
         // bin label mismatch
         assert_eq!(res2, vec![1, 2, 3, 1, 3, 3, 3, 4, 1]);
-        assert!(v.to_iter().vcut(&[3], &labels, true, true).is_err());
+        assert!(v.titer().vcut(&[3], &labels, true, true).is_err());
         // value not in bins
         let res: TResult<Vec<_>> = v
-            .to_iter()
+            .titer()
             .vcut(&[1, 2, 5, 8, 20], &labels, true, false)?
             .try_collect_vec1();
         assert!(res.is_err());
@@ -378,23 +378,23 @@ mod test {
     #[test]
     fn test_sorted_unique() {
         let v = vec![1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6];
-        let res: Vec<_> = v.to_iter().vsorted_unique_idx(Keep::First).collect();
+        let res: Vec<_> = v.titer().vsorted_unique_idx(Keep::First).collect();
         assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
-        let res: Vec<_> = v.to_iter().vsorted_unique_idx(Keep::Last).collect();
+        let res: Vec<_> = v.titer().vsorted_unique_idx(Keep::Last).collect();
         assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
         let v = vec![6, 6, 5, 5, 5, 4, 3, 3, 3, 3, 2, 2, 1];
         let v2: Vec<_> = v.to_opt_iter().chain(None).collect();
-        let res: Vec<_> = v2.to_iter().vsorted_unique_idx(Keep::First).collect();
+        let res: Vec<_> = v2.titer().vsorted_unique_idx(Keep::First).collect();
         assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
-        let res: Vec<_> = v2.to_iter().vsorted_unique_idx(Keep::Last).collect();
+        let res: Vec<_> = v2.titer().vsorted_unique_idx(Keep::Last).collect();
         assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
         let v3: Vec<_> = v
             .iter_cast::<f64>()
             .chain(std::iter::once(f64::NAN))
             .collect();
-        let res: Vec<_> = v3.to_iter().vsorted_unique_idx(Keep::First).collect();
+        let res: Vec<_> = v3.titer().vsorted_unique_idx(Keep::First).collect();
         assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
-        let res: Vec<_> = v3.to_iter().vsorted_unique_idx(Keep::Last).collect();
+        let res: Vec<_> = v3.titer().vsorted_unique_idx(Keep::Last).collect();
         assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
     }
 }

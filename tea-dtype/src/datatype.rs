@@ -23,7 +23,7 @@ pub enum DataType {
 }
 
 pub trait GetDataType: Send + Sync {
-    type Physical;
+    // type Physical;
     fn dtype() -> DataType
     where
         Self: Sized;
@@ -32,7 +32,7 @@ pub trait GetDataType: Send + Sync {
 macro_rules! impl_datatype {
     ($tyname:ident, $physical:ty) => {
         impl GetDataType for $physical {
-            type Physical = $physical;
+            // type Physical = $physical;
             #[inline(always)]
             fn dtype() -> DataType {
                 DataType::$tyname
@@ -91,7 +91,6 @@ impl_datatype!(I64, i64);
 impl_datatype!(U64, u64);
 impl_datatype!(Usize, usize);
 impl_datatype!(String, String);
-// impl_datatype!(OptUsize, OptUsize);
 impl_datatype!(OptUsize, Option<usize>);
 impl_datatype!(VecUsize, Vec<usize>);
 
@@ -101,7 +100,7 @@ impl_datatype!(DateTime, DateTime);
 impl_datatype!(TimeDelta, TimeDelta);
 
 impl<'a> GetDataType for &'a str {
-    type Physical = &'a str;
+    // type Physical = &'a str;
     #[inline(always)]
     fn dtype() -> DataType {
         DataType::Str

@@ -5,7 +5,7 @@ use std::str::FromStr;
 use tea_error::{tbail, tensure, TError, TResult};
 
 // #[serde_with::serde_as]
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 pub struct TimeDelta {
     pub months: i32,
     // #[serde_as(as = "serde_with::DurationSeconds<i64>")]

@@ -58,6 +58,26 @@ pub type TResult<T> = Result<T, TError>;
 
 #[macro_export]
 macro_rules! terr {
+    (io($idx: expr, $len: expr)) => {
+        $crate::__private::must_use(
+            $crate::TError::IdxOut { idx: $idx, len: $len }
+        )
+    };
+    (lm, $left: expr, $right: expr) => {
+        $crate::__private::must_use(
+            $crate::TError::LengthMismatch {
+                left: $left,
+                right: $right,
+            }
+        )
+    };
+    (func=$func: ident, $fmt:literal $(, $arg:expr)* $(,)?) => {
+        $crate::__private::must_use(
+            $crate::TError::Str(
+                format!("function {}: {}", stringify!($func), format!($fmt, $($arg),*)).into()
+             )
+        )
+    };
     ($variant:ident: $fmt:literal $(, $arg:expr)* $(,)?) => {
         $crate::__private::must_use(
             $crate::TError::$variant(format!($fmt, $($arg),*).into())
@@ -68,13 +88,7 @@ macro_rules! terr {
             $crate::TError::Str(format!($fmt, $($arg),*).into())
         )
     };
-    (func=$func: ident, $fmt:literal $(, $arg:expr)* $(,)?) => {
-        $crate::__private::must_use(
-            $crate::TError::Str(
-                format!("function {}: {}", stringify!($func), format!($fmt, $($arg),*)).into()
-             )
-        )
-    };
+
     ($variant: ident: $err: expr $(,)?) => {
         $crate::__private::must_use(
             $crate::TError::$variant($err.into())
@@ -82,17 +96,6 @@ macro_rules! terr {
     };
     ($err: expr) => {
         $crate::terr!(Str: $err)
-    };
-    (idx_out $idx: expr, $len: expr) => {
-        $crate::TError::IdxOut { idx: $idx, len: $len }
-    };
-    (lm, $left: expr, $right: expr) => {
-        $crate::__private::must_use(
-            $crate::TError::LengthMismatch {
-                left: $left,
-                right: $right,
-            }
-        )
     };
     () => {
         $crate::__private::must_use(

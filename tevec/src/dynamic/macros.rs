@@ -35,6 +35,27 @@ macro_rules! match_enum {
         )
     };
 
+    // match castable arm
+    (@($enum: ident, $exprs: expr; cast ($e: ident) => $body: expr, $($rest: tt)*) $($all_arms: tt)* ) => {
+        $crate::match_enum!(
+            @($enum, $exprs; $($rest)*)
+            $($all_arms)*
+            F32($e) => $body,
+            F64($e) => $body,
+            I32($e) => $body,
+            I64($e) => $body,
+            U8($e) => $body,
+            U64($e) => $body,
+            Bool($e) => $body,
+            Usize($e) => $body,
+            String($e) => $body,
+            // Object($e) => $body,
+            OptUsize($e) => $body,
+            #[cfg(feature="time")] DateTime($e) => $body,
+            #[cfg(feature="time")] TimeDelta($e) => $body,
+        )
+    };
+
     // match non-reference dtype(no str)
     (@($enum: ident, $exprs: expr; own ($e: ident) => $body: expr, $($rest: tt)*) $($all_arms: tt)* ) => {
         $crate::match_enum!(
@@ -152,7 +173,7 @@ macro_rules! match_enum {
         $crate::match_enum!(
             @($enum, $exprs; $($rest)*)
             $($all_arms)*
-            $($(#[$meta])? $arms ($e) => $body)*
+            $($(#[$meta])? $arms($e) => $body,)*
         )
     };
 

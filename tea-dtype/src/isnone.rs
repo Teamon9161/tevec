@@ -1,4 +1,5 @@
 use super::cast::Cast;
+use super::number::Number;
 use std::cmp::Ordering;
 #[cfg(feature = "time")]
 use tea_time::{DateTime, TimeDelta};
@@ -47,6 +48,14 @@ where
         self.to_opt()
             .map(|v| U::from_inner(f(v)))
             .unwrap_or_else(|| U::none())
+    }
+
+    #[inline]
+    fn vabs(self) -> Self
+    where
+        Self::Inner: Number,
+    {
+        self.map(|v| v.abs())
     }
 
     #[inline]

@@ -28,14 +28,12 @@ pub trait Vec1: Vec1View + Sized {
     }
 
     #[inline]
-    fn collect_from_trusted<I: Iterator<Item = Self::Item> + TrustedLen>(iter: I) -> Self {
+    fn collect_from_trusted<I: TrustedLen<Item = Self::Item>>(iter: I) -> Self {
         Self::collect_from_iter(iter)
     }
 
     #[inline]
-    fn try_collect_from_trusted<I: Iterator<Item = TResult<Self::Item>> + TrustedLen>(
-        iter: I,
-    ) -> TResult<Self>
+    fn try_collect_from_trusted<I: TrustedLen<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self>
     where
         Self::Item: std::fmt::Debug,
     {
@@ -81,7 +79,7 @@ pub trait Vec1: Vec1View + Sized {
             slc.sort_unstable_by(compare);
             Ok(())
         } else {
-            let mut out_c: Vec<_> = self.to_iter().collect_trusted_vec1();
+            let mut out_c: Vec<_> = self.titer().collect_trusted_vec1();
             let slc = out_c.try_as_slice_mut().ok_or_else(|| {
                 terr!("This type of 1d vector can not be sorted by the given compare function")
             })?;
