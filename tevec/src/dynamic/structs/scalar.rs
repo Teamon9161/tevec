@@ -2,35 +2,6 @@
 use crate::prelude::*;
 use tea_macros::GetDtype;
 
-// trait ScalarElement {}
-
-// impl ScalarElement for bool {}
-// impl ScalarElement for f32 {}
-// impl ScalarElement for f64 {}
-// impl ScalarElement for i32 {}
-// impl ScalarElement for i64 {}
-// impl ScalarElement for u8 {}
-// impl ScalarElement for u64 {}
-// impl ScalarElement for usize {}
-// impl ScalarElement for String {}
-// impl ScalarElement for Option<usize> {}
-// #[cfg(feature = "time")]
-// impl ScalarElement for DateTime {}
-// #[cfg(feature = "time")]
-// impl ScalarElement for TimeDelta {}
-
-// impl<T: ScalarElement + Sized> TransmuteDtype for T {
-//     type Output<U: Sized> = U;
-
-//     #[inline]
-//     /// # Safety
-//     ///
-//     /// the caller must ensure T and U is actually the same type
-//     unsafe fn into_dtype<U: Sized>(self) -> Self::Output<U> {
-//         std::mem::transmute(self)
-//     }
-// }
-
 #[derive(GetDtype, Debug, Clone)]
 pub enum Scalar {
     Bool(bool),

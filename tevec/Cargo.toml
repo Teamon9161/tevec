@@ -7,9 +7,9 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-# default = []
+default = []
 # default = ["map", "dyn", "ndarray"]
-default = ["agg", "map", "rolling", "pl", "dyn"]
+# default = ["agg", "map", "rolling", "pl", "dyn"]
 dyn = ["tea-macros"]
 
 # ops
