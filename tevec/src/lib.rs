@@ -10,10 +10,6 @@ pub use tea_core::polars;
 #[cfg(feature = "pl")]
 pub use tea_core::polars_arrow;
 
-#[cfg(feature = "dyn")]
-#[macro_use]
-pub mod dynamic;
-
 #[cfg(feature = "agg")]
 pub mod agg;
 #[cfg(feature = "map")]
