@@ -1,4 +1,3 @@
-// use ndarray::ScalarOperand;
 use std::{cmp::Ordering, hash::Hash, marker::PhantomData};
 
 use super::timeunit::*;
@@ -10,14 +9,9 @@ use chrono::{
 
 use tea_error::{tbail, terr, TResult};
 
-// #[derive(Clone, Copy, Default, Hash, Eq, PartialEq, PartialOrd)]
-// pub struct DateTime(pub Option<CrDateTime<Utc>>);
-
 #[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
-
-// pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
 const TIME_RULE_VEC: [&str; 9] = [
     "%Y-%m-%d %H:%M:%S",
@@ -68,74 +62,6 @@ impl<U: TimeUnitTrait> DateTime<U> {
             (*self).try_into().ok()
         }
     }
-
-    // #[inline]
-    // pub fn from_timestamp_opt(secs: i64, nsecs: u32) -> Self {
-    //     Self(CrDateTime::from_timestamp(secs, nsecs))
-    // }
-
-    // #[inline]
-    // pub fn from_timestamp_ms(ms: i64) -> Option<Self> {
-    //     let mut secs = ms / MILLIS_PER_SEC;
-    //     if ms < 0 {
-    //         secs = secs.checked_sub(1)?;
-    //     }
-
-    //     let nsecs = (ms % MILLIS_PER_SEC).abs();
-    //     let nsecs = if nsecs == 0 && ms < 0 {
-    //         secs += 1;
-    //         0
-    //     } else {
-    //         let mut nsecs = u32::try_from(nsecs).ok()? * NANOS_PER_MILLI as u32;
-    //         if secs < 0 {
-    //             nsecs = (NANOS_PER_SEC as u32).checked_sub(nsecs)?;
-    //         }
-    //         nsecs
-    //     };
-    //     Some(Self::from_timestamp_opt(secs, nsecs))
-    // }
-
-    // #[inline]
-    // pub fn from_timestamp_us(us: i64) -> Option<Self> {
-    //     let mut secs = us / MICROS_PER_SEC;
-    //     if us < 0 {
-    //         secs = secs.checked_sub(1)?;
-    //     }
-
-    //     let nsecs = (us % MICROS_PER_SEC).abs();
-    //     let nsecs = if nsecs == 0 && us < 0 {
-    //         secs += 1;
-    //         0
-    //     } else {
-    //         let mut nsecs = u32::try_from(nsecs).ok()? * NANOS_PER_MICRO as u32;
-    //         if secs < 0 {
-    //             nsecs = (NANOS_PER_SEC as u32).checked_sub(nsecs)?;
-    //         }
-    //         nsecs
-    //     };
-    //     Some(Self::from_timestamp_opt(secs, nsecs))
-    // }
-
-    // #[inline]
-    // pub fn from_timestamp_ns(ns: i64) -> Option<Self> {
-    //     let mut secs = ns / NANOS_PER_SEC;
-    //     if ns < 0 {
-    //         secs = secs.checked_sub(1)?;
-    //     }
-
-    //     let nsecs = (ns % NANOS_PER_SEC).abs();
-    //     let nsecs = if nsecs == 0 && ns < 0 {
-    //         secs += 1;
-    //         0
-    //     } else {
-    //         let mut nsecs = u32::try_from(nsecs).ok()?;
-    //         if secs < 0 {
-    //             nsecs = (NANOS_PER_SEC as u32).checked_sub(nsecs)?;
-    //         }
-    //         nsecs
-    //     };
-    //     Some(Self::from_timestamp_opt(secs, nsecs))
-    // }
 
     #[inline(always)]
     pub fn parse(s: &str, fmt: Option<&str>) -> TResult<Self>

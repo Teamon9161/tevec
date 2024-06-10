@@ -2,6 +2,8 @@ use crate::{DateTime, TimeDelta, TimeUnit};
 use chrono::{DateTime as CrDateTime, Months, Utc};
 use std::ops::{Add, Sub};
 
+// TODO: improve performance for time operation
+
 impl<U: TimeUnit> Add<TimeDelta> for DateTime<U> {
     type Output = DateTime<U>;
     fn add(self, rhs: TimeDelta) -> Self::Output {
