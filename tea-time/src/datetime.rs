@@ -15,7 +15,7 @@ use tea_error::{tbail, terr, TResult};
 
 #[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq, PartialOrd)]
 #[repr(transparent)]
-pub struct DateTime<U: TimeUnitTrait>(pub i64, PhantomData<U>);
+pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
 // pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
