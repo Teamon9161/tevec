@@ -6,7 +6,7 @@ use tea_error::*;
 impl<U: TimeUnitTrait> From<i64> for DateTime<U> {
     #[inline]
     fn from(dt: i64) -> Self {
-        dt.into()
+        DateTime::new(dt)
     }
 }
 

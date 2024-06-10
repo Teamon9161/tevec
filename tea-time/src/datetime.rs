@@ -89,7 +89,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
         <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
     {
         if self.is_nat() {
-            return "NaT".to_string();
+            "NaT".to_string()
         } else {
             let fmt = fmt.unwrap_or("%Y-%m-%d %H:%M:%S.%f");
             self.to_cr().unwrap().format(fmt).to_string()
