@@ -80,8 +80,18 @@ pub fn derive_get_data_type(input: TokenStream) -> TokenStream {
     let data_type_impls = if let Data::Enum(data_enum) = input.data {
         data_enum.variants.into_iter().map(|variant| {
             let ident = &variant.ident;
-            quote! {
-                Self::#ident(_) => DataType::#ident,
+            match ident.to_string().as_str() {
+                "DateTimeS" => quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Second),},
+                "DateTimeMs" => {
+                    quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Millisecond),}
+                }
+                "DateTimeUs" => {
+                    quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Microsecond),}
+                }
+                "DateTimeNs" => {
+                    quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Nanosecond),}
+                }
+                _ => quote! { Self::#ident(_) => DataType::#ident,},
             }
         })
     } else {

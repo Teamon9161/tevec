@@ -11,5 +11,5 @@ pub use tea_dtype::{
 pub use tea_error::*;
 
 #[cfg(feature = "time")]
-pub use tea_dtype::{DateTime, TimeDelta, TimeUnitTrait};
+pub use tea_dtype::{unit, CrDateTime, DateTime, TimeDelta, TimeUnit, TimeUnitTrait, Utc};
 pub const EPS: f64 = 1e-14;

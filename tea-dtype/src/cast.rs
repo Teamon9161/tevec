@@ -190,7 +190,6 @@ macro_rules! impl_time_cast {
                  }
             }
         )*
-
     };
 }
 
@@ -343,6 +342,36 @@ impl Cast<TimeDelta> for String {
         TimeDelta::parse(&self).expect("Parse string to timedelta error")
     }
 }
+
+// TODO: maybe we can remove default Cast<Self>?
+// we can impl Cast<U: TimeUnitTrait> for DateTime<U> once we
+// remove default implemention for Cast<Self>
+macro_rules! time_unit_cast {
+    ($($unit: ident => ($($to_unit: ident),*)),*) => {
+        $($(impl Cast<DateTime<unit::$to_unit>> for DateTime<unit::$unit> {
+            #[inline(always)]
+            fn cast(self) -> DateTime<unit::$to_unit> {
+                self.into_unit::<unit::$to_unit>()
+            }
+        })*)*
+    // ($($unit: ident),*) => {
+    //     $(impl<U: TimeUnitTrait> Cast<DateTime<U>> for DateTime<unit::$unit> {
+    //         #[inline(always)]
+    //         fn cast(self) -> DateTime<U> {
+    //             self.into_unit::<U>()
+    //         }
+    //     })*
+    };
+}
+
+#[cfg(feature = "time")]
+// time_unit_cast!(Millisecond, Microsecond, Second, Nanosecond);
+time_unit_cast!(
+    Millisecond => (Microsecond, Second, Nanosecond),
+    Microsecond => (Millisecond, Second, Nanosecond),
+    Second => (Millisecond, Microsecond, Nanosecond),
+    Nanosecond => (Millisecond, Microsecond, Second)
+);
 
 #[cfg(test)]
 mod tests {

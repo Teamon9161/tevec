@@ -17,5 +17,5 @@ pub use num_traits::{MulAdd, One, Zero};
 pub use tea_time::{
     chrono,
     chrono::{DateTime as CrDateTime, Utc},
-    DateTime, TimeDelta, TimeUnit, TimeUnitTrait,
+    unit, DateTime, TimeDelta, TimeUnit, TimeUnitTrait,
 };

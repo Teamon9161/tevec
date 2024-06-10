@@ -10,6 +10,13 @@ impl<U: TimeUnitTrait> From<i64> for DateTime<U> {
     }
 }
 
+impl<U: TimeUnitTrait> Default for DateTime<U> {
+    #[inline]
+    fn default() -> Self {
+        DateTime::nat()
+    }
+}
+
 impl<U: TimeUnitTrait> FromStr for DateTime<U>
 where
     Self: From<CrDateTime<Utc>>,
@@ -29,13 +36,6 @@ where
     #[inline]
     fn from(dt: NaiveDateTime) -> Self {
         CrDateTime::from_naive_utc_and_offset(dt, Utc).into()
-    }
-}
-
-impl From<CrDateTime<Utc>> for DateTime<Second> {
-    #[inline]
-    fn from(dt: CrDateTime<Utc>) -> Self {
-        dt.timestamp().into()
     }
 }
 
@@ -71,6 +71,13 @@ impl TryFrom<DateTime<Nanosecond>> for CrDateTime<Utc> {
     #[inline]
     fn try_from(dt: DateTime<Nanosecond>) -> TResult<Self> {
         Ok(CrDateTime::from_timestamp_nanos(dt.0))
+    }
+}
+
+impl From<CrDateTime<Utc>> for DateTime<Second> {
+    #[inline]
+    fn from(dt: CrDateTime<Utc>) -> Self {
+        dt.timestamp().into()
     }
 }
 

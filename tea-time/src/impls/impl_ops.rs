@@ -1,19 +1,46 @@
-use crate::{DateTime, TimeDelta, TimeUnit};
+use crate::{DateTime, TimeDelta, TimeUnitTrait};
 use chrono::{DateTime as CrDateTime, Months, Utc};
-use std::ops::{Add, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 // TODO: improve performance for time operation
 
-impl<U: TimeUnit> Add<TimeDelta> for DateTime<U> {
+impl<U: TimeUnitTrait> Add<TimeDelta> for DateTime<U>
+where
+    Self: From<CrDateTime<Utc>> + TryInto<CrDateTime<Utc>>,
+{
     type Output = DateTime<U>;
     fn add(self, rhs: TimeDelta) -> Self::Output {
         if self.is_not_nat() && rhs.is_not_nat() {
-            let dt: CrDateTime<Utc> = self.into();
+            let dt = self.to_cr().unwrap();
             let out = if rhs.months != 0 {
                 if rhs.months > 0 {
                     dt + Months::new(rhs.months as u32)
                 } else {
                     dt - Months::new((-rhs.months) as u32)
+                }
+            } else {
+                dt
+            };
+            (out + rhs.inner).try_into().unwrap()
+        } else {
+            DateTime::nat()
+        }
+    }
+}
+
+impl<U: TimeUnitTrait> Sub<TimeDelta> for DateTime<U>
+where
+    Self: From<CrDateTime<Utc>> + TryInto<CrDateTime<Utc>>,
+{
+    type Output = DateTime;
+    fn sub(self, rhs: TimeDelta) -> Self::Output {
+        if self.is_not_nat() && rhs.is_not_nat() {
+            let dt = self.to_cr().unwrap();
+            let out = if rhs.months != 0 {
+                if rhs.months > 0 {
+                    dt - Months::new(rhs.months as u32)
+                } else {
+                    dt + Months::new((-rhs.months) as u32)
                 }
             } else {
                 dt
@@ -25,34 +52,17 @@ impl<U: TimeUnit> Add<TimeDelta> for DateTime<U> {
     }
 }
 
-impl Sub<TimeDelta> for DateTime {
-    type Output = DateTime;
-    fn sub(self, rhs: TimeDelta) -> Self::Output {
-        if let Some(dt) = self.0 {
-            if rhs.is_not_nat() {
-                let out = if rhs.months != 0 {
-                    if rhs.months > 0 {
-                        dt - Months::new(rhs.months as u32)
-                    } else {
-                        dt + Months::new((-rhs.months) as u32)
-                    }
-                } else {
-                    dt
-                };
-                DateTime(Some(out + rhs.inner))
-            } else {
-                DateTime(None)
-            }
-        } else {
-            DateTime(None)
-        }
-    }
-}
-
-impl Sub<DateTime> for DateTime {
+impl<U: TimeUnitTrait> Sub<DateTime<U>> for DateTime<U>
+where
+    Self: From<CrDateTime<Utc>> + TryInto<CrDateTime<Utc>>,
+{
     type Output = TimeDelta;
-    fn sub(self, rhs: DateTime) -> Self::Output {
-        if let (Some(dt1), Some(dt2)) = (self.0, rhs.0) {
+    fn sub(self, rhs: DateTime<U>) -> Self::Output {
+        // TODO: improve performance
+        // this can be done by implement unit conversion
+        if self.is_not_nat() && rhs.is_not_nat() {
+            let dt1 = self.to_cr().unwrap();
+            let dt2 = rhs.to_cr().unwrap();
             let duration = dt1 - dt2;
             TimeDelta {
                 months: 0,

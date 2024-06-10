@@ -1,6 +1,6 @@
 mod datetime;
 mod timedelta;
-mod timeunit;
+pub mod timeunit;
 
 pub mod convert;
 mod impls;
@@ -8,4 +8,7 @@ mod impls;
 pub use chrono;
 pub use datetime::DateTime;
 pub use timedelta::TimeDelta;
-pub use timeunit::*;
+pub use timeunit as unit;
+pub use timeunit::{TimeUnit, TimeUnitTrait};
+
+pub(crate) use timeunit::*;
