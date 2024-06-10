@@ -1,5 +1,6 @@
+use tea_time::TimeUnitTrait;
 #[cfg(feature = "time")]
-use tea_time::{DateTime, TimeDelta};
+use tea_time::{DateTime, TimeDelta, TimeUnit};
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum DataType {
@@ -17,12 +18,14 @@ pub enum DataType {
     OptUsize,
     VecUsize,
     #[cfg(feature = "time")]
-    DateTime,
+    DateTime(TimeUnit),
     #[cfg(feature = "time")]
     TimeDelta,
+    // #[cfg(feature = "time")]
+    // NpDateTime(TimeUnit),
 }
 
-pub trait GetDataType: Send + Sync {
+pub trait GetDataType {
     // type Physical;
     fn dtype() -> DataType
     where
@@ -95,7 +98,15 @@ impl_datatype!(OptUsize, Option<usize>);
 impl_datatype!(VecUsize, Vec<usize>);
 
 #[cfg(feature = "time")]
-impl_datatype!(DateTime, DateTime);
+// impl_datatype!(DateTime, DateTime);
+impl<U: TimeUnitTrait> GetDataType for DateTime<U> {
+    // type Physical = DateTime<U>;
+    #[inline(always)]
+    fn dtype() -> DataType {
+        DataType::DateTime(U::unit())
+    }
+}
+
 #[cfg(feature = "time")]
 impl_datatype!(TimeDelta, TimeDelta);
 

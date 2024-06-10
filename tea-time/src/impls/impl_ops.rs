@@ -1,27 +1,24 @@
-use crate::{DateTime, TimeDelta};
-use chrono::Months;
+use crate::{DateTime, TimeDelta, TimeUnit};
+use chrono::{DateTime as CrDateTime, Months, Utc};
 use std::ops::{Add, Sub};
 
-impl Add<TimeDelta> for DateTime {
-    type Output = DateTime;
+impl<U: TimeUnit> Add<TimeDelta> for DateTime<U> {
+    type Output = DateTime<U>;
     fn add(self, rhs: TimeDelta) -> Self::Output {
-        if let Some(dt) = self.0 {
-            if rhs.is_not_nat() {
-                let out = if rhs.months != 0 {
-                    if rhs.months > 0 {
-                        dt + Months::new(rhs.months as u32)
-                    } else {
-                        dt - Months::new((-rhs.months) as u32)
-                    }
+        if self.is_not_nat() && rhs.is_not_nat() {
+            let dt: CrDateTime<Utc> = self.into();
+            let out = if rhs.months != 0 {
+                if rhs.months > 0 {
+                    dt + Months::new(rhs.months as u32)
                 } else {
-                    dt
-                };
-                DateTime(Some(out + rhs.inner))
+                    dt - Months::new((-rhs.months) as u32)
+                }
             } else {
-                DateTime(None)
-            }
+                dt
+            };
+            (out + rhs.inner).into()
         } else {
-            DateTime(None)
+            DateTime::nat()
         }
     }
 }
@@ -70,6 +67,90 @@ impl Sub<DateTime> for DateTime {
             // }
         } else {
             TimeDelta::nat()
+        }
+    }
+}
+
+impl Neg for TimeDelta {
+    type Output = TimeDelta;
+
+    #[inline]
+    fn neg(self) -> TimeDelta {
+        if self.is_not_nat() {
+            Self {
+                months: -self.months,
+                inner: -self.inner,
+            }
+        } else {
+            self
+        }
+    }
+}
+
+impl Add for TimeDelta {
+    type Output = TimeDelta;
+    #[inline]
+    fn add(self, rhs: TimeDelta) -> TimeDelta {
+        if self.is_not_nat() & rhs.is_not_nat() {
+            Self {
+                months: self.months + rhs.months,
+                inner: self.inner + rhs.inner,
+            }
+        } else {
+            TimeDelta::nat()
+        }
+    }
+}
+
+impl Sub for TimeDelta {
+    type Output = TimeDelta;
+    #[inline]
+    fn sub(self, rhs: TimeDelta) -> TimeDelta {
+        if self.is_not_nat() & rhs.is_not_nat() {
+            Self {
+                months: self.months - rhs.months,
+                inner: self.inner - rhs.inner,
+            }
+        } else {
+            TimeDelta::nat()
+        }
+    }
+}
+
+impl Mul<i32> for TimeDelta {
+    type Output = TimeDelta;
+    #[inline]
+    fn mul(self, rhs: i32) -> Self {
+        if self.is_not_nat() {
+            Self {
+                months: self.months * rhs,
+                inner: self.inner * rhs,
+            }
+        } else {
+            TimeDelta::nat()
+        }
+    }
+}
+
+impl Div<TimeDelta> for TimeDelta {
+    type Output = i32;
+
+    fn div(self, rhs: TimeDelta) -> Self::Output {
+        if self.is_not_nat() & rhs.is_not_nat() {
+            // may not as expected
+            let inner_div =
+                self.inner.num_nanoseconds().unwrap() / rhs.inner.num_nanoseconds().unwrap();
+            if self.months == 0 || rhs.months == 0 {
+                return inner_div as i32;
+            }
+            let month_div = self.months / rhs.months;
+            if month_div == inner_div as i32 {
+                month_div
+            } else {
+                panic!("not support div TimeDelta when month div and time div is not equal")
+            }
+        } else {
+            panic!("not support div TimeDelta when one of them is nat")
         }
     }
 }

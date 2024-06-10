@@ -8,4 +8,4 @@ mod impls;
 pub use chrono;
 pub use datetime::DateTime;
 pub use timedelta::TimeDelta;
-pub use timeunit::TimeUnit;
+pub use timeunit::*;

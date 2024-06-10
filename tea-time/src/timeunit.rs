@@ -1,5 +1,31 @@
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub enum TimeUnit {
+use std::fmt::Debug;
+use std::hash::Hash;
+
+macro_rules! define_timeunit {
+    ($($name: ident),*) => {
+        $(
+            #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+            pub struct $name;
+
+            impl TimeUnitTrait for $name {
+                fn unit() -> TimeUnit {
+                    TimeUnit::$name
+                }
+            }
+        )*
+
+        #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub enum TimeUnit {
+            $($name),*
+        }
+    };
+}
+
+pub trait TimeUnitTrait: Copy + Clone + Debug + PartialEq + Eq + Hash + PartialOrd + Ord {
+    fn unit() -> TimeUnit;
+}
+
+define_timeunit!(
     Year,
     Month,
     Day,
@@ -7,23 +33,6 @@ pub enum TimeUnit {
     Minute,
     Second,
     Millisecond,
-    #[default]
     Microsecond,
-    Nanosecond,
-}
-
-impl std::fmt::Debug for TimeUnit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TimeUnit::Year => write!(f, "Year"),
-            TimeUnit::Month => write!(f, "Month"),
-            TimeUnit::Day => write!(f, "Day"),
-            TimeUnit::Hour => write!(f, "Hour"),
-            TimeUnit::Minute => write!(f, "Minute"),
-            TimeUnit::Second => write!(f, "Second"),
-            TimeUnit::Millisecond => write!(f, "Millisecond"),
-            TimeUnit::Microsecond => write!(f, "Microsecond"),
-            TimeUnit::Nanosecond => write!(f, "Nanosecond"),
-        }
-    }
-}
+    Nanosecond
+);

@@ -2,7 +2,7 @@ use super::cast::Cast;
 use super::number::Number;
 use std::cmp::Ordering;
 #[cfg(feature = "time")]
-use tea_time::{DateTime, TimeDelta};
+use tea_time::{DateTime, TimeDelta, TimeUnitTrait};
 
 pub trait IsNone: Clone
 where
@@ -548,8 +548,8 @@ impl<'a> IsNone for &'a str {
 }
 
 #[cfg(feature = "time")]
-impl IsNone for DateTime {
-    type Inner = DateTime;
+impl<Unit: TimeUnitTrait> IsNone for DateTime<Unit> {
+    type Inner = DateTime<Unit>;
     type Cast<U: IsNone<Inner = U> + Clone> = U;
     #[inline]
     fn is_none(&self) -> bool {
@@ -558,7 +558,7 @@ impl IsNone for DateTime {
 
     #[inline]
     fn none() -> Self {
-        Self(None)
+        DateTime::nat()
     }
 
     #[inline]

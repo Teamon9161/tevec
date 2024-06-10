@@ -1,7 +1,7 @@
-#[cfg(feature = "time")]
-use tea_time::{DateTime, TimeDelta};
-
-use super::isnone::IsNone;
+// #[cfg(feature = "time")]
+// use tea_time::{DateTime, TimeDelta, TimeUnitTrait};
+// use super::isnone::IsNone;
+use crate::*;
 
 pub trait Cast<T> {
     fn cast(self) -> T;
@@ -98,8 +98,8 @@ macro_rules! impl_numeric_cast {
         }
 
         #[cfg(feature="time")]
-        impl Cast<DateTime> for $T {
-            #[inline] fn cast(self) -> DateTime { Cast::<i64>::cast(self).into() }
+        impl<U: TimeUnitTrait> Cast<DateTime<U>> for $T {
+            #[inline] fn cast(self) -> DateTime<U> { Cast::<i64>::cast(self).into() }
         }
 
         #[cfg(feature="time")]
@@ -108,8 +108,8 @@ macro_rules! impl_numeric_cast {
         }
 
         #[cfg(feature="time")]
-        impl Cast<DateTime> for Option<$T> {
-            #[inline] fn cast(self) -> DateTime { self.map(|v| v.cast()).unwrap_or(DateTime(None)) }
+        impl<U: TimeUnitTrait> Cast<DateTime<U>> for Option<$T> {
+            #[inline] fn cast(self) -> DateTime<U> { self.map(|v| v.cast()).unwrap_or(DateTime::nat()) }
         }
 
         #[cfg(feature="time")]
@@ -142,9 +142,9 @@ impl Cast<String> for bool {
 }
 
 #[cfg(feature = "time")]
-impl Cast<DateTime> for bool {
+impl<U: TimeUnitTrait> Cast<DateTime<U>> for bool {
     #[inline]
-    fn cast(self) -> DateTime {
+    fn cast(self) -> DateTime<U> {
         panic!("Should not cast bool to datetime")
     }
 }
@@ -161,11 +161,11 @@ impl Cast<TimeDelta> for bool {
 macro_rules! impl_time_cast {
     ($($T: ty),*) => {
         $(
-            impl Cast<$T> for DateTime {
+            impl<U: TimeUnitTrait> Cast<$T> for DateTime<U> {
                 #[inline] fn cast(self) -> $T { Cast::<i64>::cast(self).cast() }
             }
 
-            impl Cast<Option<$T>> for DateTime {
+            impl<U: TimeUnitTrait> Cast<Option<$T>> for DateTime<U> {
                 #[inline] fn cast(self) -> Option<$T> {
                     if self.is_none() {
                         None
@@ -195,7 +195,7 @@ macro_rules! impl_time_cast {
 }
 
 #[cfg(feature = "time")]
-impl Cast<i64> for DateTime {
+impl<U: TimeUnitTrait> Cast<i64> for DateTime<U> {
     #[inline(always)]
     fn cast(self) -> i64 {
         self.into_i64()
@@ -276,24 +276,30 @@ impl Cast<String> for &str {
 }
 
 #[cfg(feature = "time")]
-impl Cast<String> for DateTime {
+impl<U: TimeUnitTrait> Cast<String> for DateTime<U> {
     fn cast(self) -> String {
-        self.to_string()
+        format!("{:?}", self)
     }
 }
 
 #[cfg(feature = "time")]
-impl Cast<DateTime> for String {
+impl<U: TimeUnitTrait> Cast<DateTime<U>> for String
+where
+    DateTime<U>: From<CrDateTime<Utc>>,
+{
     #[inline]
-    fn cast(self) -> DateTime {
+    fn cast(self) -> DateTime<U> {
         self.parse().expect("Parse string to datetime error")
     }
 }
 
 #[cfg(feature = "time")]
-impl Cast<DateTime> for &str {
+impl<U: TimeUnitTrait> Cast<DateTime<U>> for &str
+where
+    DateTime<U>: From<CrDateTime<Utc>>,
+{
     #[inline]
-    fn cast(self) -> DateTime {
+    fn cast(self) -> DateTime<U> {
         self.parse().expect("Parse str to datetime error")
     }
 }
@@ -307,7 +313,7 @@ impl Cast<String> for TimeDelta {
 }
 
 #[cfg(feature = "time")]
-impl Cast<TimeDelta> for DateTime {
+impl<U: TimeUnitTrait> Cast<TimeDelta> for DateTime<U> {
     #[inline(always)]
     fn cast(self) -> TimeDelta {
         unreachable!()
@@ -315,9 +321,9 @@ impl Cast<TimeDelta> for DateTime {
 }
 
 #[cfg(feature = "time")]
-impl Cast<DateTime> for TimeDelta {
+impl<U: TimeUnitTrait> Cast<DateTime<U>> for TimeDelta {
     #[inline(always)]
-    fn cast(self) -> DateTime {
+    fn cast(self) -> DateTime<U> {
         unreachable!()
     }
 }

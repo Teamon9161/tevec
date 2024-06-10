@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::TimeDelta;
 use chrono::Duration;
 
@@ -28,13 +30,17 @@ impl From<i64> for TimeDelta {
     }
 }
 
-// impl Cast<i64> for TimeDelta {
-//     fn cast(self) -> i64 {
-//         let months = self.months;
-//         if months != 0 {
-//             panic!("not support cast TimeDelta to i64 when months is not zero")
-//         } else {
-//             self.inner.num_microseconds().unwrap_or(i64::MIN)
-//         }
-//     }
-// }
+impl PartialOrd for TimeDelta {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.is_not_nat() {
+            // may not as expected
+            if self.months != other.months {
+                self.months.partial_cmp(&other.months)
+            } else {
+                self.inner.partial_cmp(&other.inner)
+            }
+        } else {
+            None
+        }
+    }
+}

@@ -14,4 +14,8 @@ pub use number::Number;
 pub use num_traits::{MulAdd, One, Zero};
 
 #[cfg(feature = "time")]
-pub use tea_time::{chrono, DateTime, TimeDelta, TimeUnit};
+pub use tea_time::{
+    chrono,
+    chrono::{DateTime as CrDateTime, Utc},
+    DateTime, TimeDelta, TimeUnit, TimeUnitTrait,
+};
