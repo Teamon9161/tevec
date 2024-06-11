@@ -21,7 +21,7 @@ where
             } else {
                 dt
             };
-            (out + rhs.inner).try_into().unwrap()
+            (out + rhs.inner).into()
         } else {
             DateTime::nat()
         }

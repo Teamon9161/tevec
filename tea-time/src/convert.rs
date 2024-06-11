@@ -25,7 +25,7 @@ pub const SECS_PER_WEEK: i64 = 604800;
 impl<U: TimeUnitTrait> DateTime<U> {
     pub fn into_unit<T: TimeUnitTrait>(self) -> DateTime<T> {
         if U::unit() == T::unit() {
-            unsafe { std::mem::transmute(self) }
+            unsafe { std::mem::transmute::<DateTime<U>, DateTime<T>>(self) }
         } else {
             use TimeUnit::*;
             match (U::unit(), T::unit()) {
