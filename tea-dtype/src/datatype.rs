@@ -1,3 +1,4 @@
+#[cfg(feature = "time")]
 use tea_time::TimeUnitTrait;
 #[cfg(feature = "time")]
 use tea_time::{DateTime, TimeDelta, TimeUnit};

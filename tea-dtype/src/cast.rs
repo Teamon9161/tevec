@@ -1,6 +1,3 @@
-// #[cfg(feature = "time")]
-// use tea_time::{DateTime, TimeDelta, TimeUnitTrait};
-// use super::isnone::IsNone;
 use crate::*;
 
 pub trait Cast<T> {
@@ -343,6 +340,7 @@ impl Cast<TimeDelta> for String {
     }
 }
 
+#[cfg(feature = "time")]
 // TODO: maybe we can remove default Cast<Self>?
 // we can impl Cast<U: TimeUnitTrait> for DateTime<U> once we
 // remove default implemention for Cast<Self>
