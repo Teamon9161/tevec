@@ -69,9 +69,25 @@ macro_rules! impl_numeric_cast {
             }
         }
 
+        impl Cast<Option<bool>> for $T {
+            #[inline] fn cast(self) -> Option<bool> {
+                if self.is_none() {
+                    None
+                } else {
+                    Some(self.cast())
+                }
+            }
+        }
+
         impl Cast<bool> for Option<$T> {
             #[inline] fn cast(self) -> bool {
                 self.expect("can not cast None to bool").cast()
+            }
+        }
+
+        impl Cast<Option<bool>> for Option<$T> {
+            #[inline] fn cast(self) -> Option<bool> {
+                self.map(|v| v.cast())
             }
         }
 
@@ -154,6 +170,29 @@ impl Cast<TimeDelta> for bool {
     }
 }
 
+impl Cast<String> for Option<bool> {
+    #[inline]
+    fn cast(self) -> String {
+        format!("{:?}", self)
+    }
+}
+
+#[cfg(feature = "time")]
+impl<U: TimeUnitTrait> Cast<DateTime<U>> for Option<bool> {
+    #[inline]
+    fn cast(self) -> DateTime<U> {
+        panic!("Should not cast option bool to datetime")
+    }
+}
+
+#[cfg(feature = "time")]
+impl Cast<TimeDelta> for Option<bool> {
+    #[inline]
+    fn cast(self) -> TimeDelta {
+        panic!("Should not cast option bool to timedelta")
+    }
+}
+
 #[cfg(feature = "time")]
 macro_rules! impl_time_cast {
     ($($T: ty),*) => {
@@ -199,6 +238,14 @@ impl<U: TimeUnitTrait> Cast<i64> for DateTime<U> {
 }
 
 #[cfg(feature = "time")]
+impl<U: TimeUnitTrait> Cast<Option<i64>> for DateTime<U> {
+    #[inline(always)]
+    fn cast(self) -> Option<i64> {
+        self.into_opt_i64()
+    }
+}
+
+#[cfg(feature = "time")]
 impl Cast<i64> for TimeDelta {
     #[inline]
     fn cast(self) -> i64 {
@@ -207,6 +254,19 @@ impl Cast<i64> for TimeDelta {
             panic!("not support cast TimeDelta to i64 when months is not zero")
         } else {
             self.inner.num_microseconds().unwrap_or(i64::MIN)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl Cast<Option<i64>> for TimeDelta {
+    #[inline]
+    fn cast(self) -> Option<i64> {
+        let months = self.months;
+        if months != 0 {
+            panic!("not support cast TimeDelta to i64 when months is not zero")
+        } else {
+            self.inner.num_microseconds().map(Some).unwrap_or(None)
         }
     }
 }

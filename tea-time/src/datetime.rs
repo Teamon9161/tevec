@@ -52,6 +52,15 @@ impl<U: TimeUnitTrait> DateTime<U> {
     }
 
     #[inline]
+    pub fn into_opt_i64(self) -> Option<i64> {
+        if self.is_nat() {
+            Some(self.0)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
     pub fn to_cr(&self) -> Option<CrDateTime<Utc>>
     where
         Self: TryInto<CrDateTime<Utc>>,
