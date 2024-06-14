@@ -1,4 +1,6 @@
 #[cfg(feature = "pl")]
+use polars::prelude::PolarsIterator;
+#[cfg(feature = "pl")]
 use polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
 use std::iter::Scan;
 use std::slice::Iter;
@@ -97,6 +99,10 @@ unsafe impl<T> PlTrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
 unsafe impl<T> TrustedLen for &mut dyn PlTrustedLen<Item = T> {}
 #[cfg(feature = "pl")]
 unsafe impl<T> TrustedLen for Box<dyn PlTrustedLen<Item = T> + '_> {}
+#[cfg(feature = "pl")]
+unsafe impl<T> TrustedLen for dyn PolarsIterator<Item = T> {}
+#[cfg(feature = "pl")]
+unsafe impl<T> TrustedLen for Box<dyn PolarsIterator<Item = T>> {}
 
 unsafe impl<T> TrustedLen for &mut dyn TrustedLen<Item = T> {}
 unsafe impl<T> TrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
