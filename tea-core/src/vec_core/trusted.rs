@@ -94,15 +94,15 @@ unsafe impl<A: TrustedLen> TrustedLen for std::iter::Take<A> {}
 #[cfg(feature = "pl")]
 unsafe impl<T> PlTrustedLen for &mut dyn TrustedLen<Item = T> {}
 #[cfg(feature = "pl")]
-unsafe impl<T> PlTrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
+unsafe impl<'a, T> PlTrustedLen for Box<dyn TrustedLen<Item = T> + 'a> {}
 #[cfg(feature = "pl")]
 unsafe impl<T> TrustedLen for &mut dyn PlTrustedLen<Item = T> {}
 #[cfg(feature = "pl")]
-unsafe impl<T> TrustedLen for Box<dyn PlTrustedLen<Item = T> + '_> {}
+unsafe impl<'a, T> TrustedLen for Box<dyn PlTrustedLen<Item = T> + 'a> {}
 #[cfg(feature = "pl")]
 unsafe impl<T> TrustedLen for dyn PolarsIterator<Item = T> {}
 #[cfg(feature = "pl")]
-unsafe impl<T> TrustedLen for Box<dyn PolarsIterator<Item = T>> {}
+unsafe impl<'a, T> TrustedLen for Box<dyn PolarsIterator<Item = T> + 'a> {}
 
 unsafe impl<T> TrustedLen for &mut dyn TrustedLen<Item = T> {}
 unsafe impl<T> TrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
