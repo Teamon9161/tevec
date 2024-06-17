@@ -99,6 +99,20 @@ macro_rules! impl_numeric_cast {
             #[inline] fn cast(self) -> Option<$T> { Some((self as u8).cast()) }
         }
 
+        impl Cast<$T> for Option<bool> {
+            #[inline] fn cast(self) -> $T {
+                if let Some(v) = self {
+                    v.cast()
+                } else {
+                    <$T as IsNone>::none()
+                }
+             }
+        }
+
+        impl Cast<Option<$T>> for Option<bool> {
+            #[inline] fn cast(self) -> Option<$T> { self.map(Cast::cast) }
+        }
+
         // cast for string type
         impl Cast<String> for $T {
             #[inline] fn cast(self) -> String { self.to_string() }
@@ -151,6 +165,17 @@ impl Cast<String> for bool {
     #[inline]
     fn cast(self) -> String {
         self.to_string()
+    }
+}
+
+impl Cast<bool> for Option<bool> {
+    #[inline]
+    fn cast(self) -> bool {
+        if let Some(v) = self {
+            v
+        } else {
+            panic!("Should not cast None to bool")
+        }
     }
 }
 
@@ -282,7 +307,6 @@ impl_numeric_cast!(isize => { u8, f32, f64, i32, i64, u64, usize });
 // impl_numeric_cast!(char => { char });
 // impl_numeric_cast!(nocommon bool => {u8, i32, i64, u64, usize, isize});
 
-// impl_bool_cast!(f32, f64);
 #[cfg(feature = "time")]
 impl_time_cast!(u8, u64, f32, f64, i32, usize, isize, bool);
 
