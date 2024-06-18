@@ -110,7 +110,7 @@ macro_rules! impl_for_ca {
     ($($type:ty: $real: ty),*) => {
         $(
             impl_for_ca!(to_iter, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
-            impl_for_ca!(view $type=>ChunkedArray<$type>);
+            impl_for_ca!(view $type=>ChunkedArray<$type>, &ChunkedArray<$type>);
             impl_for_ca!(view_mut ChunkedArray<$type>);
             impl_for_ca!(vec ChunkedArray<$type>);
 
