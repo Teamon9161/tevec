@@ -12,6 +12,7 @@ use tea_error::{tbail, TResult};
 
 pub trait Slice {
     type Element;
+    // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
     type Output<'a>: Vec1View<Item = Self::Element> + ToOwned + ?Sized
     where
         Self: 'a,
@@ -151,8 +152,6 @@ pub trait Vec1View: TIter + Slice<Element = Self::Item> {
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        // Self: std::ops::Index<std::ops::Range<usize>, Output = U1>,
-        // V2: Vec1 + std::ops::Index<std::ops::Range<usize>, Output = U2>,
         V2: Vec1View,
         F: FnMut(&<Self as Slice>::Output<'_>, &<V2 as Slice>::Output<'_>) -> O::Item,
         O::Item: Clone,
@@ -484,18 +483,6 @@ impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
     fn try_as_slice(&self) -> Option<&[Self::Item]> {
         (**self).try_as_slice()
     }
-
-    // #[inline]
-    // fn slice<'a>(
-    //     &'a self,
-    //     start: usize,
-    //     end: usize,
-    // ) -> TResult<impl Vec1View<Item = Self::Item> + 'a>
-    // where
-    //     Self: 'a,
-    // {
-    //     (**self).slice(start, end)
-    // }
 
     #[inline]
     fn rolling_apply<O: Vec1, F>(
