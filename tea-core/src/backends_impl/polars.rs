@@ -5,13 +5,6 @@ use polars_arrow::legacy::utils::CustomIterTools;
 macro_rules! impl_for_ca {
     (to_iter, $real: ty => $($ForType: ty),*) => {
         $(
-            // impl GetLen for $ForType {
-            //     #[inline]
-            //     fn len(&self) -> usize {
-            //         (*self).len()
-            //     }
-            // }
-
             impl TIter for $ForType {
                 type Item = Option<$real>;
 
@@ -26,19 +19,35 @@ macro_rules! impl_for_ca {
     };
 
     (view $($ForType: ty),*) => {
-        $(impl Vec1View for $ForType
-        {
-            #[inline]
-            unsafe fn uget(&self, index: usize) -> Self::Item {
-                self.get_unchecked(index)
+        $(
+            impl Slice for $ForType {
+                type Element = <$ForType as TIter>::Item;
+                type Output<'a> = $ForType;
+                #[inline]
+                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>> where <Self::Output<'a> as TIter>::Item: 'a {
+                    if end < start {
+                        tbail!("end index: {} should be large than start index: {} in slice", end, start);
+                    }
+                    let len = end - start;
+                    Ok(std::borrow::Cow::Owned((*self).slice(start as i64, len)))
+                }
             }
 
-            #[inline]
-            unsafe fn uvget(&self, index: usize) -> Self::Item
+            impl Vec1View for $ForType
             {
-                self.uget(index).to_opt()
+                #[inline]
+                unsafe fn uget(&self, index: usize) -> Self::Item {
+                    self.get_unchecked(index)
+                }
+
+                #[inline]
+                unsafe fn uvget(&self, index: usize) -> Self::Item
+                {
+                    self.uget(index).to_opt()
+                }
             }
-        })*
+
+        )*
     };
 
     (view_mut $($ForType: ty),*) => {
@@ -97,8 +106,8 @@ macro_rules! impl_for_ca {
 
     ($($type:ty: $real: ty),*) => {
         $(
-            impl_for_ca!(to_iter, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
-            impl_for_ca!(view ChunkedArray<$type>, &ChunkedArray<$type>);
+            impl_for_ca!(to_iter, $real=>ChunkedArray<$type>);
+            impl_for_ca!(view ChunkedArray<$type>);
             impl_for_ca!(view_mut ChunkedArray<$type>);
             impl_for_ca!(vec ChunkedArray<$type>);
 

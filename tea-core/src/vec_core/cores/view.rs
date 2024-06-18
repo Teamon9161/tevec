@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use super::super::{
     iter::{OptIter, TIter},
     iter_traits::TIterator,
@@ -8,7 +10,19 @@ use super::own::{Vec1, Vec1Collect};
 use tea_dtype::{Cast, IsNone};
 use tea_error::{tbail, TResult};
 
-pub trait Vec1View: TIter {
+pub trait Slice {
+    type Element;
+    type Output<'a>: Vec1View<Item = Self::Element> + ToOwned + ?Sized
+    where
+        Self: 'a,
+        Self::Element: 'a;
+
+    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
+    where
+        <Self::Output<'a> as TIter>::Item: 'a;
+}
+
+pub trait Vec1View: TIter + Slice<Element = Self::Item> {
     /// Get the value at the index
     ///
     /// # Safety
@@ -20,14 +34,6 @@ pub trait Vec1View: TIter {
     fn try_as_slice(&self) -> Option<&[Self::Item]> {
         None
     }
-
-    // #[inline]
-    // fn viter<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
-    // where
-    //     Self::Item: 'a,
-    // {
-    //     self.viter()
-    // }
 
     #[inline]
     fn iter_cast<U>(&self) -> TrustIter<impl TIterator<Item = U>>
@@ -91,7 +97,6 @@ pub trait Vec1View: TIter {
         if index < self.len() {
             Ok(unsafe { self.uget(index) })
         } else {
-            // panic!("Index out of bounds")
             tbail!(io(index, self.len()))
         }
     }
@@ -110,34 +115,72 @@ pub trait Vec1View: TIter {
 
     /// Rolling and apply a custom funtion to each window
     #[inline]
-    fn rolling_custom<O: Vec1, U: ?Sized, F>(&self, window: usize, mut f: F) -> O
+    fn rolling_custom<O: Vec1, F>(
+        &self,
+        window: usize,
+        mut f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
     where
-        Self: std::ops::Index<std::ops::Range<usize>, Output = U>,
-        F: FnMut(&U) -> O::Item,
+        F: FnMut(&<Self as Slice>::Output<'_>) -> O::Item,
+        O::Item: Clone,
     {
-        (1..self.len() + 1)
-            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-            .map(|(end, start)| f(&self[start..end]))
-            .collect_trusted_vec1()
+        if let Some(mut out) = out {
+            let iter = (1..self.len() + 1)
+                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+                .map(|(end, start)| f(self.slice(start, end).unwrap().as_ref()));
+            // TODO: maybe we should return a result here?
+            out.write_trust_iter(iter).unwrap();
+            None
+        } else {
+            let res = (1..self.len() + 1)
+                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+                .map(|(end, start)| f(self.slice(start, end).unwrap().as_ref()))
+                .collect_trusted_vec1();
+            Some(res)
+        }
     }
 
-    /// Rolling and apply a custom funtion to each window if two vecs
+    /// Rolling and apply a custom funtion to each window of two vecs
     #[inline]
-    fn rolling2_custom<O: Vec1, V2, U1: ?Sized, U2: ?Sized, F>(
+    fn rolling2_custom<O: Vec1, V2, F>(
         &self,
         other: &V2,
         window: usize,
         mut f: F,
-    ) -> O
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
     where
-        Self: std::ops::Index<std::ops::Range<usize>, Output = U1>,
-        V2: Vec1 + std::ops::Index<std::ops::Range<usize>, Output = U2>,
-        F: FnMut(&U1, &U2) -> O::Item,
+        // Self: std::ops::Index<std::ops::Range<usize>, Output = U1>,
+        // V2: Vec1 + std::ops::Index<std::ops::Range<usize>, Output = U2>,
+        V2: Vec1View,
+        F: FnMut(&<Self as Slice>::Output<'_>, &<V2 as Slice>::Output<'_>) -> O::Item,
+        O::Item: Clone,
     {
-        (1..self.len() + 1)
-            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-            .map(|(end, start)| f(&self[start..end], &other[start..end]))
-            .collect_trusted_vec1()
+        if let Some(mut out) = out {
+            let iter = (1..self.len() + 1)
+                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+                .map(|(end, start)| {
+                    f(
+                        self.slice(start, end).unwrap().as_ref(),
+                        other.slice(start, end).unwrap().as_ref(),
+                    )
+                });
+            // TODO: maybe we should return a result here?
+            out.write_trust_iter(iter).unwrap();
+            None
+        } else {
+            let res = (1..self.len() + 1)
+                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+                .map(|(end, start)| {
+                    f(
+                        self.slice(start, end).unwrap().as_ref(),
+                        other.slice(start, end).unwrap().as_ref(),
+                    )
+                })
+                .collect_trusted_vec1();
+            Some(res)
+        }
     }
 
     /// Rolling and apply a function, the function accept whether to
@@ -415,6 +458,22 @@ impl<I: TIter> TIter for std::sync::Arc<I> {
     }
 }
 
+impl<S: Slice> Slice for std::sync::Arc<S> {
+    type Element = S::Element;
+    type Output<'a> = S::Output<'a>
+    where
+        Self: 'a,
+        Self::Element: 'a;
+
+    #[inline]
+    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
+    where
+        <Self::Output<'a> as TIter>::Item: 'a,
+    {
+        (**self).slice(start, end)
+    }
+}
+
 impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
     #[inline]
     unsafe fn uget(&self, index: usize) -> Self::Item {
@@ -425,6 +484,18 @@ impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
     fn try_as_slice(&self) -> Option<&[Self::Item]> {
         (**self).try_as_slice()
     }
+
+    // #[inline]
+    // fn slice<'a>(
+    //     &'a self,
+    //     start: usize,
+    //     end: usize,
+    // ) -> TResult<impl Vec1View<Item = Self::Item> + 'a>
+    // where
+    //     Self: 'a,
+    // {
+    //     (**self).slice(start, end)
+    // }
 
     #[inline]
     fn rolling_apply<O: Vec1, F>(

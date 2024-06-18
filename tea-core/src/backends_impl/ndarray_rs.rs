@@ -1,7 +1,7 @@
-use std::mem::MaybeUninit;
+use std::{borrow::Cow, mem::MaybeUninit};
 
 use crate::prelude::*;
-use ndarray::{Array1, ArrayBase, ArrayViewMut1, Data, DataMut, Ix1};
+use ndarray::{Array1, ArrayBase, ArrayView1, ArrayViewMut1, Data, DataMut, Ix1};
 
 impl<S: Data<Elem = T>, T> GetLen for ArrayBase<S, Ix1> {
     #[inline]
@@ -19,6 +19,23 @@ impl<S: Data<Elem = T>, T: Clone> TIter for ArrayBase<S, Ix1> {
         T: 'a,
     {
         TrustIter::new(self.iter().cloned(), self.len())
+    }
+}
+
+impl<S: Data<Elem = T>, T: Clone> Slice for ArrayBase<S, Ix1> {
+    type Element = T;
+    type Output<'a> = ArrayView1<'a, T>
+    where
+        Self: 'a,
+        Self::Element: 'a;
+    #[inline]
+    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
+    where
+        T: 'a,
+    {
+        use ndarray::s;
+        let view = self.slice(s![start..end]);
+        Ok(Cow::Owned(view))
     }
 }
 

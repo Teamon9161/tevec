@@ -129,8 +129,9 @@ mod tests {
         let data = vec![1, 5, 3, 2, 5];
         let data2 = vec![2, 5, 4, 3, 6];
         let out1: Vec<f64> = data.ts_vcov(&data2, 3, Some(2));
-        let out2: Vec<f64> =
-            data.rolling2_custom(&data2, 3, |v1, v2| v1.titer().vcov(v2.titer(), 2));
+        let out2: Vec<f64> = data
+            .rolling2_custom(&data2, 3, |v1, v2| v1.titer().vcov(v2.titer(), 2), None)
+            .unwrap();
         assert_vec1d_equal_numeric(&out1, &out2, None);
         assert_vec1d_equal_numeric(&out1, &vec![f64::NAN, 6., 3., 1.5, 2.333333333333332], None);
     }
@@ -140,8 +141,14 @@ mod tests {
         let data = vec![1, 5, 3, 2, 5];
         let data2 = vec![2, 5, 4, 3, 6];
         let out1: Vec<f64> = data.ts_vcorr(&data2, 3, Some(2));
-        let out2: Vec<f64> =
-            data.rolling2_custom(&data2, 3, |v1, v2| v1.titer().vcorr_pearson(v2.titer(), 2));
+        let out2: Vec<f64> = data
+            .rolling2_custom(
+                &data2,
+                3,
+                |v1, v2| v1.titer().vcorr_pearson(v2.titer(), 2),
+                None,
+            )
+            .unwrap();
         assert_vec1d_equal_numeric(&out1, &out2, None);
         assert_vec1d_equal_numeric(
             &out1,

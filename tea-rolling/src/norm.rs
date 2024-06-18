@@ -1,52 +1,6 @@
 use tea_core::prelude::*;
 
 pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
-    // #[no_out]
-    // fn ts_vstable<O: Vec1<Item = T::Cast<f64>>>(
-    //     &self,
-    //     window: usize,
-    //     min_periods: Option<usize>,
-    //     out: Option<O::UninitRefMut<'_>>,
-    // ) -> O
-    // where
-    //     T::Inner: Number,
-    // {
-    //     let mut sum = 0.;
-    //     let mut sum2 = 0.;
-    //     let mut n = 0;
-    //     let min_periods = min_periods.unwrap_or(window / 2).min(window);
-    //     self.rolling_apply(window, |v_rm, v| {
-    //         if v.not_none() {
-    //             n += 1;
-    //             let v = v.unwrap().f64();
-    //             sum += v;
-    //             sum2 += v * v
-    //         };
-    //         let res = if n >= min_periods {
-    //             let n_f64 = n.f64();
-    //             let mut var = sum2 / n_f64;
-    //             let mean = sum / n_f64;
-    //             var -= mean.powi(2);
-    //             if var > EPS {
-    //                 mean / (var * n_f64 / (n - 1).f64()).sqrt()
-    //             } else {
-    //                 f64::NAN
-    //             }
-    //         } else {
-    //             f64::NAN
-    //         };
-    //         if let Some(v) = v_rm {
-    //             if v.not_none() {
-    //                 let v = v.unwrap().f64();
-    //                 n -= 1;
-    //                 sum -= v;
-    //                 sum2 -= v * v
-    //             };
-    //         }
-    //         res.into_cast::<T>()
-    //     }, out)
-    // }
-
     #[no_out]
     fn ts_vzscore<O: Vec1<Item = U>, U>(
         &self,

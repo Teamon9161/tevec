@@ -28,6 +28,17 @@ macro_rules! impl_vec1 {
 
     (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
         $(
+            impl<T: Clone $(, const $N: usize)?> Slice for $ty {
+                type Element = T;
+                type Output<'a> = <Self as std::ops::Index<std::ops::Range<usize>>>::Output
+                where Self::Element: 'a;
+                #[inline]
+                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>> where T: 'a{
+                    use std::ops::Index;
+                    Ok(std::borrow::Cow::Borrowed(self.index(start..end)))
+                }
+            }
+
             impl<T: Clone $(, const $N: usize)?> Vec1View for $ty {
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> T {
@@ -160,6 +171,7 @@ impl_vec1!(
     to_iter
     Vec<T>,
     [T],
+    // &[T],
 );
 
 // impl<T: Clone> IntoTIter for Vec<T> {
@@ -188,6 +200,7 @@ impl_vec1!(
     view
     --try_as_slice Vec<T>,
     --try_as_slice [T],
+    // --try_as_slice &[T],
     {N} [T; N]
 );
 
@@ -304,6 +317,16 @@ mod tests {
         assert_eq!(unsafe { slice.uget(2) }, 3);
     }
 
+    // #[test]
+    // fn test_slice() {
+    //     // use super::CollectTrustedToVec;
+    //     let v = vec![1, 2, 4, 5, 2];
+    //     let res = v.slice(0, 3).unwrap().titer().collect_trusted_to_vec();
+    //     assert_eq!(&res, &[1, 2, 4]);
+    //     let res = v.slice(2, 4).unwrap().titer().collect_trusted_to_vec();
+    //     assert_eq!(&res, &[4, 5, 2]);
+    // }
+
     #[test]
     fn test_get_mut() {
         let mut data = vec![1, 2, 3];
@@ -355,7 +378,9 @@ mod tests {
     #[test]
     fn test_rolling_custom() {
         let data = vec![1, 2, 3, 4, 5];
-        let out: Vec<_> = data.rolling_custom(3, |s| s.titer().vsum().unwrap());
+        let out: Vec<_> = data
+            .rolling_custom(3, |s| s.titer().vsum().unwrap(), None)
+            .unwrap();
         assert_eq!(out, vec![1, 3, 6, 9, 12]);
     }
 }
