@@ -18,11 +18,14 @@ macro_rules! impl_for_ca {
         )*
     };
 
-    (view $($ForType: ty),*) => {
+    (view $type: ty => $($ForType: ty),*) => {
         $(
             impl Slice for $ForType {
-                type Element = <$ForType as TIter>::Item;
-                type Output<'a> = $ForType;
+                type Element = <Self as TIter>::Item;
+                type Output<'a> = ChunkedArray<$type>
+                where
+                    Self: 'a,
+                    Self::Element: 'a;
                 #[inline]
                 fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>> where <Self::Output<'a> as TIter>::Item: 'a {
                     if end < start {
@@ -106,8 +109,8 @@ macro_rules! impl_for_ca {
 
     ($($type:ty: $real: ty),*) => {
         $(
-            impl_for_ca!(to_iter, $real=>ChunkedArray<$type>);
-            impl_for_ca!(view ChunkedArray<$type>);
+            impl_for_ca!(to_iter, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
+            impl_for_ca!(view $type=>ChunkedArray<$type>);
             impl_for_ca!(view_mut ChunkedArray<$type>);
             impl_for_ca!(vec ChunkedArray<$type>);
 
