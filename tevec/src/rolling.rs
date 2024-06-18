@@ -37,6 +37,7 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
+        for<'a> Self::Output<'a>: TIter<Item = T>,
         f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);

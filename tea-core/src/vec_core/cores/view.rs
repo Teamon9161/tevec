@@ -12,18 +12,19 @@ use tea_error::{tbail, TResult};
 
 pub trait Slice {
     type Element;
-    // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
-    type Output<'a>: Vec1View<Item = Self::Element> + ToOwned + ?Sized
+    // // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
+    // type Output<'a>: Vec1View<Item = Self::Element> + ToOwned + ?Sized
+    type Output<'a>: ToOwned + ?Sized
     where
         Self: 'a,
         Self::Element: 'a;
 
     fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
     where
-        <Self::Output<'a> as TIter>::Item: 'a;
+        Self::Element: 'a;
 }
 
-pub trait Vec1View: TIter + Slice<Element = Self::Item> {
+pub trait Vec1View: TIter + Slice {
     /// Get the value at the index
     ///
     /// # Safety
@@ -85,12 +86,7 @@ pub trait Vec1View: TIter + Slice<Element = Self::Item> {
     where
         Self::Item: IsNone,
     {
-        let v = self.uget(index);
-        if v.is_none() {
-            None
-        } else {
-            v.to_opt()
-        }
+        self.uget(index).to_opt()
     }
 
     #[inline]
@@ -467,7 +463,7 @@ impl<S: Slice> Slice for std::sync::Arc<S> {
     #[inline]
     fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
     where
-        <Self::Output<'a> as TIter>::Item: 'a,
+        Self::Element: 'a,
     {
         (**self).slice(start, end)
     }

@@ -674,6 +674,14 @@ impl<T: Clone> IsNone for Vec<T> {
 mod tests {
     use crate::{Cast, IsNone};
     #[test]
+    fn test_str() {
+        let a = "dsf";
+        assert_eq!(a.unwrap(), "dsf");
+        assert_eq!(a.to_opt(), Some("dsf"));
+        let a = Some("dsf");
+        assert_eq!(a.to_opt(), Some("dsf"));
+    }
+    #[test]
     fn test_type_cast() {
         fn test1<T: IsNone>(_v: T) -> f64
         where

@@ -42,12 +42,6 @@ macro_rules! impl_for_ca {
                 unsafe fn uget(&self, index: usize) -> Self::Item {
                     self.get_unchecked(index)
                 }
-
-                #[inline]
-                unsafe fn uvget(&self, index: usize) -> Self::Item
-                {
-                    self.uget(index).to_opt()
-                }
             }
 
         )*
@@ -156,35 +150,49 @@ impl_for_ca!(
     BooleanType: bool
 );
 
-// impl ToIter for ChunkedArray<StringType> {
-//     type Item = Option<&'a str>;
+impl<'a> TIter for &'a ChunkedArray<StringType> {
+    type Item = Option<&'a str>;
 
-//     #[inline]
-//     fn len(&self) -> usize {
-//         self.len()
-//     }
+    #[inline]
+    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    where
+        Self::Item: 'b,
+    {
+        TrustIter::new(self.into_iter(), self.len())
+    }
+}
 
-//     #[inline]
-//     fn to_iterator<'b>(&'b self) -> TrustIter<impl Iterator<Item=Self::Item>> where Self::Item: 'b {
-//         TrustIter::new(self.into_iter(), self.len())
-//     }
-// }
+impl<'s> Slice for &'s ChunkedArray<StringType> {
+    type Element = <Self as TIter>::Item;
+    type Output<'a> = ChunkedArray<StringType>
+    where
+        Self: 'a,
+        Self::Element: 'a;
 
-// impl<'a> Vec1View for ChunkedArray<StringType>
-// {
-//     #[inline]
-//     fn len(&self) -> usize {
-//         (*self).len()
-//     }
+    #[inline]
+    fn slice<'a>(
+        &'a self,
+        start: usize,
+        end: usize,
+    ) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>>
+    where
+        Self::Element: 'a,
+    {
+        if end < start {
+            tbail!(
+                "end index: {} should be large than start index: {} in slice",
+                end,
+                start
+            );
+        }
+        let len = end - start;
+        Ok(std::borrow::Cow::Owned((*self).slice(start as i64, len)))
+    }
+}
 
-//     #[inline]
-//     unsafe fn uget(&self, index: usize) -> Option<&'a str> {
-//         self.get_unchecked(index)
-//     }
-
-//     #[inline]
-//     unsafe fn uvget(&self, index: usize) -> Option<Option<&'a str>>
-//     {
-//         Some(self.uget(index))
-//     }
-// }
+impl<'s> Vec1View for &'s ChunkedArray<StringType> {
+    #[inline]
+    unsafe fn uget(&self, index: usize) -> Self::Item {
+        self.get_unchecked(index)
+    }
+}

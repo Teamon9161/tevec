@@ -64,6 +64,7 @@ where
 impl<'a, V: Vec1View> Slice for OptIter<'a, V>
 where
     V::Item: IsNone,
+    V::Output<'a>: TIter<Item = V::Item>,
 {
     type Element = Option<<V::Item as IsNone>::Inner>;
     type Output<'b> = Vec<Option<<V::Item as IsNone>::Inner>> where Self: 'b, Self::Element: 'b;
@@ -82,7 +83,10 @@ where
     }
 }
 
-impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V> {
+impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V>
+where
+    for<'b> V::Output<'b>: TIter<Item = T>,
+{
     #[inline]
     unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
         self.view.uget(index).to_opt()
