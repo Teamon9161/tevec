@@ -63,3 +63,16 @@ pub trait UninitRefMut<T>: GetLen {
         Ok(())
     }
 }
+
+pub trait WriteTrustIter<T: Clone> {
+    fn write<O: UninitRefMut<T>>(self, out: &mut O) -> TResult<()>;
+}
+
+impl<I: TrustedLen> WriteTrustIter<I::Item> for I
+where
+    I::Item: Clone,
+{
+    fn write<O: UninitRefMut<I::Item>>(self, out: &mut O) -> TResult<()> {
+        out.write_trust_iter(self)
+    }
+}

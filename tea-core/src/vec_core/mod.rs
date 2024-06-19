@@ -12,4 +12,4 @@ pub use iter_traits::{IterBasic, TIterator};
 pub use trusted::{
     CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen, TryCollectTrustedToVec,
 };
-pub use uninit::{UninitRefMut, UninitVec};
+pub use uninit::{UninitRefMut, UninitVec, WriteTrustIter};

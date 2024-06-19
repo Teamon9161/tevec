@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
+
 use super::super::{
     iter::{OptIter, TIter},
     iter_traits::TIterator,
@@ -110,31 +112,36 @@ pub trait Vec1View: TIter + Slice {
         }
     }
 
+    #[inline]
+    /// Rolling and apply a custom funtion to each window, but it won't collect result
+    fn rolling_custom_iter<U, F>(&self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
+    where
+        F: FnMut(&<Self as Slice>::Output<'_>) -> U,
+    {
+        (1..self.len() + 1)
+            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+            .map(move |(end, start)| f(self.slice(start, end).unwrap().as_ref()))
+            .to_trust(self.len())
+    }
+
     /// Rolling and apply a custom funtion to each window
     #[inline]
     fn rolling_custom<O: Vec1, F>(
         &self,
         window: usize,
-        mut f: F,
+        f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
         F: FnMut(&<Self as Slice>::Output<'_>) -> O::Item,
         O::Item: Clone,
     {
+        let iter = self.rolling_custom_iter(window, f);
         if let Some(mut out) = out {
-            let iter = (1..self.len() + 1)
-                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-                .map(|(end, start)| f(self.slice(start, end).unwrap().as_ref()));
-            // TODO: maybe we should return a result here?
-            out.write_trust_iter(iter).unwrap();
+            iter.write(&mut out).unwrap();
             None
         } else {
-            let res = (1..self.len() + 1)
-                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-                .map(|(end, start)| f(self.slice(start, end).unwrap().as_ref()))
-                .collect_trusted_vec1();
-            Some(res)
+            Some(iter.collect_trusted_vec1())
         }
     }
 
@@ -152,29 +159,20 @@ pub trait Vec1View: TIter + Slice {
         F: FnMut(&<Self as Slice>::Output<'_>, &<V2 as Slice>::Output<'_>) -> O::Item,
         O::Item: Clone,
     {
+        let iter = (1..self.len() + 1)
+            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+            .map(|(end, start)| {
+                f(
+                    self.slice(start, end).unwrap().as_ref(),
+                    other.slice(start, end).unwrap().as_ref(),
+                )
+            });
         if let Some(mut out) = out {
-            let iter = (1..self.len() + 1)
-                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-                .map(|(end, start)| {
-                    f(
-                        self.slice(start, end).unwrap().as_ref(),
-                        other.slice(start, end).unwrap().as_ref(),
-                    )
-                });
             // TODO: maybe we should return a result here?
-            out.write_trust_iter(iter).unwrap();
+            iter.write(&mut out).unwrap();
             None
         } else {
-            let res = (1..self.len() + 1)
-                .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-                .map(|(end, start)| {
-                    f(
-                        self.slice(start, end).unwrap().as_ref(),
-                        other.slice(start, end).unwrap().as_ref(),
-                    )
-                })
-                .collect_trusted_vec1();
-            Some(res)
+            Some(iter.collect_trusted_vec1())
         }
     }
 

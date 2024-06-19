@@ -275,8 +275,5 @@ pub trait TryCollectTrustedToVec<T: std::fmt::Debug>:
     }
 }
 
-impl<T: Iterator + TrustedLen> CollectTrustedToVec for T {}
-impl<I: Iterator<Item = TResult<T>> + TrustedLen + Sized, T: std::fmt::Debug>
-    TryCollectTrustedToVec<T> for I
-{
-}
+impl<T: TrustedLen> CollectTrustedToVec for T {}
+impl<I: TrustedLen<Item = TResult<T>> + Sized, T: std::fmt::Debug> TryCollectTrustedToVec<T> for I {}
