@@ -116,11 +116,11 @@ pub trait Vec1View: TIter + Slice {
     /// Rolling and apply a custom funtion to each window, but it won't collect result
     fn rolling_custom_iter<U, F>(&self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
     where
-        F: FnMut(&<Self as Slice>::Output<'_>) -> U,
+        F: FnMut(Cow<'_, <Self as Slice>::Output<'_>>) -> U,
     {
         (1..self.len() + 1)
             .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-            .map(move |(end, start)| f(self.slice(start, end).unwrap().as_ref()))
+            .map(move |(end, start)| f(self.slice(start, end).unwrap()))
             .to_trust(self.len())
     }
 
@@ -133,7 +133,7 @@ pub trait Vec1View: TIter + Slice {
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        F: FnMut(&<Self as Slice>::Output<'_>) -> O::Item,
+        F: FnMut(Cow<'_, <Self as Slice>::Output<'_>>) -> O::Item,
         O::Item: Clone,
     {
         let iter = self.rolling_custom_iter(window, f);
