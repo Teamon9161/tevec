@@ -54,9 +54,9 @@ impl<U: TimeUnitTrait> DateTime<U> {
     #[inline]
     pub fn into_opt_i64(self) -> Option<i64> {
         if self.is_nat() {
-            Some(self.0)
-        } else {
             None
+        } else {
+            Some(self.0)
         }
     }
 
