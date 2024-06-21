@@ -1,20 +1,21 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, marker::PhantomData};
 
 use crate::prelude::*;
 
 /// A trait indicating that a type can be referenced to a Trusted and DoubleEnded iterator.
-pub trait TIter: GetLen {
-    type Item;
+pub trait TIter<T>: GetLen {
+    // type Item;
 
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
     where
         Self: 'a,
-        Self::Item: 'a;
+        T: 'a;
 
     #[inline]
-    fn map<U, F>(&self, f: F) -> TrustIter<impl TIterator<Item = U>>
+    fn map<'a, U, F>(&'a self, f: F) -> TrustIter<impl TIterator<Item = U>>
     where
-        F: FnMut(Self::Item) -> U,
+        F: FnMut(T) -> U,
+        T: 'a,
     {
         TrustIter::new(self.titer().map(f), self.len())
     }
@@ -35,25 +36,26 @@ impl<I: IntoIterator + GetLen> IntoTIter for I {
     }
 }
 
-pub struct OptIter<'a, V: Vec1View> {
+pub struct OptIter<'a, V: Vec1View<T>, T> {
     pub view: &'a V,
+    pub item: PhantomData<T>,
 }
 
-impl<V: Vec1View> GetLen for OptIter<'_, V> {
+impl<V: Vec1View<T>, T> GetLen for OptIter<'_, V, T> {
     #[inline]
     fn len(&self) -> usize {
         self.view.len()
     }
 }
 
-impl<V: Vec1View> TIter for OptIter<'_, V>
-where
-    V::Item: IsNone,
+impl<V: Vec1View<T>, T: IsNone> TIter<Option<<T as IsNone>::Inner>> for OptIter<'_, V, T>
+// where
+//     V::Item: IsNone,
 {
-    type Item = Option<<V::Item as IsNone>::Inner>;
+    // type Item = Option<<T as IsNone>::Inner>;
 
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Option<<T as IsNone>::Inner>>>
     where
         Self: 'a,
     {
@@ -61,17 +63,16 @@ where
     }
 }
 
-impl<'a, V: Vec1View> Slice for OptIter<'a, V>
+impl<'a, V: Vec1View<T>, T: IsNone + 'a> Slice<Option<T::Inner>> for OptIter<'a, V, T>
 where
-    V::Item: IsNone,
-    V::Output<'a>: TIter<Item = V::Item>,
+    V::Output<'a>: TIter<T>,
 {
-    type Element = Option<<V::Item as IsNone>::Inner>;
-    type Output<'b> = Vec<Option<<V::Item as IsNone>::Inner>> where Self: 'b, Self::Element: 'b;
+    // type Element = Option<T::Inner>;
+    type Output<'b> = Vec<Option<T::Inner>> where Self: 'b, Option<T::Inner>: 'b;
     #[inline]
     fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'b>>>
     where
-        Self::Element: 'b,
+        Option<T::Inner>: 'b,
     {
         Ok(Cow::Owned(
             self.view
@@ -83,9 +84,9 @@ where
     }
 }
 
-impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for OptIter<'a, V>
+impl<'a, T: IsNone + 'a, V: Vec1View<T>> Vec1View<Option<T::Inner>> for OptIter<'a, V, T>
 where
-    for<'b> V::Output<'b>: TIter<Item = T>,
+    for<'b> V::Output<'b>: TIter<T>,
 {
     #[inline]
     unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
@@ -100,12 +101,12 @@ where
 //     }
 // }
 
-impl<'a, V: Vec1View> IntoIterator for &OptIter<'a, V>
-where
-    V::Item: IsNone,
+impl<'a, V: Vec1View<T>, T: IsNone> IntoIterator for &OptIter<'a, V, T>
+// where
+//     V::Item: IsNone,
 {
-    type Item = Option<<V::Item as IsNone>::Inner>;
-    type IntoIter = TrustIter<impl Iterator<Item = Self::Item>>;
+    type Item = Option<T::Inner>;
+    type IntoIter = TrustIter<impl Iterator<Item = Option<T::Inner>>>;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.titer()

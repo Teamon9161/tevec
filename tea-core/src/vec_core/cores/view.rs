@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, marker::PhantomData};
 
 use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
 
@@ -12,46 +12,46 @@ use super::own::{Vec1, Vec1Collect};
 use tea_dtype::{Cast, IsNone};
 use tea_error::{tbail, TResult};
 
-pub trait Slice {
-    type Element;
+pub trait Slice<T> {
+    // type Element;
     // // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
     // type Output<'a>: Vec1View<Item = Self::Element> + ToOwned + ?Sized
     type Output<'a>: ToOwned + ?Sized
     where
         Self: 'a,
-        Self::Element: 'a;
+        T: 'a;
 
     fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
     where
-        Self::Element: 'a;
+        T: 'a; // this contraint is needed for polars StringChunked
 }
 
-pub trait Vec1View: TIter + Slice {
+pub trait Vec1View<T>: TIter<T> + Slice<T> {
     /// Get the value at the index
     ///
     /// # Safety
     ///
     /// The index should be less than the length of the array
-    unsafe fn uget(&self, index: usize) -> Self::Item;
+    unsafe fn uget(&self, index: usize) -> T;
 
     #[inline(always)]
-    fn try_as_slice(&self) -> Option<&[Self::Item]> {
+    fn try_as_slice(&self) -> Option<&[T]> {
         None
     }
 
     #[inline]
-    fn iter_cast<U>(&self) -> TrustIter<impl TIterator<Item = U>>
+    fn iter_cast<'a, U>(&'a self) -> TrustIter<impl TIterator<Item = U>>
     where
-        Self::Item: Cast<U>,
+        T: 'a + Cast<U>,
     {
         TrustIter::new(self.titer().map(|v| v.cast()), self.len())
     }
 
     #[inline]
-    fn opt_iter_cast<U>(&self) -> TrustIter<impl TIterator<Item = Option<U>>>
+    fn opt_iter_cast<'a, U>(&'a self) -> TrustIter<impl TIterator<Item = Option<U>>>
     where
-        Self::Item: IsNone,
-        <Self::Item as IsNone>::Inner: Cast<U>,
+        T: IsNone + 'a,
+        <T as IsNone>::Inner: Cast<U>,
     {
         TrustIter::new(
             self.titer().map(|v| v.to_opt().map(Cast::<U>::cast)),
@@ -60,20 +60,21 @@ pub trait Vec1View: TIter + Slice {
     }
 
     #[inline]
-    fn opt(&self) -> OptIter<Self>
+    fn opt(&self) -> OptIter<Self, T>
     where
-        Self::Item: IsNone,
+        T: IsNone,
         Self: Sized,
     {
-        OptIter { view: self }
+        OptIter {
+            view: self,
+            item: PhantomData,
+        }
     }
 
     #[inline]
-    fn to_opt_iter<'a>(
-        &'a self,
-    ) -> TrustIter<impl TIterator<Item = Option<<Self::Item as IsNone>::Inner>>>
+    fn to_opt_iter<'a>(&'a self) -> TrustIter<impl TIterator<Item = Option<T::Inner>>>
     where
-        Self::Item: IsNone + 'a,
+        T: IsNone + 'a,
     {
         TrustIter::new(self.titer().map(|v| v.to_opt()), self.len())
     }
@@ -84,15 +85,15 @@ pub trait Vec1View: TIter + Slice {
     ///
     /// The index should be less than the length of the array
     #[inline]
-    unsafe fn uvget(&self, index: usize) -> Option<<Self::Item as IsNone>::Inner>
+    unsafe fn uvget(&self, index: usize) -> Option<T::Inner>
     where
-        Self::Item: IsNone,
+        T: IsNone,
     {
         self.uget(index).to_opt()
     }
 
     #[inline]
-    fn get(&self, index: usize) -> TResult<Self::Item> {
+    fn get(&self, index: usize) -> TResult<T> {
         if index < self.len() {
             Ok(unsafe { self.uget(index) })
         } else {
@@ -101,9 +102,9 @@ pub trait Vec1View: TIter + Slice {
     }
 
     #[inline]
-    fn vget(&self, index: usize) -> Option<<Self::Item as IsNone>::Inner>
+    fn vget(&self, index: usize) -> Option<T::Inner>
     where
-        Self::Item: IsNone,
+        T: IsNone,
     {
         if index < self.len() {
             unsafe { self.uvget(index) }
@@ -116,7 +117,7 @@ pub trait Vec1View: TIter + Slice {
     /// Rolling and apply a custom funtion to each window, but it won't collect result
     fn rolling_custom_iter<U, F>(&self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
     where
-        F: FnMut(Cow<'_, <Self as Slice>::Output<'_>>) -> U,
+        F: FnMut(Cow<'_, <Self as Slice<T>>::Output<'_>>) -> U,
     {
         (1..self.len() + 1)
             .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
@@ -126,15 +127,15 @@ pub trait Vec1View: TIter + Slice {
 
     /// Rolling and apply a custom funtion to each window
     #[inline]
-    fn rolling_custom<O: Vec1, F>(
+    fn rolling_custom<O: Vec1<OT>, OT: Clone, F>(
         &self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        F: FnMut(Cow<'_, <Self as Slice>::Output<'_>>) -> O::Item,
-        O::Item: Clone,
+        F: FnMut(Cow<'_, <Self as Slice<T>>::Output<'_>>) -> OT,
+        // O::Item: Clone,
     {
         let iter = self.rolling_custom_iter(window, f);
         if let Some(mut out) = out {
@@ -147,7 +148,7 @@ pub trait Vec1View: TIter + Slice {
 
     /// Rolling and apply a custom funtion to each window of two vecs
     #[inline]
-    fn rolling2_custom<O: Vec1, V2, F>(
+    fn rolling2_custom<O: Vec1<OT>, OT: Clone, V2, T2, F>(
         &self,
         other: &V2,
         window: usize,
@@ -155,9 +156,9 @@ pub trait Vec1View: TIter + Slice {
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        V2: Vec1View,
-        F: FnMut(&<Self as Slice>::Output<'_>, &<V2 as Slice>::Output<'_>) -> O::Item,
-        O::Item: Clone,
+        V2: Vec1View<T2>,
+        F: FnMut(&<Self as Slice<T>>::Output<'_>, &<V2 as Slice<T2>>::Output<'_>) -> OT,
+        // O::Item: Clone,
     {
         let iter = (1..self.len() + 1)
             .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
@@ -180,18 +181,18 @@ pub trait Vec1View: TIter + Slice {
     /// move element from the window and a value to be added to
     /// the window
     #[inline]
-    fn rolling_apply<O: Vec1, F>(
+    fn rolling_apply<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
         mut f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        Self::Item: Clone,
-        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+        T: Clone,
+        F: FnMut(Option<T>, T) -> OT,
     {
         if let Some(out) = out {
-            self.rolling_apply_to::<O, _>(window, f, out);
+            self.rolling_apply_to::<O, _, _>(window, f, out);
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
@@ -216,10 +217,14 @@ pub trait Vec1View: TIter + Slice {
     /// Be careful to use this function as it will panic in polars backend.
     /// use `rolling_apply` instead
     #[inline]
-    fn rolling_apply_to<O: Vec1, F>(&self, window: usize, mut f: F, mut out: O::UninitRefMut<'_>)
-    where
-        Self::Item: Clone,
-        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+    fn rolling_apply_to<O: Vec1<OT>, OT, F>(
+        &self,
+        window: usize,
+        mut f: F,
+        mut out: O::UninitRefMut<'_>,
+    ) where
+        T: Clone,
+        F: FnMut(Option<T>, T) -> OT,
     {
         let len = self.len();
         let window = window.min(len);
@@ -247,7 +252,7 @@ pub trait Vec1View: TIter + Slice {
     /// move element from the window and a value to be added to
     /// the window
     #[inline]
-    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+    fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
         window: usize,
@@ -255,12 +260,12 @@ pub trait Vec1View: TIter + Slice {
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        Self::Item: Clone,
-        V2::Item: Clone,
-        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+        T: Clone,
+        T2: Clone,
+        F: FnMut(Option<(T, T2)>, (T, T2)) -> OT,
     {
         if let Some(out) = out {
-            self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+            self.rolling2_apply_to::<O, _, _, _, _>(other, window, f, out);
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
@@ -285,14 +290,14 @@ pub trait Vec1View: TIter + Slice {
     /// of uninit vec.
     /// Be careful to use this function as it will panic in polars backend.
     /// use `rolling_apply` instead
-    fn rolling2_apply_to<O: Vec1, V2: Vec1View, F>(
+    fn rolling2_apply_to<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
         window: usize,
         mut f: F,
         mut out: O::UninitRefMut<'_>,
     ) where
-        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+        F: FnMut(Option<(T, T2)>, (T, T2)) -> OT,
     {
         let len = self.len();
         let window = window.min(len);
@@ -318,7 +323,7 @@ pub trait Vec1View: TIter + Slice {
     }
 
     #[inline]
-    fn rolling_apply_idx<O: Vec1, F>(
+    fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
         mut f: F,
@@ -326,10 +331,10 @@ pub trait Vec1View: TIter + Slice {
     ) -> Option<O>
     where
         // start, end, value
-        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+        F: FnMut(Option<usize>, usize, T) -> OT,
     {
         if let Some(out) = out {
-            self.rolling_apply_idx_to::<O, _>(window, f, out);
+            self.rolling_apply_idx_to::<O, _, _>(window, f, out);
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
@@ -349,14 +354,14 @@ pub trait Vec1View: TIter + Slice {
     #[inline]
     /// be careful to use this function as it will panic in polars backend.
     /// use rolling_apply_idx instead
-    fn rolling_apply_idx_to<O: Vec1, F>(
+    fn rolling_apply_idx_to<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
         mut f: F,
         mut out: O::UninitRefMut<'_>,
     ) where
         // start, end, value
-        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+        F: FnMut(Option<usize>, usize, T) -> OT,
     {
         let len = self.len();
         let window = window.min(len);
@@ -377,7 +382,7 @@ pub trait Vec1View: TIter + Slice {
     }
 
     #[inline]
-    fn rolling2_apply_idx<O: Vec1, V2: Vec1View, F>(
+    fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
         window: usize,
@@ -386,10 +391,10 @@ pub trait Vec1View: TIter + Slice {
     ) -> Option<O>
     where
         // start, end, value
-        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+        F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
     {
         if let Some(out) = out {
-            self.rolling2_apply_idx_to::<O, _, _>(other, window, f, out);
+            self.rolling2_apply_idx_to::<O, _, _, _, _>(other, window, f, out);
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
@@ -410,7 +415,7 @@ pub trait Vec1View: TIter + Slice {
     #[inline]
     /// be careful to use this function as it will panic in polars backend.
     /// use rolling2_apply_idx instead
-    fn rolling2_apply_idx_to<O: Vec1, V2: Vec1View, F>(
+    fn rolling2_apply_idx_to<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
         window: usize,
@@ -418,7 +423,7 @@ pub trait Vec1View: TIter + Slice {
         mut out: O::UninitRefMut<'_>,
     ) where
         // start, end, value
-        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+        F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
     {
         let len = self.len();
         let window = window.min(len);
@@ -439,61 +444,60 @@ pub trait Vec1View: TIter + Slice {
     }
 }
 
-impl<I: TIter> TIter for std::sync::Arc<I> {
-    type Item = I::Item;
+impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
+    // type Item = I::Item;
 
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = I::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
     where
-        I::Item: 'a,
+        T: 'a,
     {
         (**self).titer()
     }
 }
 
-impl<S: Slice> Slice for std::sync::Arc<S> {
-    type Element = S::Element;
+impl<S: Slice<T>, T> Slice<T> for std::sync::Arc<S> {
     type Output<'a> = S::Output<'a>
     where
         Self: 'a,
-        Self::Element: 'a;
+        T: 'a;
 
     #[inline]
     fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
     where
-        Self::Element: 'a,
+        T: 'a,
     {
         (**self).slice(start, end)
     }
 }
 
-impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
+impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     #[inline]
-    unsafe fn uget(&self, index: usize) -> Self::Item {
+    unsafe fn uget(&self, index: usize) -> T {
         (**self).uget(index)
     }
 
     #[inline]
-    fn try_as_slice(&self) -> Option<&[Self::Item]> {
+    fn try_as_slice(&self) -> Option<&[T]> {
         (**self).try_as_slice()
     }
 
     #[inline]
-    fn rolling_apply<O: Vec1, F>(
+    fn rolling_apply<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        Self::Item: Clone,
-        F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+        T: Clone,
+        F: FnMut(Option<T>, T) -> OT,
     {
         (**self).rolling_apply(window, f, out)
     }
 
     #[inline]
-    fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+    fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
         window: usize,
@@ -501,15 +505,15 @@ impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        Self::Item: Clone,
-        V2::Item: Clone,
-        F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+        T: Clone,
+        T2: Clone,
+        F: FnMut(Option<(T, T2)>, (T, T2)) -> OT,
     {
         (**self).rolling2_apply(other, window, f, out)
     }
 
     #[inline]
-    fn rolling_apply_idx<O: Vec1, F>(
+    fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
         f: F,
@@ -517,13 +521,13 @@ impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
     ) -> Option<O>
     where
         // start, end, value
-        F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+        F: FnMut(Option<usize>, usize, T) -> OT,
     {
         (**self).rolling_apply_idx(window, f, out)
     }
 
     #[inline]
-    fn rolling2_apply_idx<O: Vec1, V2: Vec1View, F>(
+    fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
         window: usize,
@@ -532,7 +536,7 @@ impl<V: Vec1View> Vec1View for std::sync::Arc<V> {
     ) -> Option<O>
     where
         // start, end, value
-        F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+        F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
     {
         (**self).rolling2_apply_idx(other, window, f, out)
     }

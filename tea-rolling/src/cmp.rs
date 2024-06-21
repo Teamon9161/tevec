@@ -1,9 +1,9 @@
 use std::cmp::{min, Ordering};
 use tea_core::prelude::*;
 
-pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vargmin<O: Vec1<Item = U>, U>(
+    fn ts_vargmin<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -70,7 +70,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vmin<O: Vec1<Item = U>, U>(
+    fn ts_vmin<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -133,7 +133,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vargmax<O: Vec1<Item = U>, U>(
+    fn ts_vargmax<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -200,7 +200,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vmax<O: Vec1<Item = U>, U>(
+    fn ts_vmax<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -263,7 +263,7 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vrank<O: Vec1<Item = U>, U>(
+    fn ts_vrank<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -326,10 +326,10 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-pub trait RollingCmp<T>: Vec1View<Item = T> {}
+pub trait RollingCmp<T>: Vec1View<T> {}
 
-impl<T: IsNone, I: Vec1View<Item = T>> RollingValidCmp<T> for I {}
-impl<T, I: Vec1View<Item = T>> RollingCmp<T> for I {}
+impl<T: IsNone, I: Vec1View<T>> RollingValidCmp<T> for I {}
+impl<T, I: Vec1View<T>> RollingCmp<T> for I {}
 
 #[cfg(test)]
 mod tests {

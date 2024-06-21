@@ -8,7 +8,7 @@ license.workspace = true
 
 [features]
 default = []
-# default = ["rolling", "stat", "ndarray", "pl"]
+# default = ["time", "rolling", "agg", "map", "stat", "ndarray", "pl"]
 # default = ["agg", "map", "rolling", "pl", "dyn"]
 # dyn = ["tea-macros"]
 

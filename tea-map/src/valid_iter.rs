@@ -191,8 +191,8 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         T::Inner: Number + Debug,
         (T::Inner, T::Inner): itertools::traits::HomogeneousTuple<Item = T::Inner>,
         T2: IsNone + 'a,
-        V2: Vec1View<Item = T>,
-        V3: Vec1View<Item = T2>,
+        V2: Vec1View<T>,
+        V3: Vec1View<T2>,
     {
         use itertools::Itertools;
         let bins: Vec<T::Inner> = if add_bounds {

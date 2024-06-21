@@ -1,8 +1,8 @@
 use tea_core::prelude::*;
 
-pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vsum<O: Vec1<Item = U>, U>(
+    fn ts_vsum<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -40,7 +40,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vmean<O: Vec1<Item = U>, U>(
+    fn ts_vmean<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -78,7 +78,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vewm<O: Vec1<Item = U>, U>(
+    fn ts_vewm<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -121,7 +121,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vwma<O: Vec1<Item = U>, U>(
+    fn ts_vwma<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -165,7 +165,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vstd<O: Vec1<Item = U>, U>(
+    fn ts_vstd<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -218,7 +218,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vvar<O: Vec1<Item = U>, U>(
+    fn ts_vvar<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -270,7 +270,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vskew<O: Vec1<Item = U>, U>(
+    fn ts_vskew<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -331,7 +331,7 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vkurt<O: Vec1<Item = U>, U>(
+    fn ts_vkurt<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -400,9 +400,9 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
+pub trait RollingFeature<T: Clone>: Vec1View<T> {
     #[no_out]
-    fn ts_sum<O: Vec1<Item = U>, U>(
+    fn ts_sum<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -436,7 +436,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_mean<O: Vec1<Item = U>, U>(
+    fn ts_mean<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -470,7 +470,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_ewm<O: Vec1<Item = U>, U>(
+    fn ts_ewm<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -509,7 +509,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_wma<O: Vec1<Item = U>, U>(
+    fn ts_wma<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -549,7 +549,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_std<O: Vec1<Item = U>, U>(
+    fn ts_std<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -598,7 +598,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_var<O: Vec1<Item = U>, U>(
+    fn ts_var<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -647,7 +647,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_skew<O: Vec1<Item = U>, U>(
+    fn ts_skew<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -705,7 +705,7 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_kurt<O: Vec1<Item = U>, U>(
+    fn ts_kurt<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -772,9 +772,9 @@ pub trait RollingFeature<T: Clone>: Vec1View<Item = T> {
     }
 }
 
-impl<T: Clone, I: Vec1View<Item = T>> RollingFeature<T> for I {}
+impl<T: Clone, I: Vec1View<T>> RollingFeature<T> for I {}
 
-impl<T: IsNone, I: Vec1View<Item = T>> RollingValidFeature<T> for I {}
+impl<T: IsNone, I: Vec1View<T>> RollingValidFeature<T> for I {}
 
 #[cfg(test)]
 mod tests {

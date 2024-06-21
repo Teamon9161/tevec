@@ -2,14 +2,14 @@ use tea_error::{tensure, TResult};
 
 use super::view::Vec1View;
 
-pub trait Vec1Mut<'a>: Vec1View {
+pub trait Vec1Mut<'a, T>: Vec1View<T> {
     /// # Safety
     ///
     /// The index should be less than the length of the array
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut Self::Item;
+    unsafe fn uget_mut(&mut self, index: usize) -> &mut T;
 
     #[inline]
-    fn get_mut(&mut self, index: usize) -> Option<&mut Self::Item> {
+    fn get_mut(&mut self, index: usize) -> Option<&mut T> {
         if index < self.len() {
             Some(unsafe { self.uget_mut(index) })
         } else {
@@ -18,16 +18,16 @@ pub trait Vec1Mut<'a>: Vec1View {
     }
 
     #[inline(always)]
-    fn try_as_slice_mut(&mut self) -> Option<&mut [Self::Item]> {
+    fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
         None
     }
 
     #[inline]
     /// Apply a function to each element of the array and the corresponding element of another array
     /// return an error if the length of the two arrays is not equal
-    fn apply_mut_with<O: Vec1View, F>(&mut self, other: &O, mut f: F) -> TResult<()>
+    fn apply_mut_with<O: Vec1View<OT>, OT, F>(&mut self, other: &O, mut f: F) -> TResult<()>
     where
-        F: FnMut(&mut Self::Item, O::Item),
+        F: FnMut(&mut T, OT),
     {
         tensure!(
             self.len() == other.len(),

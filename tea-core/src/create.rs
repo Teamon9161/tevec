@@ -1,7 +1,7 @@
 use super::linspace::{linspace, range};
 use super::prelude::*;
 
-pub trait Vec1Create<T: IsNone>: Vec1<Item = T> {
+pub trait Vec1Create<T: IsNone>: Vec1<T> {
     #[inline]
     fn range(start: Option<T::Inner>, end: T::Inner, step: Option<T::Inner>) -> Self
     where
@@ -24,7 +24,7 @@ pub trait Vec1Create<T: IsNone>: Vec1<Item = T> {
     }
 }
 
-impl<T: IsNone, V: Vec1<Item = T>> Vec1Create<T> for V {}
+impl<T: IsNone, V: Vec1<T>> Vec1Create<T> for V {}
 
 #[cfg(test)]
 mod tests {

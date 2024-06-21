@@ -13,7 +13,7 @@ pub enum WinsorizeMethod {
     Sigma,
 }
 
-pub trait MapValidFinal<T: IsNone>: Vec1View<Item = T> {
+pub trait MapValidFinal<T: IsNone>: Vec1View<T> {
     #[cfg(feature = "agg")]
     fn winsorize<'a>(
         &'a self,
@@ -21,7 +21,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<Item = T> {
         method_params: Option<f64>,
     ) -> TResult<Box<dyn TrustedLen<Item = f64> + 'a>>
     where
-        T: Cast<f64>,
+        T: Cast<f64> + 'a,
         T::Inner: Number,
         Self: VecAggValidExt<T>,
     {
@@ -67,7 +67,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-impl<V: Vec1View<Item = T>, T: IsNone> MapValidFinal<T> for V {}
+impl<V: Vec1View<T>, T: IsNone> MapValidFinal<T> for V {}
 
 #[cfg(test)]
 mod tests {

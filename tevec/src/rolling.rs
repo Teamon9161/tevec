@@ -25,10 +25,10 @@ fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
         .collect_trusted_to_vec()
 }
 
-pub trait RollingValidFinal<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
     #[cfg(feature = "statrs")]
     #[no_out]
-    fn ts_fdiff<O: Vec1<Item = U>, U: Clone>(
+    fn ts_fdiff<O: Vec1<U>, U: Clone>(
         &self,
         d: f64,
         window: usize,
@@ -37,7 +37,7 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<Item = T> {
     ) -> O
     where
         T::Inner: Number,
-        for<'a> Self::Output<'a>: TIter<Item = T>,
+        for<'a> Self::Output<'a>: TIter<T>,
         f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
@@ -67,7 +67,7 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-impl<I: Vec1View<Item = T>, T: IsNone> RollingValidFinal<T> for I {}
+impl<I: Vec1View<T>, T: IsNone> RollingValidFinal<T> for I {}
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,7 @@
 use std::ops::Sub;
 use tea_core::prelude::*;
 
-pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
+pub trait MapValidVec<T: IsNone>: Vec1View<T> {
     fn vdiff<'a>(&'a self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
     where
         T: Clone + Sub<Output = T> + Zero + 'a,
@@ -82,12 +82,11 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         }
     }
 
-    fn vrank<O: Vec1>(&self, pct: bool, rev: bool) -> O
+    fn vrank<O: Vec1<OT>, OT: IsNone>(&self, pct: bool, rev: bool) -> O
     where
         T: IsNone + PartialEq,
         T::Inner: PartialOrd,
-        f64: Cast<O::Item>,
-        O::Item: IsNone,
+        f64: Cast<OT>,
     {
         let len = self.len();
         if len == 0 {
@@ -114,7 +113,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
         }
         // if the first value is none then all the elements are none
         if unsafe { self.uget(idx_sorted.uget(0)) }.is_none() {
-            return O::full(len, O::Item::none());
+            return O::full(len, OT::none());
         }
         let mut out = O::uninit(len);
         let mut repeat_num = 1usize;
@@ -360,7 +359,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-impl<T: IsNone, I: Vec1View<Item = T>> MapValidVec<T> for I {}
+impl<T: IsNone, I: Vec1View<T>> MapValidVec<T> for I {}
 
 #[cfg(test)]
 mod test {

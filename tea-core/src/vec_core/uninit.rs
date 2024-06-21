@@ -5,7 +5,7 @@ use super::{trusted::TrustedLen, GetLen};
 use super::Vec1;
 
 pub trait UninitVec<T>: GetLen {
-    type Vec: Vec1<Item = T>;
+    type Vec: Vec1<T>;
     // type RefMut<'a>: UninitRefMut<T> where Self: 'a;
     /// # Safety
     ///

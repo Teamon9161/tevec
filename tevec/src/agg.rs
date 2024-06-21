@@ -13,8 +13,8 @@ pub enum CorrMethod {
     Spearman,
 }
 
-pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
-    fn vcorr<V2: Vec1View<Item = T>>(
+pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
+    fn vcorr<V2: Vec1View<T>>(
         &self,
         other: &V2,
         min_periods: Option<usize>,
@@ -31,8 +31,8 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
             CorrMethod::Pearson => self.titer().vcorr_pearson(other.titer(), min_periods),
             #[cfg(feature = "map")]
             CorrMethod::Spearman => {
-                let v1_rank = self.vrank::<Vec<f64>>(false, false);
-                let v2_rank = other.vrank::<Vec<f64>>(false, false);
+                let v1_rank = self.vrank::<Vec<f64>, _>(false, false);
+                let v2_rank = other.vrank::<Vec<f64>, _>(false, false);
                 v1_rank.vcorr_pearson(v2_rank, min_periods)
             }
         }
@@ -78,7 +78,7 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-impl<V: Vec1View<Item = T>, T: IsNone> AggValidFinal<T> for V {}
+impl<V: Vec1View<T>, T: IsNone> AggValidFinal<T> for V {}
 
 #[cfg(test)]
 mod tests {

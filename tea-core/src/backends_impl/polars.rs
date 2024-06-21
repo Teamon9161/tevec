@@ -1,16 +1,17 @@
 use crate::prelude::*;
 use polars::prelude::*;
 use polars_arrow::legacy::utils::CustomIterTools;
+use std::borrow::Cow;
+#[cfg(feature = "time")]
+use tea_dtype::{unit, DateTime};
 
 macro_rules! impl_for_ca {
     (to_iter, $real: ty => $($ForType: ty),*) => {
         $(
-            impl TIter for $ForType {
-                type Item = Option<$real>;
-
+            impl TIter<Option<$real>> for $ForType {
                 #[inline]
-                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item=Self::Item>>
-                where Self::Item: 'a
+                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item=Option<$real>>>
+                where Option<$real>: 'a
                 {
                     TrustIter::new(self.into_iter(), self.len())
                 }
@@ -18,16 +19,17 @@ macro_rules! impl_for_ca {
         )*
     };
 
-    (view $type: ty => $($ForType: ty),*) => {
+    (view $type: ty, $real: ty => $($ForType: ty),*) => {
         $(
-            impl Slice for $ForType {
-                type Element = <Self as TIter>::Item;
+            impl Slice<Option<$real>> for $ForType {
                 type Output<'a> = ChunkedArray<$type>
                 where
                     Self: 'a,
-                    Self::Element: 'a;
+                    Option<$real>: 'a;
                 #[inline]
-                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>> where <Self::Output<'a> as TIter>::Item: 'a {
+                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>>
+                where Option<$real>: 'a,
+                {
                     if end < start {
                         tbail!("end index: {} should be large than start index: {} in slice", end, start);
                     }
@@ -36,10 +38,10 @@ macro_rules! impl_for_ca {
                 }
             }
 
-            impl Vec1View for $ForType
+            impl Vec1View<Option<$real>> for $ForType
             {
                 #[inline]
-                unsafe fn uget(&self, index: usize) -> Self::Item {
+                unsafe fn uget(&self, index: usize) -> Option<$real> {
                     self.get_unchecked(index)
                 }
             }
@@ -47,28 +49,28 @@ macro_rules! impl_for_ca {
         )*
     };
 
-    (view_mut $($ForType: ty),*) => {
-        $(impl<'a> Vec1Mut<'a> for $ForType
+    (view_mut $real: ty => $($ForType: ty),*) => {
+        $(impl<'a> Vec1Mut<'a, Option<$real>> for $ForType
         {
             #[inline]
-            unsafe fn uget_mut(&mut self, _index: usize) -> &mut Self::Item {
+            unsafe fn uget_mut(&mut self, _index: usize) -> &mut Option<$real> {
                 unimplemented!("get mut is not supported in polars backend");
             }
         })*
     };
 
-    (vec $($ForType: ty),*) => {
-        $(impl Vec1 for $ForType {
+    (vec $real: ty => $($ForType: ty),*) => {
+        $(impl Vec1<Option<$real>> for $ForType {
             type Uninit = $ForType;
             type UninitRefMut<'a> = &'a mut $ForType;
 
             #[inline]
-            fn collect_from_iter<I: Iterator<Item = Self::Item>>(iter: I) -> Self {
+            fn collect_from_iter<I: Iterator<Item = Option<$real>>>(iter: I) -> Self {
                 iter.collect()
             }
 
             #[inline]
-            fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self>
+            fn try_collect_from_iter<I: Iterator<Item = TResult<Option<$real>>>>(iter: I) -> TResult<Self>
             {
                 iter.collect()
             }
@@ -85,16 +87,16 @@ macro_rules! impl_for_ca {
             }
 
             #[inline]
-            fn collect_from_trusted<I: Iterator<Item = Self::Item>+TrustedLen>(iter: I) -> Self {
+            fn collect_from_trusted<I: Iterator<Item = Option<$real>>+TrustedLen>(iter: I) -> Self {
                 iter.collect_trusted()
             }
 
             #[inline]
-            fn try_collect_from_trusted<I: Iterator<Item = TResult<Self::Item>> + TrustedLen>(
+            fn try_collect_from_trusted<I: Iterator<Item = TResult<Option<$real>>> + TrustedLen>(
                 iter: I,
             ) -> TResult<Self>
             where
-                Self::Item: std::fmt::Debug,
+                Option<$real>: std::fmt::Debug,
             {
                 iter.try_collect_ca_trusted("")
             }
@@ -104,9 +106,9 @@ macro_rules! impl_for_ca {
     ($($type:ty: $real: ty),*) => {
         $(
             impl_for_ca!(to_iter, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
-            impl_for_ca!(view $type=>ChunkedArray<$type>, &ChunkedArray<$type>);
-            impl_for_ca!(view_mut ChunkedArray<$type>);
-            impl_for_ca!(vec ChunkedArray<$type>);
+            impl_for_ca!(view $type, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
+            impl_for_ca!(view_mut $real=>ChunkedArray<$type>);
+            impl_for_ca!(vec $real=>ChunkedArray<$type>);
 
             impl UninitVec<Option<$real>> for ChunkedArray<$type>
             {
@@ -150,33 +152,27 @@ impl_for_ca!(
     BooleanType: bool
 );
 
-impl<'a> TIter for &'a ChunkedArray<StringType> {
-    type Item = Option<&'a str>;
-
+impl<'a: 's, 's> TIter<Option<&'s str>> for &'a ChunkedArray<StringType> {
     #[inline]
-    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = Option<&'s str>>>
     where
-        Self::Item: 'b,
+        Option<&'s str>: 'b,
     {
         TrustIter::new(self.into_iter(), self.len())
     }
 }
 
-impl<'s> Slice for &'s ChunkedArray<StringType> {
-    type Element = <Self as TIter>::Item;
+impl<'b, 's> Slice<Option<&'b str>> for &'s ChunkedArray<StringType> {
+    // type Element = Option<&str>;
     type Output<'a> = ChunkedArray<StringType>
     where
         Self: 'a,
-        Self::Element: 'a;
+        Option<&'b str>: 'a;
 
     #[inline]
-    fn slice<'a>(
-        &'a self,
-        start: usize,
-        end: usize,
-    ) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>>
+    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
     where
-        Self::Element: 'a,
+        Option<&'b str>: 'a,
     {
         if end < start {
             tbail!(
@@ -190,9 +186,71 @@ impl<'s> Slice for &'s ChunkedArray<StringType> {
     }
 }
 
-impl<'s> Vec1View for &'s ChunkedArray<StringType> {
+impl<'s: 'a, 'a> Vec1View<Option<&'a str>> for &'s ChunkedArray<StringType> {
     #[inline]
-    unsafe fn uget(&self, index: usize) -> Self::Item {
+    unsafe fn uget(&self, index: usize) -> Option<&'a str> {
         self.get_unchecked(index)
+    }
+}
+
+#[cfg(feature = "time")]
+impl GetLen for DatetimeChunked {
+    #[inline]
+    fn len(&self) -> usize {
+        (**self).len()
+    }
+}
+
+#[cfg(feature = "time")]
+impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
+    #[inline]
+    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = DateTime<unit::Nanosecond>>>
+    where
+        DateTime<unit::Nanosecond>: 'b,
+    {
+        use polars::prelude::{DataType, TimeUnit};
+        match self.dtype() {
+            DataType::Datetime(TimeUnit::Nanoseconds, _) => {
+                // TODO(Teamon): support timezone in future
+                TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
+            }
+            _ => unreachable!("datetime chunked should be nanoseconds unit"),
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
+    #[inline]
+    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = DateTime<unit::Millisecond>>>
+    where
+        DateTime<unit::Millisecond>: 'b,
+    {
+        use polars::prelude::{DataType, TimeUnit};
+        match self.dtype() {
+            DataType::Datetime(TimeUnit::Microseconds, _) => {
+                // TODO(Teamon): support timezone in future
+                TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
+            }
+            _ => unreachable!("datetime chunked should be milliseconds unit"),
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
+    #[inline]
+    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = DateTime<unit::Microsecond>>>
+    where
+        DateTime<unit::Microsecond>: 'b,
+    {
+        use polars::prelude::{DataType, TimeUnit};
+        match self.dtype() {
+            DataType::Datetime(TimeUnit::Microseconds, _) => {
+                // TODO(Teamon): support timezone in future
+                TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
+            }
+            _ => unreachable!("datetime chunked should be microseconds unit"),
+        }
     }
 }

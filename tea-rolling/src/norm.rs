@@ -1,8 +1,8 @@
 use tea_core::prelude::*;
 
-pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vzscore<O: Vec1<Item = U>, U>(
+    fn ts_vzscore<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -53,7 +53,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vminmaxnorm<O: Vec1<Item = U>, U>(
+    fn ts_vminmaxnorm<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -150,4 +150,4 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-impl<T: IsNone, I: Vec1View<Item = T>> RollingValidNorm<T> for I {}
+impl<T: IsNone, I: Vec1View<T>> RollingValidNorm<T> for I {}

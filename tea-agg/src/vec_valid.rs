@@ -8,7 +8,7 @@ pub enum QuantileMethod {
     MidPoint,
 }
 
-pub trait VecAggValidExt<T: IsNone>: Vec1View<Item = T> {
+pub trait VecAggValidExt<T: IsNone>: Vec1View<T> {
     /// Calculate the quantile of the vector.
     /// return error if q is not between 0 and 1.
     fn vquantile(&self, q: f64, method: QuantileMethod) -> TResult<f64>
@@ -88,7 +88,7 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<Item = T> {
         self.vquantile(0.5, QuantileMethod::Linear).unwrap()
     }
 }
-impl<V: Vec1View<Item = T>, T: IsNone> VecAggValidExt<T> for V {}
+impl<V: Vec1View<T>, T: IsNone> VecAggValidExt<T> for V {}
 
 #[cfg(test)]
 mod tests {

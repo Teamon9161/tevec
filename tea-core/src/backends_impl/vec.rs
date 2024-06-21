@@ -12,11 +12,11 @@ macro_rules! impl_vec1 {
                 }
             }
 
-            impl<T: Clone> TIter for $ty {
-                type Item = T;
+            impl<T: Clone> TIter<T> for $ty {
+                // type Item = T;
 
                 #[inline]
-                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
                 where
                     T: 'a,
                 {
@@ -28,18 +28,20 @@ macro_rules! impl_vec1 {
 
     (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
         $(
-            impl<T: Clone $(, const $N: usize)?> Slice for $ty {
-                type Element = T;
+            impl<T: Clone $(, const $N: usize)?> Slice<T> for $ty {
+                // type Element = T;
                 type Output<'a> = <Self as std::ops::Index<std::ops::Range<usize>>>::Output
-                where Self::Element: 'a;
+                where T: 'a;
                 #[inline]
-                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>> where T: 'a{
+                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>>
+                where T: 'a
+                {
                     use std::ops::Index;
                     Ok(std::borrow::Cow::Borrowed(self.index(start..end)))
                 }
             }
 
-            impl<T: Clone $(, const $N: usize)?> Vec1View for $ty {
+            impl<T: Clone $(, const $N: usize)?> Vec1View<T> for $ty {
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> T {
                     self.get_unchecked(index).clone()
@@ -53,22 +55,22 @@ macro_rules! impl_vec1 {
                 #[inline]
                 /// this should be a faster implemention than default as
                 /// we read value directly by ptr
-                fn rolling_apply<O: Vec1, F>(
+                fn rolling_apply<O: Vec1<OT>, OT, F>(
                     &self,
                     window: usize,
                     f: F,
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                    F: FnMut(Option<Self::Item>, Self::Item) -> O::Item,
+                    F: FnMut(Option<T>, T) -> OT,
                 {
                     let len = self.len();
                     if let Some(out) = out {
-                        self.rolling_apply_to::<O, _>(window, f, out);
+                        self.rolling_apply_to::<O, _, _>(window, f, out);
                         None
                     } else {
                         let mut out = O::uninit(len);
-                        self.rolling_apply_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
+                        self.rolling_apply_to::<O, _, _>(window, f, O::uninit_ref_mut(&mut out));
                         Some(unsafe { out.assume_init() })
                     }
                 }
@@ -76,7 +78,7 @@ macro_rules! impl_vec1 {
                 #[inline]
                 /// this should be a faster implemention than default as
                 /// we read value directly by ptr
-                fn rolling2_apply<O: Vec1, V2: Vec1View, F>(
+                fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
                     &self,
                     other: &V2,
                     window: usize,
@@ -84,15 +86,15 @@ macro_rules! impl_vec1 {
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                    F: FnMut(Option<(Self::Item, V2::Item)>, (Self::Item, V2::Item)) -> O::Item,
+                    F: FnMut(Option<(T, T2)>, (T, T2)) -> OT,
                 {
                     let len = self.len();
                     if let Some(out) = out {
-                        self.rolling2_apply_to::<O, _, _>(other, window, f, out);
+                        self.rolling2_apply_to::<O, _, _, _, _>(other, window, f, out);
                         None
                     } else {
                         let mut out = O::uninit(len);
-                        self.rolling2_apply_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
+                        self.rolling2_apply_to::<O, _, _, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
                         Some(unsafe { out.assume_init() })
                     }
                 }
@@ -100,22 +102,22 @@ macro_rules! impl_vec1 {
                 #[inline]
                 /// this should be a faster implemention than default as
                 /// we read value directly by ptr
-                fn rolling_apply_idx<O: Vec1, F>(
+                fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
                     &self,
                     window: usize,
                     f: F,
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                    F: FnMut(Option<usize>, usize, Self::Item) -> O::Item,
+                    F: FnMut(Option<usize>, usize, T) -> OT,
                 {
                     let len = self.len();
                     if let Some(out) = out {
-                        self.rolling_apply_idx_to::<O, _>(window, f, out);
+                        self.rolling_apply_idx_to::<O, _, _>(window, f, out);
                         None
                     } else {
                         let mut out = O::uninit(len);
-                        self.rolling_apply_idx_to::<O, _>(window, f, O::uninit_ref_mut(&mut out));
+                        self.rolling_apply_idx_to::<O, _, _>(window, f, O::uninit_ref_mut(&mut out));
                         Some(unsafe { out.assume_init() })
                     }
                 }
@@ -123,7 +125,7 @@ macro_rules! impl_vec1 {
                 #[inline]
                 /// this should be a faster implemention than default as
                 /// we read value directly by ptr
-                fn rolling2_apply_idx<O: Vec1,V2: Vec1View, F>(
+                fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
                     &self,
                     other: &V2,
                     window: usize,
@@ -131,15 +133,15 @@ macro_rules! impl_vec1 {
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                F: FnMut(Option<usize>, usize, (Self::Item, V2::Item)) -> O::Item,
+                F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
                 {
                     let len = self.len();
                     if let Some(out) = out {
-                        self.rolling2_apply_idx_to::<O, _, _>(other, window, f, out);
+                        self.rolling2_apply_idx_to::<O, _, _, _, _>(other, window, f, out);
                         None
                     } else {
                         let mut out = O::uninit(len);
-                        self.rolling2_apply_idx_to::<O, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
+                        self.rolling2_apply_idx_to::<O, _, _, _, _>(other, window, f, O::uninit_ref_mut(&mut out));
                         Some(unsafe { out.assume_init() })
                     }
                 }
@@ -155,11 +157,11 @@ impl<T, const N: usize> GetLen for [T; N] {
     }
 }
 
-impl<T: Clone, const N: usize> TIter for [T; N] {
-    type Item = T;
+impl<T: Clone, const N: usize> TIter<T> for [T; N] {
+    // type Item = T;
 
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Self::Item>>
+    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
     where
         T: 'a,
     {
@@ -204,19 +206,19 @@ impl_vec1!(
     {N} [T; N]
 );
 
-impl<'a, T: Clone + 'a> Vec1Mut<'a> for Vec<T> {
+impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for Vec<T> {
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.get_unchecked_mut(index)
     }
 
     #[inline]
-    fn try_as_slice_mut(&mut self) -> Option<&mut [Self::Item]> {
+    fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
         Some(self.as_mut_slice())
     }
 }
 
-impl<T: Clone> Vec1 for Vec<T> {
+impl<T: Clone> Vec1<T> for Vec<T> {
     type Uninit = Vec<MaybeUninit<T>>;
     type UninitRefMut<'a> = &'a mut [MaybeUninit<T>] where T: 'a;
 
@@ -226,7 +228,7 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 
     #[inline]
-    fn try_collect_from_iter<I: Iterator<Item = TResult<Self::Item>>>(iter: I) -> TResult<Self> {
+    fn try_collect_from_iter<I: Iterator<Item = TResult<T>>>(iter: I) -> TResult<Self> {
         iter.collect()
     }
 
@@ -250,11 +252,11 @@ impl<T: Clone> Vec1 for Vec<T> {
     }
 
     #[inline]
-    fn try_collect_from_trusted<I: Iterator<Item = TResult<Self::Item>> + TrustedLen>(
+    fn try_collect_from_trusted<I: Iterator<Item = TResult<T>> + TrustedLen>(
         iter: I,
     ) -> TResult<Self>
     where
-        Self::Item: std::fmt::Debug,
+        T: std::fmt::Debug,
     {
         iter.try_collect_trusted_to_vec()
     }

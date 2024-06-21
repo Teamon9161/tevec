@@ -1,8 +1,8 @@
 use tea_core::prelude::*;
 
-pub trait RollingValidReg<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vreg<O: Vec1<Item = U>, U>(
+    fn ts_vreg<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -51,7 +51,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vtsf<O: Vec1<Item = U>, U>(
+    fn ts_vtsf<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -100,7 +100,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vreg_slope<O: Vec1<Item = U>, U>(
+    fn ts_vreg_slope<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -147,7 +147,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vreg_intercept<O: Vec1<Item = U>, U>(
+    fn ts_vreg_intercept<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -195,7 +195,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vreg_resid_mean<O: Vec1<Item = U>, U>(
+    fn ts_vreg_resid_mean<O: Vec1<U>, U>(
         &self,
         window: usize,
         min_periods: Option<usize>,
@@ -253,9 +253,9 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-pub trait RollingValidRegBinary<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vregx_alpha<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
+    fn ts_vregx_alpha<O: Vec1<U>, U, V2: Vec1View<T>>(
         &self,
         other: &V2,
         window: usize,
@@ -308,7 +308,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vregx_beta<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
+    fn ts_vregx_beta<O: Vec1<U>, U, V2: Vec1View<T>>(
         &self,
         other: &V2,
         window: usize,
@@ -359,7 +359,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vregx_resid_mean<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
+    fn ts_vregx_resid_mean<O: Vec1<U>, U, V2: Vec1View<T>>(
         &self,
         other: &V2,
         window: usize,
@@ -424,7 +424,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vregx_resid_std<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
+    fn ts_vregx_resid_std<O: Vec1<U>, U, V2: Vec1View<T>>(
         &self,
         other: &V2,
         window: usize,

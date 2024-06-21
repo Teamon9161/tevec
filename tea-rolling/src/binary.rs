@@ -1,8 +1,8 @@
 use tea_core::prelude::*;
 
-pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
+pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vcov<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
+    fn ts_vcov<O: Vec1<U>, U, V2: Vec1View<T>>(
         &self,
         other: &V2,
         window: usize,
@@ -50,7 +50,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
     }
 
     #[no_out]
-    fn ts_vcorr<O: Vec1<Item = U>, U, V2: Vec1View<Item = T>>(
+    fn ts_vcorr<O: Vec1<U>, U, V2: Vec1View<T>>(
         &self,
         other: &V2,
         window: usize,
@@ -117,7 +117,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<Item = T> {
     }
 }
 
-impl<T: IsNone, I: Vec1View<Item = T>> RollingValidBinary<T> for I {}
+impl<T: IsNone, I: Vec1View<T>> RollingValidBinary<T> for I {}
 
 #[cfg(test)]
 mod tests {
