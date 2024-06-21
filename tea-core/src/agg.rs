@@ -218,7 +218,7 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     {
         let (mut sum_a, mut sum_b, mut sum_ab) = (0., 0., 0.);
         let mut n = 0;
-        let min_periods = min_periods.max(2);
+        let min_periods = min_periods.max_with(2);
         self.into_iter().zip(other).for_each(|(va, vb)| {
             if va.not_none() && vb.not_none() {
                 n += 1;
@@ -244,7 +244,7 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     {
         let (mut sum_a, mut sum2_a, mut sum_b, mut sum2_b, mut sum_ab) = (0., 0., 0., 0., 0.);
         let mut n = 0;
-        let min_periods = min_periods.max(2);
+        let min_periods = min_periods.max_with(2);
         self.into_iter().zip(other).for_each(|(va, vb)| {
             if va.not_none() && vb.not_none() {
                 n += 1;
