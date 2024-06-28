@@ -19,4 +19,3 @@ pub mod agg;
 pub mod map;
 #[cfg(feature = "rolling")]
 pub mod rolling;
-// pub use tea_rolling as rolling;
