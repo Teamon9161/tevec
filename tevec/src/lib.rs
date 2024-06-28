@@ -2,6 +2,9 @@ pub mod prelude;
 pub use tea_core as core;
 pub use tea_dtype as dtype;
 
+#[cfg(feature = "statrs")]
+pub mod special_func;
+
 #[allow(unused_imports)]
 #[macro_use]
 pub extern crate tea_macros as macros;
