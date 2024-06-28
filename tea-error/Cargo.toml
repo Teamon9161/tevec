@@ -10,6 +10,6 @@ license.workspace = true
 default = []
 
 [dependencies]
-anyhow = {workspace = true}
-thiserror = {workspace = true}
-polars = {version = "0.40", optional = true, default-features = false}
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+polars = { version = "0.41.2", optional = true, default-features = false }
