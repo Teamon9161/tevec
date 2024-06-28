@@ -4,7 +4,7 @@ pub use tea_dtype as dtype;
 
 #[allow(unused_imports)]
 #[macro_use]
-pub extern crate tea_macros;
+pub extern crate tea_macros as macros;
 
 #[cfg(feature = "ndarray")]
 pub use tea_core::ndarray;
