@@ -1,22 +1,11 @@
-#[cfg(feature = "statrs")]
-use super::special_func::binom::binom;
 use tea_core::prelude::*;
 pub use tea_rolling::*;
 
-// #[cfg(feature = "statrs")]
-// fn binom(x: f64, y: f64) -> f64 {
-//     use statrs::function::beta::checked_beta;
-//     let res = if let Ok(res) = checked_beta(x - y + 1., y + 1.) {
-//         res
-//     } else {
-//         use statrs::function::gamma::ln_gamma;
-//         dbg!("gamma x+1 {}", ln_gamma(x + 1.));
-//         dbg!("gamma y+1 {}", ln_gamma(y + 1.));
-//         dbg!("gamma x-y+1 {}", ln_gamma(x - y + 1.));
-//         return (ln_gamma(x + 1.) - ln_gamma(y + 1.) - ln_gamma(x - y + 1.)).exp();
-//     };
-//     1. / ((x + 1.) * res)
-// }
+#[cfg(feature = "statrs")]
+#[inline]
+fn binom(x: f64, y: f64) -> f64 {
+    crate::ffi::binom(x, y)
+}
 
 #[cfg(feature = "statrs")]
 fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
@@ -77,57 +66,55 @@ impl<I: Vec1View<T>, T: IsNone> RollingValidFinal<T> for I {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    // use tea_core::testing::*;
+    use tea_core::testing::*;
 
-    // #[cfg(feature = "statrs")]
-    // #[test]
-    // fn test_binom() {
-    //     // let res = binom(2.2, 3.1);
-    //     // assert!((res - 0.03739998336513408).abs() <= EPS);
-    //     // let res = binom(2.2, 3.4);
-    //     // assert!((res - -0.04108154623173803).abs() <= EPS);
-    //     assert_eq!(binom(0.5, 600.), 0.);
-    // }
+    #[cfg(feature = "statrs")]
+    #[test]
+    fn test_binom() {
+        let res = binom(2.2, 3.1);
+        assert!((res - 0.03739998336513408).abs() <= EPS);
+        let res = binom(2.2, 3.4);
+        assert!((res - -0.04108154623173803).abs() <= EPS);
+        assert_eq!(binom(0.5, 600.), -1.9206126162302755e-5);
+    }
 
-    // #[cfg(feature = "statrs")]
-    // #[test]
-    // fn test_fdiff_coef() {
-    //     let res = fdiff_coef(0.3, 5);
-    //     assert_vec1d_equal_numeric(
-    //         &res,
-    //         &vec![-0.0401625, -0.0595, -0.105, -0.3, 1.],
-    //         Some(EPS),
-    //     );
-    //     let res = fdiff_coef(0.5, 4);
-    //     assert_vec1d_equal_numeric(&res, &vec![-0.0625, -0.125, -0.5, 1.], Some(EPS));
-    //     // let res = fdiff_coef(0.5, 600);
-    //     // assert_eq!(res, vec![0.; 600]);
-    // }
+    #[cfg(feature = "statrs")]
+    #[test]
+    fn test_fdiff_coef() {
+        let res = fdiff_coef(0.3, 5);
+        assert_vec1d_equal_numeric(
+            &res,
+            &vec![-0.0401625, -0.0595, -0.105, -0.3, 1.],
+            Some(EPS),
+        );
+        let res = fdiff_coef(0.5, 4);
+        assert_vec1d_equal_numeric(&res, &vec![-0.0625, -0.125, -0.5, 1.], Some(EPS));
+    }
 
-    // #[cfg(feature = "statrs")]
-    // #[test]
-    // fn test_fdiff() {
-    //     let arr = vec![7, 4, 2, 5, 1, 2];
-    //     let res: Vec<f64> = arr.ts_fdiff(0.5, 4, None);
-    //     assert_vec1d_equal_numeric(
-    //         &res,
-    //         &vec![f64::NAN, 0.5, -0.875, 3.0625, -2., 0.75],
-    //         Some(EPS),
-    //     );
-    //     let arr = vec![5, 1, 5, 2, 2, 4, 6];
-    //     let res: Vec<f64> = arr.ts_fdiff(0.3, 5, Some(5));
-    //     assert_vec1d_equal_numeric(
-    //         &res,
-    //         &vec![
-    //             f64::NAN,
-    //             f64::NAN,
-    //             f64::NAN,
-    //             f64::NAN,
-    //             0.6146875,
-    //             2.8523375,
-    //             4.2701875,
-    //         ],
-    //         Some(EPS),
-    //     );
-    // }
+    #[cfg(feature = "statrs")]
+    #[test]
+    fn test_fdiff() {
+        let arr = vec![7, 4, 2, 5, 1, 2];
+        let res: Vec<f64> = arr.ts_fdiff(0.5, 4, None);
+        assert_vec1d_equal_numeric(
+            &res,
+            &vec![f64::NAN, 0.5, -0.875, 3.0625, -2., 0.75],
+            Some(EPS),
+        );
+        let arr = vec![5, 1, 5, 2, 2, 4, 6];
+        let res: Vec<f64> = arr.ts_fdiff(0.3, 5, Some(5));
+        assert_vec1d_equal_numeric(
+            &res,
+            &vec![
+                f64::NAN,
+                f64::NAN,
+                f64::NAN,
+                f64::NAN,
+                0.6146875,
+                2.8523375,
+                4.2701875,
+            ],
+            Some(EPS),
+        );
+    }
 }

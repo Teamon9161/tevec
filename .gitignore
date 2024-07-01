@@ -1,4 +1,6 @@
 /target
 *.lock
+*.json
+.vscode/
 teapy-master
 tea-test

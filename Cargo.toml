@@ -4,7 +4,6 @@ members = [
     "tevec",
     "tea-core",
     "tea-dtype",
-    # "tea-time",
     "tea-agg",
     "tea-map",
     "tea-rolling",
