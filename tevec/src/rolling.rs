@@ -19,10 +19,36 @@ fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
         .collect_trusted_to_vec()
 }
 
-pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
+pub trait RollingFinal<T>: Vec1View<T> {
     #[cfg(feature = "stat")]
     #[no_out]
     fn ts_fdiff<O: Vec1<U>, U: Clone>(
+        &self,
+        d: f64,
+        window: usize,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> O
+    where
+        T: Number,
+        for<'a> Self::Output<'a>: TIter<T>,
+        f64: Cast<U>,
+    {
+        let coef = fdiff_coef(d, window);
+        self.rolling_custom(
+            window,
+            |arr| {
+                let acc_func = |acc: f64, (v, c): (T, f64)| acc + v.f64() * c;
+                arr.titer().zip(coef.titer()).fold(0., acc_func).cast()
+            },
+            out,
+        )
+    }
+}
+
+pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
+    #[cfg(feature = "stat")]
+    #[no_out]
+    fn ts_vfdiff<O: Vec1<U>, U: Clone>(
         &self,
         d: f64,
         window: usize,
@@ -50,7 +76,10 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
                 let res = if n == window {
                     arr.titer().zip(coef.titer()).fold(0., acc_func)
                 } else if n >= min_periods {
-                    arr.titer().zip(fdiff_coef(d, n).titer()).fold(0., acc_func)
+                    arr.titer()
+                        .filter(IsNone::not_none)
+                        .zip(fdiff_coef(d, n).titer())
+                        .fold(0., acc_func)
                 } else {
                     f64::NAN
                 };
@@ -62,6 +91,7 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
 }
 
 impl<I: Vec1View<T>, T: IsNone> RollingValidFinal<T> for I {}
+impl<I: Vec1View<T>, T> RollingFinal<T> for I {}
 
 #[cfg(test)]
 mod tests {
@@ -95,14 +125,14 @@ mod tests {
     #[test]
     fn test_fdiff() {
         let arr = vec![7, 4, 2, 5, 1, 2];
-        let res: Vec<f64> = arr.ts_fdiff(0.5, 4, None);
+        let res: Vec<f64> = arr.ts_vfdiff(0.5, 4, None);
         assert_vec1d_equal_numeric(
             &res,
             &vec![f64::NAN, 0.5, -0.875, 3.0625, -2., 0.75],
             Some(EPS),
         );
         let arr = vec![5, 1, 5, 2, 2, 4, 6];
-        let res: Vec<f64> = arr.ts_fdiff(0.3, 5, Some(5));
+        let res: Vec<f64> = arr.ts_vfdiff(0.3, 5, Some(5));
         assert_vec1d_equal_numeric(
             &res,
             &vec![

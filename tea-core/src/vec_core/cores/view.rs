@@ -135,7 +135,6 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
     ) -> Option<O>
     where
         F: FnMut(Cow<'_, <Self as Slice<T>>::Output<'_>>) -> OT,
-        // O::Item: Clone,
     {
         let iter = self.rolling_custom_iter(window, f);
         if let Some(mut out) = out {

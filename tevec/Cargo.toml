@@ -6,11 +6,9 @@ edition.workspace = true
 repository.workspace = true
 license.workspace = true
 
-crate-type = ["cdylib", "rlib"]
-
 [features]
-default = []
-# default = ["time", "rolling", "agg", "map", "stat", "ndarray", "pl"]
+# default = []
+default = ["time", "rolling", "agg", "map", "stat", "ndarray", "pl"]
 # default = ["agg", "map", "rolling", "pl", "dyn"]
 # dyn = ["tea-macros"]
 
@@ -18,7 +16,7 @@ default = []
 rolling = ["tea-rolling"]
 map = ["tea-map"]
 agg = ["tea-agg"]
-stat = ["statrs", "ffi"]
+stat = ["statrs", "ffi", "ndarray-conv"]
 
 # backends
 pl = ["tea-core/pl"]
@@ -31,6 +29,7 @@ time = ["tea-dtype/time", "tea-core/time"]
 ffi = ["cxx-build", "cxx"]
 
 [dependencies]
+ndarray-conv = { version = "0.3.3", optional = true }
 statrs = { version = "0.17", optional = true }
 cxx = { version = "1", optional = true }
 tea-dtype = { path = "../tea-dtype", default-features = false }
