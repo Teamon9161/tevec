@@ -1,7 +1,7 @@
 use tea_core::prelude::*;
 pub use tea_rolling::*;
 
-#[cfg(feature = "statrs")]
+#[cfg(feature = "stat")]
 #[inline]
 fn binom(x: f64, y: f64) -> f64 {
     crate::ffi::binom(x, y)
