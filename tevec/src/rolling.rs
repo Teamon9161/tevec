@@ -29,7 +29,7 @@ pub trait RollingFinal<T>: Vec1View<T> {
         out: Option<O::UninitRefMut<'_>>,
     ) -> O
     where
-        T: Number,
+        T: Cast<f64>,
         for<'a> Self::Output<'a>: TIter<T>,
         f64: Cast<U>,
     {
@@ -37,7 +37,7 @@ pub trait RollingFinal<T>: Vec1View<T> {
         self.rolling_custom(
             window,
             |arr| {
-                let acc_func = |acc: f64, (v, c): (T, f64)| acc + v.f64() * c;
+                let acc_func = |acc: f64, (v, c): (T, f64)| acc + v.cast() * c;
                 arr.titer().zip(coef.titer()).fold(0., acc_func).cast()
             },
             out,
