@@ -14,6 +14,7 @@ pub enum CorrMethod {
 }
 
 pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
+    #[cfg(feature = "map")]
     fn vcorr<V2: Vec1View<T>>(
         &self,
         other: &V2,
