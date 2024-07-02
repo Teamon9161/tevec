@@ -24,7 +24,7 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<T> {
         use QuantileMethod::*;
         let mut out_c: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
         let slc = out_c.try_as_slice_mut().unwrap();
-        let n = AggValidBasic::count(self.titer());
+        let n = self.titer().count_valid();
         // fast path for special cases
         if n == 0 {
             return Ok(f64::NAN);

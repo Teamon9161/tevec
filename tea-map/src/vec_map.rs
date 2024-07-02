@@ -181,7 +181,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
                 }
             }
         } else {
-            let not_none_count = AggValidBasic::count(self.titer());
+            let not_none_count = self.titer().count_valid();
             unsafe {
                 for i in 0..len - 1 {
                     // safe because max of i = len-2 and len >= 2
@@ -256,7 +256,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         T::Inner: Number,
         T: 'a,
     {
-        let n = AggValidBasic::count(self.titer());
+        let n = self.titer().count_valid();
         // fast path for n <= kth + 1
         if n <= kth + 1 {
             if !sort {
@@ -334,7 +334,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         T::Inner: PartialOrd,
         T: 'a,
     {
-        let n = AggValidBasic::count(self.titer());
+        let n = self.titer().count_valid();
         if n <= kth + 1 {
             if !sort {
                 return Box::new(self.titer());

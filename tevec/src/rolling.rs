@@ -65,7 +65,7 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
         self.rolling_custom(
             window,
             |arr| {
-                let n = AggValidBasic::count(arr.titer());
+                let n = arr.titer().count_valid();
                 let acc_func = |acc: f64, (v, c): (T, f64)| {
                     if v.not_none() {
                         acc + v.unwrap().f64() * c

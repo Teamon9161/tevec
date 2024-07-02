@@ -5,7 +5,14 @@ use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number};
 pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
     /// count the number of valid elements in the vector.
+    #[deprecated(since = "0.3.0", note = "Please use count_valid instead")]
     fn count(self) -> usize {
+        self.vfold_n((), |(), _| {}).0
+    }
+
+    #[inline]
+    /// count the number of valid elements in the vector.
+    fn count_valid(self) -> usize {
         self.vfold_n((), |(), _| {}).0
     }
 
