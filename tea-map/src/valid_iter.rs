@@ -311,6 +311,33 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
             }
         }
     }
+
+    #[allow(clippy::unnecessary_filter_map)]
+    fn vsorted_unique<'a>(self) -> impl Iterator<Item = T> + 'a
+    where
+        T::Inner: PartialEq + 'a,
+        Self: 'a,
+    {
+        let mut value: Option<T::Inner> = None;
+        self.into_iter().filter_map(move |v| {
+            if v.not_none() {
+                let v = v.unwrap();
+                if let Some(last_v) = value.as_ref() {
+                    if v != last_v.clone() {
+                        value = Some(v.clone());
+                        Some(T::from_inner(v))
+                    } else {
+                        None
+                    }
+                } else {
+                    value = Some(v.clone());
+                    Some(T::from_inner(v))
+                }
+            } else {
+                None
+            }
+        })
+    }
 }
 
 impl<T: IsNone, I: TrustedLen<Item = T>> MapValidBasic<T> for I {}
@@ -380,6 +407,8 @@ mod test {
         let v = vec![1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6];
         let res: Vec<_> = v.titer().vsorted_unique_idx(Keep::First).collect();
         assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
+        let res: Vec<_> = v.titer().vsorted_unique().collect();
+        assert_eq!(res, vec![1, 2, 3, 4, 5, 6]);
         let res: Vec<_> = v.titer().vsorted_unique_idx(Keep::Last).collect();
         assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
         let v = vec![6, 6, 5, 5, 5, 4, 3, 3, 3, 3, 2, 2, 1];
@@ -388,6 +417,11 @@ mod test {
         assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
         let res: Vec<_> = v2.titer().vsorted_unique_idx(Keep::Last).collect();
         assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
+        let res: Vec<_> = v2.titer().vsorted_unique().collect();
+        assert_eq!(
+            res,
+            vec![Some(6), Some(5), Some(4), Some(3), Some(2), Some(1)]
+        );
         let v3: Vec<_> = v
             .iter_cast::<f64>()
             .chain(std::iter::once(f64::NAN))
@@ -396,5 +430,12 @@ mod test {
         assert_eq!(res, vec![0, 2, 5, 6, 10, 12]);
         let res: Vec<_> = v3.titer().vsorted_unique_idx(Keep::Last).collect();
         assert_eq!(res, vec![1, 4, 5, 9, 11, 12]);
+        let res: Vec<_> = v3.titer().vsorted_unique().collect();
+        assert_eq!(res, vec![6., 5., 4., 3., 2., 1.]);
+        let v4 = vec![f64::NAN, f64::NAN, 4., 4., 2., 0., 0.];
+        let res: Vec<_> = v4.titer().vsorted_unique().collect();
+        assert_eq!(res, vec![4., 2., 0.]);
+        let res: Vec<_> = v4.titer().vsorted_unique_idx(Keep::First).collect();
+        assert_eq!(res, vec![2, 4, 5]);
     }
 }

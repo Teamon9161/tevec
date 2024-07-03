@@ -19,9 +19,9 @@ tea-error = { path = "../tea-error", default-features = false }
 tea-dtype = { path = "../tea-dtype", default-features = false }
 serde = "1.0"
 ndarray = { version = "0.15.6", optional = true, features = ["rayon"] }
-polars = { version = "0.41.2", optional = true, default-features = false, features = [
+polars = { version = "0.41.3", optional = true, default-features = false, features = [
     "dtype-struct",
     "dtype-datetime",
     "dtype-duration",
 ] }
-polars-arrow = { version = "0.41.2", optional = true }
+polars-arrow = { version = "0.41.3", optional = true }

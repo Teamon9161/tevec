@@ -475,7 +475,7 @@ mod tests {
     #[test]
     fn test_count() {
         let data = vec![1., 2., f64::NAN, 2., f64::NAN, f64::NAN];
-        assert_eq!(data.opt().count(), 3);
+        assert_eq!(data.opt().count_valid(), 3);
         assert_eq!(data.opt().count_none(), 3);
         assert_eq!(data.titer().count_value(1.), 1);
         assert_eq!(data.titer().count_value(2.), 2);
