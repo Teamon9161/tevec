@@ -488,3 +488,6 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         )
     }
 }
+
+impl<T: IsNone, I: Vec1View<T>> RollingValidReg<T> for I {}
+impl<T: IsNone, I: Vec1View<T>> RollingValidRegBinary<T> for I {}

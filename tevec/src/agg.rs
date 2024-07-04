@@ -5,7 +5,7 @@ use tea_core::prelude::*;
 #[cfg(feature = "map")]
 use tea_map::*;
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub enum CorrMethod {
     #[default]
     Pearson,
