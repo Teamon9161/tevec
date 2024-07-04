@@ -52,6 +52,15 @@ impl<U: TimeUnitTrait> DateTime<U> {
     }
 
     #[inline]
+    pub fn from_opt_i64(v: Option<i64>) -> Self {
+        if let Some(v) = v {
+            Self::new(v)
+        } else {
+            Self::nat()
+        }
+    }
+
+    #[inline]
     pub fn into_opt_i64(self) -> Option<i64> {
         if self.is_nat() {
             None
