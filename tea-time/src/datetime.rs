@@ -13,8 +13,8 @@ use tea_error::{tbail, terr, TResult};
 #[repr(transparent)]
 pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
-unsafe impl Send for DateTime {}
-unsafe impl Sync for DateTime {}
+unsafe impl<U: TimeUnitTrait> Send for DateTime<U> {}
+unsafe impl<U: TimeUnitTrait> Sync for DateTime<U> {}
 
 const TIME_RULE_VEC: [&str; 9] = [
     "%Y-%m-%d %H:%M:%S",
