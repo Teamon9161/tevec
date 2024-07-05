@@ -28,7 +28,7 @@ pub trait UninitVec<T>: GetLen {
             unsafe { self.uset(idx, v) }
             Ok(())
         } else {
-            tbail!(io(idx, self.len()))
+            tbail!(oob(idx, self.len()))
         }
     }
 }

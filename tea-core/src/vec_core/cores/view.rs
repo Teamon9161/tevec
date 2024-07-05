@@ -97,7 +97,7 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
         if index < self.len() {
             Ok(unsafe { self.uget(index) })
         } else {
-            tbail!(io(index, self.len()))
+            tbail!(oob(index, self.len()))
         }
     }
 

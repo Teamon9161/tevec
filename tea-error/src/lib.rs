@@ -46,6 +46,8 @@ pub enum TError {
     LengthMismatch { left: usize, right: usize },
     #[error("Index out of bounds: index: {idx}, length: {len}")]
     IdxOut { idx: usize, len: usize },
+    #[error(transparent)]
+    Other(#[from] std::io::Error),
     #[error("Parse error: {0}")]
     ParseError(ErrInfo),
     #[error("{0}")]
@@ -58,7 +60,7 @@ pub type TResult<T> = Result<T, TError>;
 
 #[macro_export]
 macro_rules! terr {
-    (io($idx: expr, $len: expr)) => {
+    (oob($idx: expr, $len: expr)) => {
         $crate::__private::must_use(
             $crate::TError::IdxOut { idx: $idx, len: $len }
         )
