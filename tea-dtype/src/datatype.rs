@@ -59,6 +59,19 @@ impl DataType {
         matches!(self, I32 | I64 | Usize | U64 | OptUsize | OptI32 | OptI64)
     }
 
+    #[inline]
+    pub fn is_time(&self) -> bool {
+        use DataType::*;
+        #[cfg(feature = "time")]
+        {
+            matches!(self, DateTime(_))
+        }
+        #[cfg(not(feature = "time"))]
+        {
+            false
+        }
+    }
+
     pub fn float(self) -> Self {
         use DataType::*;
         match self {

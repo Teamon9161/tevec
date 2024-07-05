@@ -36,3 +36,10 @@ define_timeunit!(
     Microsecond,
     Nanosecond
 );
+
+impl Default for TimeUnit {
+    #[inline]
+    fn default() -> Self {
+        TimeUnit::Nanosecond
+    }
+}
