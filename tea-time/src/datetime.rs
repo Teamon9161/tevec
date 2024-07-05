@@ -9,7 +9,7 @@ use chrono::{
 
 use tea_error::{tbail, terr, TResult};
 
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
