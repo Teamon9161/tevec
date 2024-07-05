@@ -32,7 +32,7 @@ impl<U: TimeUnitTrait> Sub<TimeDelta> for DateTime<U>
 where
     Self: From<CrDateTime<Utc>> + TryInto<CrDateTime<Utc>>,
 {
-    type Output = DateTime;
+    type Output = DateTime<U>;
     fn sub(self, rhs: TimeDelta) -> Self::Output {
         if self.is_not_nat() && rhs.is_not_nat() {
             let dt = self.to_cr().unwrap();
