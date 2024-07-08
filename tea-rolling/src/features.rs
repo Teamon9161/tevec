@@ -139,9 +139,8 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
             window,
             move |v_rm, v| {
                 if v.not_none() {
-                    let v = v.unwrap();
+                    let v = v.unwrap().f64();
                     n += 1;
-                    let v = v.f64();
                     sum_xt += n.f64() * v; // 错位相减法, 忽略nan带来的系数和window不一致问题
                     sum += v;
                 }
@@ -183,9 +182,8 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
             window,
             move |v_rm, v| {
                 if v.not_none() {
-                    let v = v.unwrap();
+                    let v = v.unwrap().f64();
                     n += 1;
-                    let v = v.f64();
                     sum += v;
                     sum2 += v * v
                 }
