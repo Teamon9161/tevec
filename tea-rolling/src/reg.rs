@@ -255,7 +255,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
 
 pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vregx_alpha<O: Vec1<U>, U, V2: Vec1View<T>>(
+    fn ts_vregx_alpha<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
         other: &V2,
         window: usize,
@@ -264,6 +264,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
+        T2::Inner: Number,
         f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
@@ -308,7 +309,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     }
 
     #[no_out]
-    fn ts_vregx_beta<O: Vec1<U>, U, V2: Vec1View<T>>(
+    fn ts_vregx_beta<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
         other: &V2,
         window: usize,
@@ -317,6 +318,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
+        T2::Inner: Number,
         f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
@@ -359,7 +361,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     }
 
     #[no_out]
-    fn ts_vregx_resid_mean<O: Vec1<U>, U, V2: Vec1View<T>>(
+    fn ts_vregx_resid_mean<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
         other: &V2,
         window: usize,
@@ -368,6 +370,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
+        T2::Inner: Number,
         f64: Cast<U>,
         T::Cast<f64>: Cast<U>,
     {
@@ -424,7 +427,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     }
 
     #[no_out]
-    fn ts_vregx_resid_std<O: Vec1<U>, U, V2: Vec1View<T>>(
+    fn ts_vregx_resid_std<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
         other: &V2,
         window: usize,
@@ -433,6 +436,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
+        T2::Inner: Number,
         f64: Cast<U>,
         T::Cast<f64>: Cast<U>,
     {

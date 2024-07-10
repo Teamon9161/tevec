@@ -219,9 +219,14 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
         min_idx
     }
 
-    fn vcov<V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T::Cast<f64>
+    fn vcov<V2: IntoIterator<Item = T2>, T2: IsNone>(
+        self,
+        other: V2,
+        min_periods: usize,
+    ) -> T::Cast<f64>
     where
         T::Inner: Number,
+        T2::Inner: Number,
     {
         let (mut sum_a, mut sum_b, mut sum_ab) = (0., 0., 0.);
         let mut n = 0;
@@ -243,11 +248,15 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
-    fn vcorr_pearson<T2, V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T2
+    fn vcorr_pearson<O, V2: IntoIterator<Item = T2>, T2: IsNone>(
+        self,
+        other: V2,
+        min_periods: usize,
+    ) -> O
     where
-        T::Inner: Zero + Number,
-        f64: Cast<T2>,
-        T2: IsNone,
+        T::Inner: Number,
+        T2::Inner: Number,
+        f64: Cast<O>,
     {
         let (mut sum_a, mut sum2_a, mut sum_b, mut sum2_b, mut sum_ab) = (0., 0., 0., 0., 0.);
         let mut n = 0;
@@ -277,10 +286,10 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
                 let res = (exy - exey) / (var_a * var_b).sqrt();
                 res.cast()
             } else {
-                T2::none()
+                f64::NAN.cast()
             }
         } else {
-            T2::none()
+            f64::NAN.cast()
         }
     }
 }
