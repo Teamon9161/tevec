@@ -489,6 +489,71 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
             out,
         )
     }
+
+    #[no_out]
+    fn ts_vregx_resid_skew<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
+        &self,
+        other: &V2,
+        window: usize,
+        min_periods: Option<usize>,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> O
+    where
+        T::Inner: Number,
+        T2::Inner: Number,
+        f64: Cast<U>,
+    {
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
+        let mut sum_a = 0.;
+        let mut sum_b = 0.;
+        let mut sum_b2 = 0.;
+        let mut sum_ab = 0.;
+        let mut n = 0;
+        self.rolling2_apply_idx(
+            other,
+            window,
+            |start, end, (va, vb)| {
+                if va.not_none() && vb.not_none() {
+                    n += 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a += va;
+                    sum_b += vb;
+                    sum_b2 += vb.powi(2);
+                    sum_ab += va * vb;
+                };
+                let res = if n >= min_periods {
+                    let beta =
+                        (n.f64() * sum_ab - sum_a * sum_b) / (n.f64() * sum_b2 - sum_b.powi(2));
+                    let alpha = (sum_a - beta * sum_b) / n.f64();
+                    (start.unwrap_or(0)..=end)
+                        .map(|j| {
+                            let (vy, vx) = unsafe { (self.uget(j), other.uget(j)) };
+                            if vy.not_none() && vx.not_none() {
+                                vy.unwrap().f64() - alpha - beta * vx.unwrap().f64()
+                            } else {
+                                f64::NAN
+                            }
+                        })
+                        .vskew(3)
+                } else {
+                    f64::NAN
+                };
+                if let Some(start) = start {
+                    let (va, vb) = unsafe { (self.uget(start), other.uget(start)) };
+                    if va.not_none() && vb.not_none() {
+                        n -= 1;
+                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                        sum_a -= va;
+                        sum_b -= vb;
+                        sum_b2 -= vb.powi(2);
+                        sum_ab -= va * vb;
+                    };
+                }
+                res.cast()
+            },
+            out,
+        )
+    }
 }
 
 impl<T: IsNone, I: Vec1View<T>> RollingValidReg<T> for I {}

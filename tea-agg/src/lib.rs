@@ -64,45 +64,6 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
-    /// skewness of the data
-    fn vskew(self, min_periods: usize) -> f64
-    where
-        T::Inner: Number,
-    {
-        let (mut m1, mut m2, mut m3) = (0., 0., 0.);
-        let n = self.vapply_n(|v| {
-            let v = v.f64();
-            m1 += v;
-            let v2 = v * v;
-            m2 += v2;
-            m3 += v2 * v;
-        });
-        if n < min_periods {
-            return f64::NAN;
-        }
-        let mut res = if n >= 3 {
-            let n_f64 = n.f64();
-            m1 /= n_f64; // Ex
-            m2 /= n_f64; // Ex^2
-            let var = m2 - m1.powi(2);
-            if var <= EPS {
-                0.
-            } else {
-                let std = var.sqrt(); // var^2
-                m3 /= n_f64; // Ex^3
-                let mean_std = m1 / std; // mean / std
-                m3 / std.powi(3) - 3_f64 * mean_std - mean_std.powi(3)
-            }
-        } else {
-            f64::NAN
-        };
-        if res.not_none() && res != 0. {
-            let adjust = (n * (n - 1)).f64().sqrt() / (n - 2).f64();
-            res *= adjust;
-        }
-        res
-    }
-
     /// kurtosis of the data
     fn vkurt(self, min_periods: usize) -> f64
     where
