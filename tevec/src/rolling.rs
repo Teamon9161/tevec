@@ -2,19 +2,13 @@ use tea_core::prelude::*;
 pub use tea_rolling::*;
 
 #[cfg(feature = "stat")]
-#[inline]
-fn binom(x: f64, y: f64) -> f64 {
-    ffi::binom(x, y)
-}
-
-#[cfg(feature = "stat")]
 fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
     let mut sign = if window % 2 == 0 { 1. } else { -1. };
     (0..window)
         .rev()
         .map(|v| {
             sign = -sign;
-            binom(d, v as f64) * sign
+            ffi::binom(d, v as f64) * sign
         })
         .collect_trusted_to_vec()
 }
@@ -101,11 +95,11 @@ mod tests {
     #[cfg(feature = "stat")]
     #[test]
     fn test_binom() {
-        let res = binom(2.2, 3.1);
+        let res = ffi::binom(2.2, 3.1);
         assert!((res - 0.03739998336513408).abs() <= EPS);
-        let res = binom(2.2, 3.4);
+        let res = ffi::binom(2.2, 3.4);
         assert!((res - -0.04108154623173803).abs() <= EPS);
-        assert_eq!(binom(0.5, 600.), -1.9206126162302755e-5);
+        assert_eq!(ffi::binom(0.5, 600.), -1.9206126162302755e-5);
     }
 
     #[cfg(feature = "stat")]

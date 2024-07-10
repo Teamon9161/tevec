@@ -10,7 +10,6 @@ license.workspace = true
 default = ["agg", "map"]
 # default = ["time", "rolling", "agg", "map", "stat", "ndarray", "pl"]
 # default = ["agg", "map", "rolling", "pl", "dyn"]
-# dyn = ["tea-macros"]
 
 # ops
 rolling = ["tea-rolling"]
@@ -37,6 +36,3 @@ ffi = { path = "../tea-ffi", default-features = false, optional = true, package 
 derive_more = { version = "0.99", default-features = false, features = [
     "from",
 ] }
-
-# [build-dependencies]
-# cxx-build = { version = "1", optional = true }

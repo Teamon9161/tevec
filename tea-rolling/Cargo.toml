@@ -17,4 +17,3 @@ tea-core = { path = "../tea-core", default-features = false, features = [
 ndarray = { version = "0.15.6", optional = true }
 tea-macros = { path = "../tea-macros" }
 num-traits = { workspace = true }
-# tea-ext = {path = "C:/code/rust/teapy/tea-ext", default-features = false, features = ["rolling"]}
