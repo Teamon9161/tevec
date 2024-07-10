@@ -25,22 +25,18 @@ ndarray = ["tea-core/ndarray"]
 # dtype
 time = ["tea-dtype/time", "tea-core/time"]
 
-# ffi
-ffi = ["cxx-build", "cxx"]
-
 [dependencies]
-# ndarray-conv = { version = "0.3.3", optional = true }
 statrs = { version = "0.17", optional = true }
-cxx = { version = "1", optional = true }
 tea-dtype = { path = "../tea-dtype", default-features = false }
 tea-core = { path = "../tea-core", default-features = false }
 tea-macros = { path = "../tea-macros" }
 tea-rolling = { path = "../tea-rolling", default-features = false, optional = true }
 tea-map = { path = "../tea-map", default-features = false, optional = true }
 tea-agg = { path = "../tea-agg", default-features = false, optional = true }
+ffi = { path = "../tea-ffi", default-features = false, optional = true, package = "tea-ffi" }
 derive_more = { version = "0.99", default-features = false, features = [
     "from",
 ] }
 
-[build-dependencies]
-cxx-build = { version = "1", optional = true }
+# [build-dependencies]
+# cxx-build = { version = "1", optional = true }

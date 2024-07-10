@@ -456,6 +456,13 @@ mod tests {
         assert_eq!(data.titer().vsum(), Some(4.));
         assert_eq!(AggValidBasic::vsum(&data.opt()), Some(4.));
         assert_eq!(data.opt().vmean(), 2.);
+        // #[cfg(feature = "ndarray")]
+        // {
+        //     use ndarray::prelude::*;
+        //     let arr = arr0(1.);
+        //     assert_eq!(arr.titer().vsum(), Some(1.));
+        //     assert_eq!(arr.titer().vmean(), Some(1.))
+        // }
     }
 
     #[test]

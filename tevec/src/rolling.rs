@@ -4,7 +4,7 @@ pub use tea_rolling::*;
 #[cfg(feature = "stat")]
 #[inline]
 fn binom(x: f64, y: f64) -> f64 {
-    crate::ffi::binom(x, y)
+    ffi::binom(x, y)
 }
 
 #[cfg(feature = "stat")]

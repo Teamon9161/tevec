@@ -9,7 +9,9 @@ members = [
     "tea-rolling",
     "tea-macros",
     "tea-error",
+    # "tea-ffi",
 ]
+exclude = ["tea-ffi"]
 
 [workspace.package]
 version = "0.2.1"

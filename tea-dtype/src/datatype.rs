@@ -61,9 +61,9 @@ impl DataType {
 
     #[inline]
     pub fn is_time(&self) -> bool {
-        use DataType::*;
         #[cfg(feature = "time")]
         {
+            use DataType::*;
             matches!(self, DateTime(_))
         }
         #[cfg(not(feature = "time"))]

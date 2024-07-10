@@ -1,0 +1,14 @@
+[package]
+name = "tea-ffi"
+version = "0.1.0"
+# version.workspace = true
+# authors.workspace = true
+# edition.workspace = true
+# repository.workspace = true
+# license.workspace = true
+
+[dependencies]
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = { version = "1" }
