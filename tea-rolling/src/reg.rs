@@ -372,7 +372,6 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         T::Inner: Number,
         T2::Inner: Number,
         f64: Cast<U>,
-        T::Cast<f64>: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum_a = 0.;
@@ -438,7 +437,6 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         T::Inner: Number,
         T2::Inner: Number,
         f64: Cast<U>,
-        T::Cast<f64>: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
         let mut sum_a = 0.;
