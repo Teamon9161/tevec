@@ -16,7 +16,7 @@ default = ["agg", "map"]
 rolling = ["tea-rolling"]
 map = ["tea-map"]
 agg = ["tea-agg"]
-stat = ["statrs", "ffi", "ndarray-conv"]
+stat = ["statrs", "ffi"]
 
 # backends
 pl = ["tea-core/pl"]
@@ -29,7 +29,7 @@ time = ["tea-dtype/time", "tea-core/time"]
 ffi = ["cxx-build", "cxx"]
 
 [dependencies]
-ndarray-conv = { version = "0.3.3", optional = true }
+# ndarray-conv = { version = "0.3.3", optional = true }
 statrs = { version = "0.17", optional = true }
 cxx = { version = "1", optional = true }
 tea-dtype = { path = "../tea-dtype", default-features = false }
