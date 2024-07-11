@@ -142,6 +142,45 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
         self.vvar(min_periods).sqrt()
     }
 
+    /// skewness of the data
+    fn vskew(self, min_periods: usize) -> f64
+    where
+        T::Inner: Number,
+    {
+        let (mut m1, mut m2, mut m3) = (0., 0., 0.);
+        let n = self.vapply_n(|v| {
+            let v = v.f64();
+            m1 += v;
+            let v2 = v * v;
+            m2 += v2;
+            m3 += v2 * v;
+        });
+        if n < min_periods {
+            return f64::NAN;
+        }
+        let mut res = if n >= 3 {
+            let n_f64 = n.f64();
+            m1 /= n_f64; // Ex
+            m2 /= n_f64; // Ex^2
+            let var = m2 - m1.powi(2);
+            if var <= EPS {
+                0.
+            } else {
+                let std = var.sqrt(); // var^2
+                m3 /= n_f64; // Ex^3
+                let mean_std = m1 / std; // mean / std
+                m3 / std.powi(3) - 3_f64 * mean_std - mean_std.powi(3)
+            }
+        } else {
+            f64::NAN
+        };
+        if res.not_none() && res != 0. {
+            let adjust = (n * (n - 1)).f64().sqrt() / (n - 2).f64();
+            res *= adjust;
+        }
+        res
+    }
+
     #[inline]
     fn vmax(self) -> Option<T::Inner>
     where
@@ -219,9 +258,14 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
         min_idx
     }
 
-    fn vcov<V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T::Cast<f64>
+    fn vcov<V2: IntoIterator<Item = T2>, T2: IsNone>(
+        self,
+        other: V2,
+        min_periods: usize,
+    ) -> T::Cast<f64>
     where
         T::Inner: Number,
+        T2::Inner: Number,
     {
         let (mut sum_a, mut sum_b, mut sum_ab) = (0., 0., 0.);
         let mut n = 0;
@@ -243,11 +287,15 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
-    fn vcorr_pearson<T2, V2: IntoIterator<Item = T>>(self, other: V2, min_periods: usize) -> T2
+    fn vcorr_pearson<O, V2: IntoIterator<Item = T2>, T2: IsNone>(
+        self,
+        other: V2,
+        min_periods: usize,
+    ) -> O
     where
-        T::Inner: Zero + Number,
-        f64: Cast<T2>,
-        T2: IsNone,
+        T::Inner: Number,
+        T2::Inner: Number,
+        f64: Cast<O>,
     {
         let (mut sum_a, mut sum2_a, mut sum_b, mut sum2_b, mut sum_ab) = (0., 0., 0., 0., 0.);
         let mut n = 0;
@@ -277,10 +325,10 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
                 let res = (exy - exey) / (var_a * var_b).sqrt();
                 res.cast()
             } else {
-                T2::none()
+                f64::NAN.cast()
             }
         } else {
-            T2::none()
+            f64::NAN.cast()
         }
     }
 }

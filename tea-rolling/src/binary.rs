@@ -2,7 +2,7 @@ use tea_core::prelude::*;
 
 pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
     #[no_out]
-    fn ts_vcov<O: Vec1<U>, U, V2: Vec1View<T>>(
+    fn ts_vcov<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
         other: &V2,
         window: usize,
@@ -11,6 +11,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
+        T2::Inner: Number,
         f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);
@@ -50,7 +51,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
     }
 
     #[no_out]
-    fn ts_vcorr<O: Vec1<U>, U, V2: Vec1View<T>>(
+    fn ts_vcorr<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
         other: &V2,
         window: usize,
@@ -59,6 +60,7 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
+        T2::Inner: Number,
         f64: Cast<U>,
     {
         let mut sum_a = 0.;
