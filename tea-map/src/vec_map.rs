@@ -290,6 +290,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
                 return Box::new(
                     idx_sorted
                         .into_iter()
+                        .take(n)
                         .chain(std::iter::repeat(-1))
                         .take(kth + 1)
                         .to_trust(kth + 1),
@@ -335,9 +336,18 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         T: 'a,
     {
         let n = self.titer().count_valid();
+        if (n == kth + 1) && !sort {
+            return Box::new(self.titer().filter(IsNone::not_none).to_trust(kth + 1));
+        }
         if n <= kth + 1 {
             if !sort {
-                return Box::new(self.titer());
+                return Box::new(
+                    self.titer()
+                        .filter(IsNone::not_none)
+                        .chain(std::iter::repeat(T::none()))
+                        .take(kth + 1)
+                        .to_trust(kth + 1),
+                );
             } else {
                 let mut vec: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
                 if !rev {
@@ -345,7 +355,7 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
                 } else {
                     vec.sort_unstable_by(|a, b| a.sort_cmp_rev(b)).unwrap();
                 }
-                return Box::new(vec.into_iter());
+                return Box::new(vec.into_iter().take(kth + 1));
             }
         }
         let mut out_c: Vec<_> = self.titer().collect_trusted_vec1(); // clone the array
@@ -412,5 +422,15 @@ mod test {
         assert_eq!(res, vec![7, 6, 5, 2]);
         let res: Vec<_> = v.vpartition(3, true, true).collect();
         assert_eq!(res, vec![32, 7, 6, 5]);
+        let v = vec![1., f64::NAN, 3., f64::NAN, f64::NAN];
+        assert_eq!(
+            v.varg_partition(2, true, true).collect_trusted_to_vec(),
+            vec![2, 0, -1]
+        );
+        assert_vec1d_equal_numeric(
+            &v.vpartition(2, true, true).collect_trusted_to_vec(),
+            &vec![3., 1., f64::NAN],
+            None,
+        )
     }
 }
