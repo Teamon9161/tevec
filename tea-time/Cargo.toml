@@ -5,7 +5,8 @@ authors.workspace = true
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
+description = "Time related dtypes for tevec"
 
 [dependencies]
 chrono = "0.4.37"
-tea-error = { path = "../tea-error", default-features = false}
+tea-error = { path = "../tea-error", default-features = false }

@@ -5,6 +5,7 @@ authors.workspace = true
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
+description = "Core data structures and traits for tevec."
 
 [features]
 default = []

@@ -5,6 +5,7 @@ authors.workspace = true
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
+description = "A library to provide datatype and useful traits for datatype"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
@@ -13,5 +14,5 @@ time = ["tea-time"]
 dyn = []
 
 [dependencies]
-tea-time = {path = "../tea-time", optional = true}
+tea-time = { path = "../tea-time", optional = true }
 num-traits = { workspace = true }

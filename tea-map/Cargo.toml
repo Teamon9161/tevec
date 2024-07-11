@@ -5,6 +5,7 @@ authors.workspace = true
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
+description = "Map functions for tevec"
 
 [dependencies]
 tea-core = { path = "../tea-core", default-features = false }

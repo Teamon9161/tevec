@@ -5,12 +5,12 @@ authors.workspace = true
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
+description = "Rolling functions for tevec"
 
 [features]
 default = []
 
 [dependencies]
-# teapy_core = {path = "C:/code/rust/teapy/tea-core", default-features = false, package="tea-core"}
 tea-core = { path = "../tea-core", default-features = false, features = [
     # "ndarray",
 ] }

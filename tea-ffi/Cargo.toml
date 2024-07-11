@@ -1,6 +1,11 @@
 [package]
 name = "tea-ffi"
 version = "0.1.0"
+authors = ["Teamon"]
+edition = "2021"
+repository = "https://github.com/Teamon9161/tevec"
+license = "MIT"
+description = "FFI bindings for tevec"
 
 [dependencies]
 cxx = "1.0"

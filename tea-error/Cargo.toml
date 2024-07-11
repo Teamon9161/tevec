@@ -1,5 +1,6 @@
 [package]
 name = "tea-error"
+description = "A library for creating custom errors for tevec"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
