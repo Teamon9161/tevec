@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 26 commits contributed to the release over the course of 91 calendar days.
+ - 29 commits contributed to the release over the course of 92 calendar days.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Change import order ([`a9f2c7c`](https://github.com/Teamon9161/tevec/commit/a9f2c7c0c481a2d582fd33a3ee65821ba0d02388))
+    - Specify version for crates ([`1fd90b6`](https://github.com/Teamon9161/tevec/commit/1fd90b68819a5a10e6eb77f579aec14476ddcec8))
+    - Add changelog ([`ca39664`](https://github.com/Teamon9161/tevec/commit/ca39664ddea9ae5122696175e0bad8679b03f44f))
     - Add description for crates ([`5ebd586`](https://github.com/Teamon9161/tevec/commit/5ebd586b29bde6de272812d3f5deeac14d3e4684))
     - Fix output of sub datetime ([`06f4773`](https://github.com/Teamon9161/tevec/commit/06f4773c06eb55bec41fa1e00ccd38853c0c8b96))
     - Default trait for timeunit ([`664a656`](https://github.com/Teamon9161/tevec/commit/664a656be855cc75b18240ab3d573cd6fdc2a143))

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 40 commits contributed to the release over the course of 84 calendar days.
+ - 43 commits contributed to the release over the course of 85 calendar days.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Change import order ([`a9f2c7c`](https://github.com/Teamon9161/tevec/commit/a9f2c7c0c481a2d582fd33a3ee65821ba0d02388))
+    - Specify version for crates ([`1fd90b6`](https://github.com/Teamon9161/tevec/commit/1fd90b68819a5a10e6eb77f579aec14476ddcec8))
+    - Add changelog ([`ca39664`](https://github.com/Teamon9161/tevec/commit/ca39664ddea9ae5122696175e0bad8679b03f44f))
     - Add description for crates ([`5ebd586`](https://github.com/Teamon9161/tevec/commit/5ebd586b29bde6de272812d3f5deeac14d3e4684))
     - [fix] special case of arg_partition and partition ([`a76df1e`](https://github.com/Teamon9161/tevec/commit/a76df1eb765043a3ee11d8d9cd76f59d444f6448))
     - Update polars to 0.41.3 ([`e536b04`](https://github.com/Teamon9161/tevec/commit/e536b04bcf3991e30056c0018dadac078335e84f))

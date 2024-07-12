@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+<csr-id-3b9897d9e06ff7516fa3b86bb0c8707e8c2e92f5/>
+
 ### Other
 
  - <csr-id-3b9897d9e06ff7516fa3b86bb0c8707e8c2e92f5/> fix binom
@@ -15,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 47 commits contributed to the release over the course of 84 calendar days.
+ - 51 commits contributed to the release over the course of 85 calendar days.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -26,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Change import order ([`a9f2c7c`](https://github.com/Teamon9161/tevec/commit/a9f2c7c0c481a2d582fd33a3ee65821ba0d02388))
+    - Remove default-features for tea-map, tea-agg and tea-rolling ([`ed61bfc`](https://github.com/Teamon9161/tevec/commit/ed61bfc159aec542a5fd1023ffa8ccf89b45b188))
+    - Specify version for crates ([`1fd90b6`](https://github.com/Teamon9161/tevec/commit/1fd90b68819a5a10e6eb77f579aec14476ddcec8))
+    - Add changelog ([`ca39664`](https://github.com/Teamon9161/tevec/commit/ca39664ddea9ae5122696175e0bad8679b03f44f))
     - Add description for crates ([`5ebd586`](https://github.com/Teamon9161/tevec/commit/5ebd586b29bde6de272812d3f5deeac14d3e4684))
     - Remove useless codes ([`b17dac2`](https://github.com/Teamon9161/tevec/commit/b17dac29dd99bb51818e4146d40000063aeaed0c))
     - Move ffi to a new crate ([`248ce62`](https://github.com/Teamon9161/tevec/commit/248ce625b2929764a0504f35bf11f5bd9423f46e))
