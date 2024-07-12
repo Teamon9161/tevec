@@ -12,9 +12,7 @@ use super::own::{Vec1, Vec1Collect};
 use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
 
 pub trait Slice<T> {
-    // type Element;
-    // // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
-    // type Output<'a>: Vec1View<Item = Self::Element> + ToOwned + ?Sized
+    // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
     type Output<'a>: ToOwned + ?Sized
     where
         Self: 'a,

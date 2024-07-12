@@ -5,7 +5,6 @@ use super::{GetLen, Vec1};
 
 pub trait UninitVec<T>: GetLen {
     type Vec: Vec1<T>;
-    // type RefMut<'a>: UninitRefMut<T> where Self: 'a;
     /// # Safety
     ///
     /// all elements must be initialized

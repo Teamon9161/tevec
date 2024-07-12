@@ -13,10 +13,10 @@ pub use tea_dtype as dtype;
 pub mod prelude;
 pub mod testing;
 
-// re-export polars backend
 // re-export nd_array backend
 #[cfg(feature = "ndarray")]
 pub use ndarray;
+// re-export polars backend
 #[cfg(feature = "pl")]
 pub use polars;
 #[cfg(feature = "pl")]

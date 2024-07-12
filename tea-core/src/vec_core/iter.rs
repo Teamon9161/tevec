@@ -95,13 +95,6 @@ where
     }
 }
 
-// impl<'a, T: IsNone, V: Vec1View<Item = T>> Vec1View for &OptIter<'a, V> {
-//     #[inline]
-//     unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
-//         self.view.uget(index).to_opt()
-//     }
-// }
-
 impl<'a, V: Vec1View<T>, T: IsNone> IntoIterator for &OptIter<'a, V, T>
 // where
 //     V::Item: IsNone,

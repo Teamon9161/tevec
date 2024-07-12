@@ -5,8 +5,6 @@ use tea_dtype::IsNone;
 pub trait TIterator: Iterator + DoubleEndedIterator {}
 impl<I: Iterator + DoubleEndedIterator> TIterator for I {}
 
-// pub trait TIntoIterator: IntoIterator;
-
 pub trait IterBasic: IntoIterator + Sized {
     #[inline]
     fn vfold<U, F>(self, init: U, mut f: F) -> U
