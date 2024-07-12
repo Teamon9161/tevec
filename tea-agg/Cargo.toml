@@ -8,4 +8,4 @@ license.workspace = true
 description = "Aggregate function for tevec"
 
 [dependencies]
-tea-core = { path = "../tea-core", default-features = false }
+tea-core = { workspace = true, default-features = false }

@@ -20,8 +20,8 @@ fn bench_rolling(b: &mut Bencher) {
 #[bench]
 fn bench_rolling_array(b: &mut Bencher) {
     let data: Vec<_> = (0..LENGTH).collect();
-    let arr = ndarray::Array1::<i32>::from_vec(data);
-    b.iter(|| arr.ts_vmean::<ndarray::Array1<f64>, _>(100, None));
+    let arr = tea_core::ndarray::Array1::<i32>::from_vec(data);
+    b.iter(|| arr.ts_vmean::<tea_core::ndarray::Array1<f64>, _>(100, None));
 }
 
 // #[bench]

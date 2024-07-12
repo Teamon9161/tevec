@@ -9,11 +9,10 @@ description = "Rolling functions for tevec"
 
 [features]
 default = []
+ndarray = ["tea-core/ndarray"]
 
 [dependencies]
-tea-core = { path = "../tea-core", default-features = false, features = [
-    # "ndarray",
-] }
-ndarray = { version = "0.15.6", optional = true }
-tea-macros = { path = "../tea-macros" }
+tea-core = { workspace = true, default-features = false }
+# ndarray = { version = "0.15.6", optional = true }
+tea-macros = { workspace = true }
 num-traits = { workspace = true }

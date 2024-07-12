@@ -14,5 +14,5 @@ time = ["tea-time"]
 dyn = []
 
 [dependencies]
-tea-time = { path = "../tea-time", optional = true }
+tea-time = { workspace = true, optional = true }
 num-traits = { workspace = true }
