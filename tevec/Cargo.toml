@@ -30,9 +30,9 @@ statrs = { version = "0.17", optional = true }
 tea-dtype = { workspace = true, default-features = false }
 tea-core = { workspace = true, default-features = false }
 tea-macros = { workspace = true }
-tea-rolling = { workspace = true, default-features = false, optional = true }
-tea-map = { workspace = true, default-features = false, optional = true }
-tea-agg = { workspace = true, default-features = false, optional = true }
+tea-rolling = { workspace = true, optional = true }
+tea-map = { workspace = true, optional = true }
+tea-agg = { workspace = true, optional = true }
 ffi = { version = "0.1", default-features = false, optional = true, package = "tea-ffi" }
 derive_more = { version = "0.99", default-features = false, features = [
     "from",
