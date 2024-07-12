@@ -1,9 +1,10 @@
+use std::iter::Scan;
+use std::slice::Iter;
+
 #[cfg(feature = "pl")]
 use polars::prelude::PolarsIterator;
 #[cfg(feature = "pl")]
 use polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
-use std::iter::Scan;
-use std::slice::Iter;
 use tea_error::TResult;
 
 /// An iterator of known, fixed size.

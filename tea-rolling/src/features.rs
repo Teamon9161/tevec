@@ -776,8 +776,9 @@ impl<T: IsNone, I: Vec1View<T>> RollingValidFeature<T> for I {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tea_core::testing::*;
+
+    use super::*;
     #[test]
     fn test_ts_sum() {
         // test empty iter

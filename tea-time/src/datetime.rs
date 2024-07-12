@@ -1,13 +1,15 @@
-use std::{cmp::Ordering, hash::Hash, marker::PhantomData};
+use std::cmp::Ordering;
+use std::hash::Hash;
+use std::marker::PhantomData;
 
-use super::timeunit::*;
-use crate::TimeDelta;
 use chrono::{
     DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveDateTime, NaiveTime, Timelike,
     Utc,
 };
-
 use tea_error::{tbail, terr, TResult};
+
+use super::timeunit::*;
+use crate::TimeDelta;
 
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(transparent)]

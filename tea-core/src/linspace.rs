@@ -1,7 +1,8 @@
-use super::vec_core::TrustedLen;
 #[cfg(feature = "pl")]
 use polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
 use tea_dtype::{Cast, Number};
+
+use super::vec_core::TrustedLen;
 
 pub struct Linspace<T> {
     start: T,

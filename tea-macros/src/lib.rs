@@ -4,7 +4,6 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, parse_quote, Data, DeriveInput, FnArg, ItemFn, ReturnType};
 
@@ -84,13 +83,13 @@ pub fn derive_get_data_type(input: TokenStream) -> TokenStream {
                 "DateTimeS" => quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Second),},
                 "DateTimeMs" => {
                     quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Millisecond),}
-                }
+                },
                 "DateTimeUs" => {
                     quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Microsecond),}
-                }
+                },
                 "DateTimeNs" => {
                     quote! {Self::#ident(_) => DataType::DateTime(TimeUnit::Nanosecond),}
-                }
+                },
                 _ => quote! { Self::#ident(_) => DataType::#ident,},
             }
         })

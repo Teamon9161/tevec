@@ -1,9 +1,8 @@
 #![feature(test)]
 
 extern crate test;
-use test::Bencher;
-
 use tea_rolling::*;
+use test::Bencher;
 // use tea_ext::rolling::*;
 // use teapy_core::prelude::*;
 

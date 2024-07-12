@@ -1,9 +1,7 @@
-pub use tea_map::*;
-
-use tea_core::prelude::*;
-
 #[cfg(feature = "agg")]
 use tea_agg::*;
+use tea_core::prelude::*;
+pub use tea_map::*;
 
 #[cfg(feature = "agg")]
 #[derive(Copy, Clone)]
@@ -33,7 +31,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<T> {
                 let min = self.vquantile(method_params, QuantileMethod::Linear)?;
                 let max = self.vquantile(1. - method_params, QuantileMethod::Linear)?;
                 Ok(Box::new(self.iter_cast::<f64>().vclip(min, max)))
-            }
+            },
             Median => {
                 // default method is clip median - 3 * mad, median + 3 * mad
                 let method_params = method_params.unwrap_or(3.);
@@ -49,7 +47,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<T> {
                 } else {
                     Ok(Box::new(self.iter_cast::<f64>()))
                 }
-            }
+            },
             Sigma => {
                 // default method is clip mean - 3 * std, mean + 3 * std
                 let method_params = method_params.unwrap_or(3.);
@@ -62,7 +60,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<T> {
                 } else {
                     Ok(Box::new(self.iter_cast::<f64>()))
                 }
-            }
+            },
         }
     }
 }
@@ -72,9 +70,10 @@ impl<V: Vec1View<T>, T: IsNone> MapValidFinal<T> for V {}
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "agg")]
-    use super::*;
-    #[cfg(feature = "agg")]
     use tea_core::testing::assert_vec1d_equal_numeric;
+
+    #[cfg(feature = "agg")]
+    use super::*;
     #[test]
     #[cfg(feature = "agg")]
     fn test_winsorize() -> TResult<()> {

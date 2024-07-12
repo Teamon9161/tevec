@@ -1,8 +1,10 @@
-use super::cast::Cast;
-use super::number::Number;
 use std::cmp::Ordering;
+
 #[cfg(feature = "time")]
 use tea_time::{DateTime, TimeDelta, TimeUnitTrait};
+
+use super::cast::Cast;
+use super::number::Number;
 
 pub trait IsNone: Clone
 where

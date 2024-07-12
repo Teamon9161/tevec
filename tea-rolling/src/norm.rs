@@ -86,7 +86,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
                                     }
                                 }
                             }
-                        }
+                        },
                         (false, true) => {
                             // min value is invalid, find min value again
                             min = T::Inner::max_();
@@ -99,7 +99,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
                                     }
                                 }
                             }
-                        }
+                        },
                         (true, true) => {
                             // both max and min value are invalid, find max and min value again
                             (max, min) = (T::Inner::min_(), T::Inner::max_());
@@ -115,7 +115,7 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
                                     }
                                 }
                             }
-                        }
+                        },
                         (false, false) => (), // we don't need to find max and min value again
                     }
                 }

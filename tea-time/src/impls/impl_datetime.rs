@@ -1,7 +1,10 @@
-use crate::*;
+use std::convert::TryFrom;
+use std::str::FromStr;
+
 use chrono::{DateTime as CrDateTime, NaiveDateTime, Utc};
-use std::{convert::TryFrom, str::FromStr};
 use tea_error::*;
+
+use crate::*;
 
 impl<U: TimeUnitTrait> From<i64> for DateTime<U> {
     #[inline]

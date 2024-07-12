@@ -1,7 +1,8 @@
 use std::cmp::Ordering;
 
-use crate::TimeDelta;
 use chrono::Duration;
+
+use crate::TimeDelta;
 
 impl Default for TimeDelta {
     #[inline(always)]

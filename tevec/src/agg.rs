@@ -1,7 +1,5 @@
 pub use tea_agg::*;
-
 use tea_core::prelude::*;
-
 #[cfg(feature = "map")]
 use tea_map::*;
 
@@ -35,7 +33,7 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
                 let v1_rank = self.vrank::<Vec<f64>, _>(false, false);
                 let v2_rank = other.vrank::<Vec<f64>, _>(false, false);
                 v1_rank.vcorr_pearson(v2_rank, min_periods)
-            }
+            },
         }
     }
 

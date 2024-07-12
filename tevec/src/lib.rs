@@ -1,6 +1,5 @@
 pub mod prelude;
-pub use tea_core as core;
-pub use tea_dtype as dtype;
+pub use {tea_core as core, tea_dtype as dtype};
 
 #[allow(unused_imports)]
 #[macro_use]

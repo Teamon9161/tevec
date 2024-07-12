@@ -1,7 +1,9 @@
-use std::{borrow::Cow, mem::MaybeUninit};
+use std::borrow::Cow;
+use std::mem::MaybeUninit;
+
+use ndarray::{Array1, ArrayBase, ArrayView1, ArrayViewMut1, Data, DataMut, Ix1};
 
 use crate::prelude::*;
-use ndarray::{Array1, ArrayBase, ArrayView1, ArrayViewMut1, Data, DataMut, Ix1};
 
 impl<S: Data<Elem = T>, T> GetLen for ArrayBase<S, Ix1> {
     #[inline]
@@ -227,8 +229,9 @@ impl<'a, T> UninitRefMut<T> for ArrayViewMut1<'a, MaybeUninit<T>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
     use ndarray::Array1;
+
+    use crate::prelude::*;
 
     #[test]
     fn test_basic() {

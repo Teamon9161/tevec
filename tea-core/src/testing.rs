@@ -1,7 +1,8 @@
 use std::fmt::Debug;
 
-use crate::prelude::{Vec1View, EPS};
 use tea_dtype::{IsNone, Number};
+
+use crate::prelude::{Vec1View, EPS};
 
 pub fn assert_vec1d_equal_numeric<T: IsNone + Debug, V1: Vec1View<T>, V2: Vec1View<T>>(
     v1: &V1,

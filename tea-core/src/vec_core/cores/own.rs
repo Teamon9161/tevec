@@ -1,13 +1,9 @@
-use super::Vec1View;
-use super::{
-    super::{
-        trusted::{ToTrustIter, TrustedLen},
-        uninit::{UninitRefMut, UninitVec},
-    },
-    Vec1Mut,
-};
 use tea_dtype::IsNone;
 use tea_error::*;
+
+use super::super::trusted::{ToTrustIter, TrustedLen};
+use super::super::uninit::{UninitRefMut, UninitVec};
+use super::{Vec1Mut, Vec1View};
 
 /// a vector owns its data is not necessarily mutable
 pub trait Vec1<T>: Vec1View<T> + Sized {

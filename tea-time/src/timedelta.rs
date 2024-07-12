@@ -1,8 +1,10 @@
-use crate::convert::*;
-use chrono::Duration;
 use std::hash::Hash;
 use std::str::FromStr;
+
+use chrono::Duration;
 use tea_error::{tbail, tensure, TError, TResult};
+
+use crate::convert::*;
 
 // #[serde_with::serde_as]
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
@@ -63,10 +65,10 @@ impl TimeDelta {
                         Some((i, ch_)) => {
                             ch = ch_;
                             start = i
-                        }
+                        },
                         None => {
                             break;
-                        }
+                        },
                     }
                 }
                 tensure!(!unit.is_empty(), ParseError:"expected a unit in the duration string");

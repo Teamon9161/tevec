@@ -1,4 +1,5 @@
 use std::ops::Sub;
+
 use tea_core::prelude::*;
 
 pub trait MapValidVec<T: IsNone>: Vec1View<T> {
@@ -373,8 +374,9 @@ impl<T: IsNone, I: Vec1View<T>> MapValidVec<T> for I {}
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use tea_core::testing::assert_vec1d_equal_numeric;
+
+    use super::*;
 
     #[test]
     fn test_diff() {

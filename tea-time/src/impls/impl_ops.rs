@@ -1,6 +1,8 @@
-use crate::{DateTime, TimeDelta, TimeUnitTrait};
-use chrono::{DateTime as CrDateTime, Months, Utc};
 use std::ops::{Add, Div, Mul, Neg, Sub};
+
+use chrono::{DateTime as CrDateTime, Months, Utc};
+
+use crate::{DateTime, TimeDelta, TimeUnitTrait};
 
 // TODO: improve performance for time operation
 

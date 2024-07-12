@@ -14,11 +14,10 @@ pub mod prelude;
 pub mod testing;
 
 // re-export polars backend
+// re-export nd_array backend
+#[cfg(feature = "ndarray")]
+pub use ndarray;
 #[cfg(feature = "pl")]
 pub use polars;
 #[cfg(feature = "pl")]
 pub use polars_arrow;
-
-// re-export nd_array backend
-#[cfg(feature = "ndarray")]
-pub use ndarray;

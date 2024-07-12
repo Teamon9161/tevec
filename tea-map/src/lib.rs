@@ -2,7 +2,6 @@ mod valid_iter;
 mod vec_map;
 
 use tea_core::prelude::*;
-
 pub use valid_iter::{Keep, MapValidBasic};
 pub use vec_map::MapValidVec;
 

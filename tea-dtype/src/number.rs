@@ -1,8 +1,10 @@
-use super::cast::Cast;
-use super::isnone::IsNone;
-use num_traits::{MulAdd, Num};
 use std::cmp::PartialOrd;
 use std::ops::{Add, AddAssign, DivAssign, MulAssign, Sub, SubAssign};
+
+use num_traits::{MulAdd, Num};
+
+use super::cast::Cast;
+use super::isnone::IsNone;
 
 /// Kahan summation, see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
 #[inline]

@@ -1,4 +1,5 @@
 use std::cmp::{min, Ordering};
+
 use tea_core::prelude::*;
 
 pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
@@ -39,16 +40,16 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
                             match v_.sort_cmp(&min) {
                                 Ordering::Less | Ordering::Equal => {
                                     (min, min_idx) = (v_, Some(i));
-                                }
-                                _ => {}
+                                },
+                                _ => {},
                             }
                         }
                     } else {
                         match v.sort_cmp(&min) {
                             Ordering::Less | Ordering::Equal => {
                                 (min, min_idx) = (v, Some(end));
-                            }
-                            _ => {}
+                            },
+                            _ => {},
                         }
                     }
                     let out = if n >= min_periods {
@@ -105,16 +106,16 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
                             match v_.sort_cmp(&min) {
                                 Ordering::Less | Ordering::Equal => {
                                     (min, min_idx) = (v_, Some(i));
-                                }
-                                _ => {}
+                                },
+                                _ => {},
                             }
                         }
                     } else {
                         match v.sort_cmp(&min) {
                             Ordering::Less | Ordering::Equal => {
                                 (min, min_idx) = (v, Some(end));
-                            }
-                            _ => {}
+                            },
+                            _ => {},
                         }
                     }
                     let out = if n >= min_periods {
@@ -169,16 +170,16 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
                             match v_.sort_cmp_rev(&max) {
                                 Ordering::Less | Ordering::Equal => {
                                     (max, max_idx) = (v_, Some(i));
-                                }
-                                _ => {}
+                                },
+                                _ => {},
                             }
                         }
                     } else {
                         match v.sort_cmp_rev(&max) {
                             Ordering::Less | Ordering::Equal => {
                                 (max, max_idx) = (v, Some(end));
-                            }
-                            _ => {}
+                            },
+                            _ => {},
                         }
                     }
                     let out = if n >= min_periods {
@@ -235,16 +236,16 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
                             match v_.sort_cmp_rev(&max) {
                                 Ordering::Less | Ordering::Equal => {
                                     (max, max_idx) = (v_, Some(i));
-                                }
-                                _ => {}
+                                },
+                                _ => {},
                             }
                         }
                     } else {
                         match v.sort_cmp_rev(&max) {
                             Ordering::Less | Ordering::Equal => {
                                 (max, max_idx) = (v, Some(end));
-                            }
-                            _ => {}
+                            },
+                            _ => {},
                         }
                     }
                     let out = if n >= min_periods {

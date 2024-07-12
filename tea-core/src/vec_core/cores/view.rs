@@ -1,16 +1,15 @@
-use std::{borrow::Cow, marker::PhantomData};
+use std::borrow::Cow;
+use std::marker::PhantomData;
 
-use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
-
-use super::super::{
-    iter::{OptIter, TIter},
-    iter_traits::TIterator,
-    trusted::TrustIter,
-    uninit::UninitRefMut,
-};
-use super::own::{Vec1, Vec1Collect};
 use tea_dtype::{Cast, IsNone};
 use tea_error::{tbail, TResult};
+
+use super::super::iter::{OptIter, TIter};
+use super::super::iter_traits::TIterator;
+use super::super::trusted::TrustIter;
+use super::super::uninit::UninitRefMut;
+use super::own::{Vec1, Vec1Collect};
+use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
 
 pub trait Slice<T> {
     // type Element;

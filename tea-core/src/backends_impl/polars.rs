@@ -1,9 +1,11 @@
-use crate::prelude::*;
+use std::borrow::Cow;
+
 use polars::prelude::*;
 use polars_arrow::legacy::utils::CustomIterTools;
-use std::borrow::Cow;
 #[cfg(feature = "time")]
 use tea_dtype::{unit, DateTime};
+
+use crate::prelude::*;
 
 macro_rules! impl_for_ca {
     (to_iter, $real: ty => $($ForType: ty),*) => {
@@ -213,7 +215,7 @@ impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
             DataType::Datetime(TimeUnit::Nanoseconds, _) => {
                 // TODO(Teamon): support timezone in future
                 TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
-            }
+            },
             _ => unreachable!("datetime chunked should be nanoseconds unit"),
         }
     }
@@ -231,7 +233,7 @@ impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
                 // TODO(Teamon): support timezone in future
                 TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
-            }
+            },
             _ => unreachable!("datetime chunked should be milliseconds unit"),
         }
     }
@@ -249,7 +251,7 @@ impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
                 // TODO(Teamon): support timezone in future
                 TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
-            }
+            },
             _ => unreachable!("datetime chunked should be microseconds unit"),
         }
     }

@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+
 use tea_core::prelude::*;
 
 #[derive(Clone, Debug)]
@@ -110,7 +111,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                         v
                     }
                 }))
-            }
+            },
             (true, false) => {
                 let lower_inner = lower.clone().unwrap();
                 Box::new(self.map(move |v: T| {
@@ -120,7 +121,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                         v
                     }
                 }))
-            }
+            },
             (false, true) => {
                 let upper_inner = upper.clone().unwrap();
                 Box::new(self.map(move |v: T| {
@@ -130,7 +131,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                         v
                     }
                 }))
-            }
+            },
             (false, false) => Box::new(self),
         }
     }
@@ -275,7 +276,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                     }
                 });
                 Box::new(out)
-            }
+            },
             Keep::Last => {
                 let mut iter = self.into_iter();
                 let first_element = iter.next();
@@ -308,7 +309,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                         }
                     });
                 Box::new(out)
-            }
+            },
         }
     }
 
@@ -344,8 +345,9 @@ impl<T: IsNone, I: TrustedLen<Item = T>> MapValidBasic<T> for I {}
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use tea_core::testing::assert_vec1d_equal_numeric;
+
+    use super::*;
 
     #[test]
     fn test_clip() {

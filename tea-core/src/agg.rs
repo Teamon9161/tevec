@@ -1,6 +1,7 @@
-use crate::prelude::{IterBasic, EPS};
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number};
+
+use crate::prelude::{IterBasic, EPS};
 
 pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]

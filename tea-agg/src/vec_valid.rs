@@ -53,11 +53,11 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<T> {
                 match method {
                     Lower => {
                         return Ok(m.clone().cast());
-                    }
+                    },
                     Higher => {
                         return Ok(vi);
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 };
                 (q, i, j, vi, m.clone().cast())
             } else {
@@ -71,7 +71,7 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<T> {
                 let (qi, qj) = (i.f64() / len_1, j.f64() / len_1);
                 let fraction = (q - qi) / (qj - qi);
                 Ok(vi + (vj - vi) * fraction)
-            }
+            },
             Lower => Ok(vi),                // i
             Higher => Ok(vj),               // j
             MidPoint => Ok((vi + vj) / 2.), // (i + j) / 2.

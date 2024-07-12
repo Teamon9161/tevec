@@ -1,11 +1,10 @@
-use std::{borrow::Cow, ops::Deref};
+use std::borrow::Cow;
+use std::ops::Deref;
 
 pub use anyhow::{anyhow, bail, ensure, Result};
-
-use thiserror::Error;
-
 #[cfg(feature = "polars")]
 use polars::prelude::PolarsError;
+use thiserror::Error;
 
 #[derive(Debug)]
 pub struct ErrInfo(Cow<'static, str>);

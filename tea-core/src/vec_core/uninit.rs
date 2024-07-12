@@ -1,8 +1,7 @@
 use tea_error::{tbail, TResult};
 
-use super::{trusted::TrustedLen, GetLen};
-
-use super::Vec1;
+use super::trusted::TrustedLen;
+use super::{GetLen, Vec1};
 
 pub trait UninitVec<T>: GetLen {
     type Vec: Vec1<T>;
