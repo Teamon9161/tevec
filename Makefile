@@ -8,3 +8,14 @@ check_format:
 
 test:
 	cargo test --all-features
+
+changelog:
+	cargo changelog --write tevec
+
+try_publish_patch:
+	cargo release version patch
+	cargo release publish
+
+publish_patch:
+	cargo release version patch --execute
+	cargo release publish --execute
