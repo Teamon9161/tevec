@@ -37,3 +37,15 @@ ffi = { version = "0.1", default-features = false, optional = true, package = "t
 derive_more = { version = "0.99", default-features = false, features = [
     "from",
 ] }
+
+[dev-dependencies]
+criterion = "0.5"
+
+
+[[bench]]
+name = "linspace"
+harness = false
+
+[[bench]]
+name = "fdiff"
+harness = false

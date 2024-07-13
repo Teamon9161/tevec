@@ -1,18 +1,18 @@
-#![feature(test)]
+use criterion::{criterion_group, criterion_main, Criterion};
+use tevec::prelude::*;
 
-extern crate test;
-// use test::Bencher;
+const LENGTH: usize = 10_000_000;
 
-// use tevec::prelude::*;
+fn bench_linspace_vec(c: &mut Criterion) {
+    c.bench_function("linspace", |b| {
+        b.iter(|| {
+            let _out: Vec<f64> = Vec1Create::linspace(Some(-2.), 19., LENGTH);
+        })
+    });
+}
 
-// const LENGTH: usize = 10_000_000;
-
-// #[bench]
-// fn bench_linspace_vec(b: &mut Bencher) {
-//     b.iter(|| {
-//         let _out: Vec<f64> = Vec1Create::linspace(Some(-2.), 19., LENGTH);
-//     });
-// }
+criterion_group!(benches, bench_linspace_vec);
+criterion_main!(benches);
 
 // #[cfg(feature = "pl")]
 // #[bench]

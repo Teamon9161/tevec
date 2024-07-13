@@ -1,19 +1,17 @@
-#![feature(test)]
-
-extern crate test;
+use criterion::{criterion_group, criterion_main, Criterion};
 use tea_core::prelude::*;
-use test::Bencher;
 
-const LENGTH: i32 = 10_000_000;
+const LENGTH: i32 = 100_000_000;
 
-#[bench]
-fn bench_sum(b: &mut Bencher) {
+fn bench_sum(c: &mut Criterion) {
     let data: Vec<_> = (0..LENGTH).collect();
-    b.iter(|| data.titer().vsum());
+    c.bench_function("sum", |b| b.iter(|| AggBasic::sum(data.titer())));
 }
 
-// #[bench]
-// fn bench_sum2(b: &mut Bencher) {
-//     let data: Vec<_> = (0..LENGTH).collect();
-//     b.iter(|| Vec1View::vsum(&data));
-// }
+fn bench_vsum(c: &mut Criterion) {
+    let data: Vec<_> = (0..LENGTH).collect();
+    c.bench_function("vsum", |b| b.iter(|| data.titer().vsum()));
+}
+
+criterion_group!(benches, bench_sum, bench_vsum);
+criterion_main!(benches);

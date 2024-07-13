@@ -1,29 +1,25 @@
-#![feature(test)]
-
-extern crate test;
+use criterion::{criterion_group, criterion_main, Criterion};
 use tea_rolling::*;
-use test::Bencher;
 
 const LENGTH: i32 = 10_000_000;
 
-#[bench]
-fn bench_rolling(b: &mut Bencher) {
+fn bench_rolling_vec(c: &mut Criterion) {
     let data: Vec<_> = (0..LENGTH).collect();
-    // let arr = ndarray::Array1::<i32>::from_vec(data);
-    b.iter(|| data.ts_vmean::<Vec<f64>, _>(100, None));
+    c.bench_function("rolling", |b| {
+        b.iter(|| data.ts_vmean::<Vec<f64>, _>(100, None))
+    });
 }
 
 #[cfg(feature = "ndarray")]
-#[bench]
-fn bench_rolling_array(b: &mut Bencher) {
+fn bench_rolling_array(c: &mut Criterion) {
     let data: Vec<_> = (0..LENGTH).collect();
     let arr = tea_core::ndarray::Array1::<i32>::from_vec(data);
-    b.iter(|| arr.ts_vmean::<tea_core::ndarray::Array1<f64>, _>(100, None));
+    c.bench_function("ndarray_rolling", |b| {
+        b.iter(|| arr.ts_vmean::<tea_core::ndarray::Array1<f64>, _>(100, None))
+    });
 }
-
-// #[bench]
-// fn bench_tp_rolling(b: &mut Bencher) {
-//     let data: Vec<_> = (0..LENGTH).collect();
-//     let arr = Arr1::<i32>::from_vec(data);
-//     b.iter(|| arr.ts_sma(100, 50, false, 0, false));
-// }
+#[cfg(not(feature = "ndarray"))]
+criterion_group!(benches, bench_rolling_vec);
+#[cfg(feature = "ndarray")]
+criterion_group!(benches, bench_rolling_vec, bench_rolling_array);
+criterion_main!(benches);

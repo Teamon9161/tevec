@@ -13,6 +13,13 @@ ndarray = ["tea-core/ndarray"]
 
 [dependencies]
 tea-core = { workspace = true, default-features = false }
-# ndarray = { version = "0.15.6", optional = true }
 tea-macros = { workspace = true }
 num-traits = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.5"
+
+
+[[bench]]
+name = "rolling"
+harness = false

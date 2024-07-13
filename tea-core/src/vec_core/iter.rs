@@ -95,14 +95,11 @@ where
     }
 }
 
-impl<'a, V: Vec1View<T>, T: IsNone> IntoIterator for &OptIter<'a, V, T>
-// where
-//     V::Item: IsNone,
-{
+impl<'a, 'b, V: Vec1View<T>, T: IsNone> IntoIterator for &'b OptIter<'a, V, T> {
     type Item = Option<T::Inner>;
-    type IntoIter = TrustIter<impl Iterator<Item = Option<T::Inner>>>;
+    type IntoIter = Box<dyn TrustedLen<Item = Option<T::Inner>> + 'b>;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.titer()
+        Box::new(self.titer())
     }
 }

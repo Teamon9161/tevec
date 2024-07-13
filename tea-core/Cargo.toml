@@ -9,7 +9,7 @@ description = "Core data structures and traits for tevec."
 
 [features]
 default = []
-# default = ["ndarray", "time", "pl"]
+# default = ["ndsarray", "time", "pl"]
 
 pl = ["polars", "polars-arrow", "tea-error/polars"]
 time = ["tea-dtype/time"]
@@ -26,3 +26,11 @@ polars = { version = "0.41.3", optional = true, default-features = false, featur
     "dtype-duration",
 ] }
 polars-arrow = { version = "0.41.3", optional = true }
+
+[dev-dependencies]
+criterion = "0.5"
+
+
+[[bench]]
+name = "agg"
+harness = false

@@ -272,8 +272,7 @@ impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
 
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
-        let (ptr, len, cap) = self.into_raw_parts();
-        Vec::from_raw_parts(ptr as *mut T, len, cap)
+        std::mem::transmute::<Vec<MaybeUninit<T>>, Vec<T>>(self)
     }
 
     #[inline]
