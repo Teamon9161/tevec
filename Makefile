@@ -12,10 +12,14 @@ test:
 changelog:
 	cargo changelog --write tevec
 
-try_publish_patch:
+check_patch:
 	cargo release version patch
+
+check_publish:
 	cargo release publish
 
-publish_patch:
+patch:
 	cargo release version patch --execute
+
+publish:
 	cargo release publish --execute
