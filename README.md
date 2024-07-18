@@ -47,13 +47,20 @@ let mean2: Array1<f32> = data.ts_vmean(4, None); // rolling_mean function ignore
 Some mapping functions return an `Iterator`, allowing for chained calls without reallocating memory, and only collecting the iterator when needed.
 
 ### Feature Flags
+
 **pl**: For `Polars` backend
+
 **ndarray**: For `Ndarray` backend
 
+
 **agg**:  Aggregate Functions
+
 **map**: Mapping Functions
+
 **rolling**: Rolling Functions
+
 **stat**: Statistic Functions
+
 
 **time**: `DateTime` and `TimeDelta` structs
 
