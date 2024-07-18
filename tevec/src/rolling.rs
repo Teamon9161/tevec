@@ -89,8 +89,10 @@ impl<I: Vec1View<T>, T> RollingFinal<T> for I {}
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "stat")]
     use tea_core::testing::*;
 
+    #[cfg(feature = "stat")]
     use super::*;
 
     #[cfg(feature = "stat")]

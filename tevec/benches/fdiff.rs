@@ -1,11 +1,11 @@
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 use criterion::{criterion_group, criterion_main, Criterion};
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 use tevec::prelude::*;
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 const LENGTH: usize = 1_000_000;
 
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 fn bench_fdiff_vec(c: &mut Criterion) {
     let data: Vec<f64> = Vec1Create::linspace(Some(-2.), 19., LENGTH);
     c.bench_function("fdiff_vec", |b| {
@@ -15,7 +15,7 @@ fn bench_fdiff_vec(c: &mut Criterion) {
     });
 }
 
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 fn bench_vfdiff_vec(c: &mut Criterion) {
     let data: Vec<f64> = Vec1Create::linspace(Some(-2.), 19., LENGTH);
     c.bench_function("fdiff_vec", |b| {
@@ -35,10 +35,10 @@ fn bench_vfdiff_vec(c: &mut Criterion) {
 //     });
 // }
 
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 criterion_group!(benches, bench_fdiff_vec, bench_vfdiff_vec);
-#[cfg(feature = "rolling")]
+#[cfg(all(feature = "rolling", feature = "stat"))]
 criterion_main!(benches);
 
-#[cfg(not(feature = "rolling"))]
+#[cfg(not(all(feature = "rolling", feature = "stat")))]
 fn main() {}

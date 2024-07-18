@@ -1,4 +1,6 @@
 # Tevec
+[![Build](https://github.com/teamon9161/tevec/workflows/Build/badge.svg)](https://github.com/teamon9161/tevec/actions)
+![Crates.io Version](https://img.shields.io/crates/v/tevec)
 
 ## Introduction
 A crate to provide financial quantitative analysis functions across different backends (currently Vec & Ndarray & Polars). It uses the Rust trait system to facilitate the support of more backends in the future.
@@ -19,8 +21,8 @@ First, import the common trait names to call the corresponding methods.
 Most aggregation functions are implemented for structs that satisfy the `IntoIterator + Sized` traits.
 ```rust
 let data = vec![1, 2, 3, 4, 5];
-data.mean();  // consume data, return Some(3)
 data.titer().mean();  // not consume data, return Some(3)
+data.mean();  // consume data, return Some(3)
 let data = vec![1., f64::NAN, 3.];
 data.titer().vmean();  // valid mean, this will ignore nan, return 2.
 // valid function can also be used for Option<T> dtype
@@ -72,8 +74,8 @@ Tevec是一个为不同backend提供金融量化分析常用方法和函数的�
 绝大部分聚合函数都为满足`IntoIterator + Sized`特征的对象进行实现。
 ```rust
 let data = vec![1, 2, 3, 4, 5];
-data.mean();  // consume data, return Some(3)
 data.titer().mean();  // not consume data, return Some(3)
+data.mean();  // consume data, return Some(3)
 let data = vec![1., f64::NAN, 3.];
 data.titer().vmean();  // valid mean, this will ignore nan, return 2.
 // valid function can also be used for Option<T> dtype

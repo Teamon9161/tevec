@@ -8,7 +8,7 @@ license.workspace = true
 description = "A crate to provide quantitative analysis functions for vec | ndarray | polars backend."
 
 [features]
-default = ["agg", "map"]
+default = ["agg", "map", "rolling"]
 # default = ["time", "rolling", "agg", "map", "stat", "ndarray", "pl"]
 
 # ops
