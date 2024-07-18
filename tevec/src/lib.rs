@@ -1,13 +1,13 @@
 //! # Tevec
 
 //! ## Introduction
-//! A crate to provide financial quantitative analysis functions across different backends (currently Vec & Ndarray & Polars). It uses the Rust trait system to facilitate the support of more backends in the future.
-
+//! A crate to provide financial quantitative analysis functions across different backends (currently **Vec** & **Ndarray** & **Polars**). almost entirely implemented with Rust `traits` to facilitate the future support of additional backends.
+//!
 //! Currently, it is mainly divided into three categories of functions:
 //! * Rolling functions
 //! * Mapping functions
 //! * Aggregation functions
-
+//!
 //! ## Installation
 //! add `tevec = "0.2"` to your `Cargo.toml`
 //! ### Aggregation Functions
@@ -24,7 +24,7 @@
 //! data.vmean(); // return 2.
 //! ```
 //! Using `titer` returns an `Iterator` that satisfies `TrustedLen`, allowing for further method calls. The `titer` method comes from the `Titer` trait, which has been implemented for all backends.
-
+//!
 //! ### Rolling Functions
 //! ```
 //! use tevec::prelude::*;
@@ -36,7 +36,7 @@
 //!     let mean2: Array1<f32> = data.ts_vmean(4, None); // rolling_mean function ignore none values
 //! }
 //! ```
-
+//!
 //! ### Mapping Functions
 //! ```
 //!  use tevec::prelude::*;
@@ -45,17 +45,21 @@
 //!  let shfit_abs_v: Vec<_> = v.titer().abs().vshift(2, None).collect_trusted_vec1();
 //! ```
 //! Some mapping functions return an `Iterator`, allowing for chained calls without reallocating memory, and only collecting the iterator when needed.
-
+//!
 //! ### Feature Flags
-//! pl: For `Polars` backend
-//! ndarray: For `Ndarray` backend
-
-//! agg:  Aggregate Functions
-//! map: Mapping Functions
-//! rolling: Rolling Functions
-//! stat: Statistic Functions
-
-//! time: DateTime and TimeDelta structs
+//! **pl**: For `Polars` backend
+//!
+//! **ndarray**: For `Ndarray` backend
+//!
+//! **agg**:  Aggregate Functions
+//!
+//! **map**: Mapping Functions
+//!
+//! **rolling**: Rolling Functions
+//!
+//! **stat**: Statistic Functions
+//!
+//! **time**: `DateTime` and `TimeDelta` structs
 
 pub mod prelude;
 pub use {tea_core as core, tea_dtype as dtype};
