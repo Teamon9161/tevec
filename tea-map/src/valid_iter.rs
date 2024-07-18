@@ -18,6 +18,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     }
 
     /// Forward fill value where the mask is true
+    /// value: value to fill if head values are still none after forward fill
     fn ffill_mask<F: Fn(&T) -> bool>(
         self,
         mask_func: F,
@@ -43,11 +44,14 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     }
 
     #[inline]
+    /// Forward fill value
+    /// value: value to fill if head values are still none after forward fill
     fn ffill(self, value: Option<T>) -> impl TrustedLen<Item = T> {
         self.ffill_mask(T::is_none, value)
     }
 
     /// Backward fill value where the mask is true
+    /// value: value to fill if tails values are still none after backward fill
     fn bfill_mask<F: Fn(&T) -> bool>(
         self,
         mask_func: F,
@@ -78,6 +82,8 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     }
 
     #[inline]
+    /// Backward fill value
+    /// value: value to fill if tails values are still none after backward fill
     fn bfill(self, value: Option<T>) -> impl TrustedLen<Item = T>
     where
         Self: DoubleEndedIterator<Item = T>,
