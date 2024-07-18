@@ -1,6 +1,6 @@
 # Tevec
 [![Build](https://github.com/teamon9161/tevec/workflows/Build/badge.svg)](https://github.com/teamon9161/tevec/actions)
-![Crates.io Version](https://img.shields.io/crates/v/tevec)
+[![Crates.io Version](https://img.shields.io/crates/v/tevec)](https://docs.rs/tevec/latest/tevec/)
 
 ## Introduction
 A crate to provide financial quantitative analysis functions across different backends (currently Vec & Ndarray & Polars). It uses the Rust trait system to facilitate the support of more backends in the future.
@@ -88,7 +88,7 @@ data.vmean(); // return 2.
 ```rust
 let data = vec![1, 2, 3, 4, 5];
 let mean: Vec<f64> = data.ts_mean(3, Some(1)); // params: window, min_periods
-let mean2: Array1<f32> = data.ts_vmean(4, None); // rolling_mean function ignore none values
+let mean2: Array1<f32> = data.ts_vmean(4, None); // rolling_mean function ignore none values, need ndarray feature
 ```
 
 ## 映射函数
