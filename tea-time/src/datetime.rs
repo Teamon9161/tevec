@@ -3,10 +3,10 @@ use std::hash::Hash;
 use std::marker::PhantomData;
 
 use chrono::{
-    DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveDateTime, NaiveTime, Timelike,
-    Utc,
+    DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveDate, NaiveDateTime, NaiveTime,
+    Timelike, Utc,
 };
-use tea_error::{tbail, terr, TResult};
+use tea_error::{tbail, TResult};
 
 use super::timeunit::*;
 use crate::TimeDelta;
@@ -18,7 +18,7 @@ pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 unsafe impl<U: TimeUnitTrait> Send for DateTime<U> {}
 unsafe impl<U: TimeUnitTrait> Sync for DateTime<U> {}
 
-const TIME_RULE_VEC: [&str; 9] = [
+const TIME_RULE_VEC: [&str; 11] = [
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d",
@@ -28,6 +28,8 @@ const TIME_RULE_VEC: [&str; 9] = [
     "%d/%m/%Y H%M%S",
     "%Y%m%d%H%M%S",
     "%d/%m/%YH%M%S",
+    "%Y/%m/%d",
+    "%Y/%m/%d %H:%M:%S",
 ];
 
 impl<U: TimeUnitTrait> DateTime<U> {
@@ -92,13 +94,19 @@ impl<U: TimeUnitTrait> DateTime<U> {
         Self: From<CrDateTime<Utc>>,
     {
         if let Some(fmt) = fmt {
-            let cr_dt = NaiveDateTime::parse_from_str(s, fmt)
-                .map_err(|err| terr!(ParseError:"Failed to parse datetime: {}", err))?;
-            Ok(cr_dt.into())
+            if let Ok(cr_dt) = NaiveDateTime::parse_from_str(s, fmt) {
+                Ok(cr_dt.into())
+            } else if let Ok(cr_date) = NaiveDate::parse_from_str(s, fmt) {
+                Ok(cr_date.into())
+            } else {
+                tbail!(ParseError:"Failed to parse datetime from string: {}", s)
+            }
         } else {
             for fmt in TIME_RULE_VEC.iter() {
                 if let Ok(cr_dt) = NaiveDateTime::parse_from_str(s, fmt) {
                     return Ok(cr_dt.into());
+                } else if let Ok(cr_date) = NaiveDate::parse_from_str(s, fmt) {
+                    return Ok(cr_date.into());
                 }
             }
             tbail!(ParseError:"Failed to parse datetime from string: {}", s)
@@ -160,7 +168,6 @@ impl<U: TimeUnitTrait> DateTime<U> {
 impl<U: TimeUnitTrait> DateTime<U>
 where
     Self: TryInto<CrDateTime<Utc>>,
-    // <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
 {
     #[inline(always)]
     pub fn time(&self) -> Option<NaiveTime> {
@@ -190,5 +197,21 @@ where
     #[inline(always)]
     pub fn second(&self) -> Option<usize> {
         self.to_cr().map(|dt| dt.second() as usize)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[allow(unused_assignments, unused_variables)]
+    fn test_parse_datetime() -> TResult<()> {
+        let mut dt: DateTime = "2020-01-01 00:00:00".parse()?;
+        dt = DateTime::parse("2020-01-01", Some("%Y-%m-%d"))?;
+        dt = "2020-01-01".parse()?;
+        dt = "20220101".parse()?;
+        dt = "2021/02/03".parse()?;
+        Ok(())
     }
 }

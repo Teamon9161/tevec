@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use chrono::{DateTime as CrDateTime, NaiveDateTime, Utc};
+use chrono::{DateTime as CrDateTime, NaiveDate, NaiveDateTime, Utc};
 use tea_error::*;
 
 use crate::*;
@@ -39,6 +39,30 @@ where
     #[inline]
     fn from(dt: NaiveDateTime) -> Self {
         CrDateTime::from_naive_utc_and_offset(dt, Utc).into()
+    }
+}
+
+impl<U: TimeUnitTrait> From<Option<NaiveDateTime>> for DateTime<U>
+where
+    Self: From<CrDateTime<Utc>>,
+{
+    #[inline]
+    fn from(dt: Option<NaiveDateTime>) -> Self {
+        if let Some(dt) = dt {
+            CrDateTime::from_naive_utc_and_offset(dt, Utc).into()
+        } else {
+            DateTime::nat()
+        }
+    }
+}
+
+impl<U: TimeUnitTrait> From<NaiveDate> for DateTime<U>
+where
+    Self: From<CrDateTime<Utc>>,
+{
+    #[inline]
+    fn from(dt: NaiveDate) -> Self {
+        CrDateTime::from_naive_utc_and_offset(dt.and_hms_opt(0, 0, 0).unwrap(), Utc).into()
     }
 }
 
