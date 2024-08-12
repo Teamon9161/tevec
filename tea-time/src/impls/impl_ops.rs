@@ -47,7 +47,7 @@ where
             } else {
                 dt
             };
-            (out + rhs.inner).into()
+            (out - rhs.inner).into()
         } else {
             DateTime::nat()
         }
