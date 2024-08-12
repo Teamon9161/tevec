@@ -356,7 +356,10 @@ impl Cast<String> for &str {
 }
 
 #[cfg(feature = "time")]
-impl<U: TimeUnitTrait> Cast<String> for DateTime<U> {
+impl<U: TimeUnitTrait> Cast<String> for DateTime<U>
+where
+    CrDateTime<Utc>: From<DateTime<U>>,
+{
     fn cast(self) -> String {
         format!("{:?}", self)
     }

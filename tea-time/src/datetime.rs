@@ -11,9 +11,22 @@ use tea_error::{tbail, TResult};
 use super::timeunit::*;
 use crate::TimeDelta;
 
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Hash, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
+
+impl<U: TimeUnitTrait> std::fmt::Debug for DateTime<U>
+where
+    chrono::DateTime<Utc>: From<DateTime<U>>,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.is_nat() {
+            write!(f, "NaT")
+        } else {
+            write!(f, "{}", self.strftime(None))
+        }
+    }
+}
 
 unsafe impl<U: TimeUnitTrait> Send for DateTime<U> {}
 unsafe impl<U: TimeUnitTrait> Sync for DateTime<U> {}
