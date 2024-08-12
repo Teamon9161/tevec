@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
+use polars::export::arrow::legacy::utils::CustomIterTools;
 use polars::prelude::*;
-use polars_arrow::legacy::utils::CustomIterTools;
 #[cfg(feature = "time")]
 use tea_dtype::{unit, DateTime};
 

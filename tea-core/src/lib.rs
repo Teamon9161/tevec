@@ -16,4 +16,4 @@ pub use ndarray;
 #[cfg(feature = "pl")]
 pub use polars;
 #[cfg(feature = "pl")]
-pub use polars_arrow;
+pub use polars::export::arrow;

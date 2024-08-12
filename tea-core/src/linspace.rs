@@ -1,5 +1,5 @@
 #[cfg(feature = "pl")]
-use polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
+use polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
 use tea_dtype::{Cast, Number};
 
 use super::vec_core::TrustedLen;
