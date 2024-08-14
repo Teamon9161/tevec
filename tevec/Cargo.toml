@@ -33,9 +33,7 @@ tea-rolling = { workspace = true, optional = true }
 tea-map = { workspace = true, optional = true }
 tea-agg = { workspace = true, optional = true }
 ffi = { version = "0.1", default-features = false, optional = true, package = "tea-ffi" }
-derive_more = { version = "0.99", default-features = false, features = [
-    "from",
-] }
+derive_more = { version = "1", default-features = false, features = ["from"] }
 
 [dev-dependencies]
 criterion = "0.5"
