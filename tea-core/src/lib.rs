@@ -13,7 +13,7 @@ pub mod testing;
 #[cfg(feature = "ndarray")]
 pub use ndarray;
 // re-export polars backend
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 pub use polars;
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 pub use polars::export::arrow;

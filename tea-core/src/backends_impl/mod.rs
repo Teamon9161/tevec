@@ -1,5 +1,5 @@
 #[cfg(feature = "ndarray")]
 mod ndarray_rs;
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 mod polars;
 mod vec;

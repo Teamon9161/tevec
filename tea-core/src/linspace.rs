@@ -1,4 +1,4 @@
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 use polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
 use tea_dtype::{Cast, Number};
 
@@ -93,6 +93,6 @@ where
     }
 }
 
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<T: Number> PlTrustedLen for Linspace<T> where usize: Cast<T> {}
 unsafe impl<T: Number> TrustedLen for Linspace<T> where usize: Cast<T> {}

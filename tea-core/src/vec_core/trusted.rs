@@ -1,9 +1,9 @@
 use std::iter::Scan;
 use std::slice::Iter;
 
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 use polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 use polars::prelude::PolarsIterator;
 use tea_error::TResult;
 
@@ -15,7 +15,7 @@ use tea_error::TResult;
 /// # Safety
 /// This trait must only be implemented when the contract is upheld.
 /// Consumers of this trait must inspect Iterator::size_hint()’s upper bound.
-#[cfg(not(feature = "pl"))]
+#[cfg(not(feature = "polars"))]
 pub unsafe trait TrustedLen: Iterator {
     #[inline]
     fn len(&self) -> usize {
@@ -36,7 +36,7 @@ pub unsafe trait TrustedLen: Iterator {
 /// # Safety
 /// This trait must only be implemented when the contract is upheld.
 /// Consumers of this trait must inspect Iterator::size_hint()’s upper bound.
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 pub unsafe trait TrustedLen: Iterator + PlTrustedLen {
     #[inline]
     fn len(&self) -> usize {
@@ -92,17 +92,17 @@ unsafe impl<A: Clone> TrustedLen for std::iter::Repeat<A> {}
 unsafe impl<A, F: FnMut() -> A> TrustedLen for std::iter::RepeatWith<F> {}
 unsafe impl<A: TrustedLen> TrustedLen for std::iter::Take<A> {}
 
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<T> PlTrustedLen for &mut dyn TrustedLen<Item = T> {}
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<'a, T> PlTrustedLen for Box<dyn TrustedLen<Item = T> + 'a> {}
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<T> TrustedLen for &mut dyn PlTrustedLen<Item = T> {}
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<'a, T> TrustedLen for Box<dyn PlTrustedLen<Item = T> + 'a> {}
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<T> TrustedLen for dyn PolarsIterator<Item = T> {}
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<'a, T> TrustedLen for Box<dyn PolarsIterator<Item = T> + 'a> {}
 
 unsafe impl<T> TrustedLen for &mut dyn TrustedLen<Item = T> {}
@@ -171,7 +171,7 @@ where
     }
 }
 
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 unsafe impl<I: Iterator> PlTrustedLen for TrustIter<I> {}
 unsafe impl<I: Iterator> TrustedLen for TrustIter<I> {}
 

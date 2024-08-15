@@ -12,7 +12,7 @@ default = []
 # default = ["ndarray", "time", "pl"]
 
 ndarray = ["dep:ndarray"]
-pl = ["polars", "tea-error/polars"]
+polars = ["dep:polars", "tea-error/polars"]
 time = ["tea-dtype/time"]
 serde = ["tea-dtype/serde"]
 

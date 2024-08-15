@@ -68,11 +68,11 @@ pub use {tea_core as core, tea_dtype as dtype};
 #[macro_use]
 pub extern crate tea_macros as macros;
 
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 pub use tea_core::arrow;
 #[cfg(feature = "ndarray")]
 pub use tea_core::ndarray;
-#[cfg(feature = "pl")]
+#[cfg(feature = "polars")]
 pub use tea_core::polars;
 
 #[cfg(feature = "agg")]
