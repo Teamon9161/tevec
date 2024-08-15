@@ -18,7 +18,8 @@ pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
 impl<U: TimeUnitTrait> std::fmt::Debug for DateTime<U>
 where
-    chrono::DateTime<Utc>: From<DateTime<U>>,
+    Self: TryInto<CrDateTime<Utc>>,
+    <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.is_nat() {
