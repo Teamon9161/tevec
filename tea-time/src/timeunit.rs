@@ -5,6 +5,7 @@ macro_rules! define_timeunit {
     ($($name: ident),*) => {
         $(
             #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+            #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
             pub struct $name;
 
             impl TimeUnitTrait for $name {

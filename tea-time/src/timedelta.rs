@@ -6,11 +6,20 @@ use tea_error::{tbail, tensure, TError, TResult};
 
 use crate::convert::*;
 
-// #[serde_with::serde_as]
+#[cfg(feature = "serde")]
+#[serde_with::serde_as]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct TimeDelta {
+    pub months: i32,
+    // #[cfg_attr(feature = "serde", serde_as(as = "serde_with::DurationSeconds<i64>"))]
+    #[serde_as(as = "serde_with::DurationSeconds<i64>")]
+    pub inner: Duration,
+}
+
+#[cfg(not(feature = "serde"))]
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 pub struct TimeDelta {
     pub months: i32,
-    // #[serde_as(as = "serde_with::DurationSeconds<i64>")]
     pub inner: Duration,
 }
 

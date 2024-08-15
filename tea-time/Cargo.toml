@@ -7,6 +7,12 @@ repository.workspace = true
 license.workspace = true
 description = "Time related dtypes for tevec"
 
+[features]
+default = []
+serde = ["dep:serde", "chrono/serde", "serde_with"]
+
 [dependencies]
 chrono = "0.4.37"
+serde = { version = "1", optional = true, features = ["derive"] }
+serde_with = { version = "3", optional = true, features = ["chrono"] }
 tea-error = { workspace = true }

@@ -12,6 +12,7 @@ use super::timeunit::*;
 use crate::TimeDelta;
 
 #[derive(Clone, Copy, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(transparent)]
 pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 

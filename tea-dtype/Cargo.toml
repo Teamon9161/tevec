@@ -10,7 +10,9 @@ description = "A library to provide datatype and useful traits for datatype"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
 default = ["time"]
+
 time = ["tea-time"]
+serde = ["tea-time?/serde"]
 dyn = []
 
 [dependencies]

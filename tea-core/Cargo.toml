@@ -14,6 +14,7 @@ default = []
 ndarray = ["dep:ndarray"]
 pl = ["polars", "tea-error/polars"]
 time = ["tea-dtype/time"]
+serde = ["tea-dtype/serde"]
 
 [dependencies]
 num-traits = { workspace = true }
