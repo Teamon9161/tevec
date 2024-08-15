@@ -11,7 +11,7 @@ Currently, it is mainly divided into three categories of functions:
 * Aggregation functions
 
 ## Installation
-add `tevec = "0.2"` to your `Cargo.toml`
+add `tevec = "0.3"` to your `Cargo.toml`
 
 ## Basic Usage
 First, import the common trait names to call the corresponding methods.
