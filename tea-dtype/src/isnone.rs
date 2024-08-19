@@ -675,6 +675,7 @@ impl<T: Clone> IsNone for Vec<T> {
 #[cfg(test)]
 mod tests {
     use crate::{Cast, IsNone};
+
     #[test]
     fn test_str() {
         let a = "dsf";
@@ -683,6 +684,7 @@ mod tests {
         let a = Some("dsf");
         assert_eq!(a.to_opt(), Some("dsf"));
     }
+
     #[test]
     fn test_type_cast() {
         fn test1<T: IsNone>(_v: T) -> f64
@@ -717,5 +719,18 @@ mod tests {
             }
         }
         assert_eq!(2., test3(1_i32));
+    }
+
+    #[test]
+    fn test_unwrap() {
+        let v = Some(f64::NAN);
+        assert!(v.not_none());
+        assert!(IsNone::unwrap(v).is_nan());
+        let v: Option<i32> = None;
+        assert!(!v.not_none());
+        let v = f64::NAN;
+        assert!(v.is_none());
+        let v = 1;
+        assert!(!v.is_none());
     }
 }

@@ -19,19 +19,21 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
         self.rolling_apply(
             window,
             |v_rm, v| {
-                if v.not_none() {
+                let res = if v.not_none() {
                     n += 1;
-                    let v = v.clone().unwrap().f64();
+                    let v = v.unwrap().f64();
                     sum += v;
-                    sum2 += v * v
-                };
-                let res = if n >= min_periods {
-                    let n_f64 = n.f64();
-                    let mut var = sum2 / n_f64;
-                    let mean = sum / n_f64;
-                    var -= mean.powi(2);
-                    if var > EPS {
-                        (v.unwrap().f64() - mean) / (var * n_f64 / (n - 1).f64()).sqrt()
+                    sum2 += v * v;
+                    if n >= min_periods {
+                        let n_f64 = n.f64();
+                        let mut var = sum2 / n_f64;
+                        let mean = sum / n_f64;
+                        var -= mean.powi(2);
+                        if var > EPS {
+                            (v - mean) / (var * n_f64 / (n - 1).f64()).sqrt()
+                        } else {
+                            f64::NAN
+                        }
                     } else {
                         f64::NAN
                     }
@@ -151,3 +153,29 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
 }
 
 impl<T: IsNone, I: Vec1View<T>> RollingValidNorm<T> for I {}
+
+#[cfg(test)]
+mod tests {
+    use tea_core::testing::assert_vec1d_equal_numeric;
+
+    use super::*;
+    #[test]
+    fn test_ts_zscore() {
+        let data = vec![1., 2., 3., f64::NAN, 5., 6., 7., f64::NAN, 9., 10.];
+        let res: Vec<f64> = data.ts_vzscore(4, None);
+        let expect = vec![
+            f64::NAN,
+            0.707107,
+            1.0,
+            f64::NAN,
+            1.091089,
+            0.872872,
+            1.0,
+            f64::NAN,
+            1.091089,
+            0.872872,
+        ];
+        // assert_eq!(res, expect);
+        assert_vec1d_equal_numeric(&res, &expect, Some(1e-5))
+    }
+}
