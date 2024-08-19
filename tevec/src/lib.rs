@@ -9,7 +9,7 @@
 //! * Aggregation functions
 //!
 //! ## Installation
-//! add `tevec = "0.2"` to your `Cargo.toml`
+//! add `tevec = "0.3"` to your `Cargo.toml`
 //! ### Aggregation Functions
 //! Most aggregation functions are implemented for structs that satisfy the `IntoIterator + Sized` traits.
 //! ```
