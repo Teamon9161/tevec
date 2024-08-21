@@ -4,16 +4,9 @@ mod create;
 mod linspace;
 mod vec_core;
 
+pub mod export;
+
 pub use tea_dtype as dtype;
 
 pub mod prelude;
 pub mod testing;
-
-// re-export nd_array backend
-#[cfg(feature = "ndarray")]
-pub use ndarray;
-// re-export polars backend
-#[cfg(feature = "polars")]
-pub use polars;
-#[cfg(feature = "polars")]
-pub use polars::export::arrow;

@@ -32,7 +32,7 @@
 //! let mean: Vec<f64> = data.ts_mean(3, Some(1)); // params: window, min_periods
 //! #[cfg(feature = "ndarray")]
 //! {   
-//!     use tevec::ndarray::Array1;  // reexported from ndarray crate
+//!     use tevec::export::ndarray::Array1;  // reexported from ndarray crate
 //!     let mean2: Array1<f32> = data.ts_vmean(4, None); // rolling_mean function ignore none values
 //! }
 //! ```
@@ -61,19 +61,13 @@
 //!
 //! **time**: `DateTime` and `TimeDelta` structs
 
+pub mod export;
 pub mod prelude;
 pub use {tea_core as core, tea_dtype as dtype};
 
 #[allow(unused_imports)]
 #[macro_use]
 pub extern crate tea_macros as macros;
-
-#[cfg(feature = "polars")]
-pub use tea_core::arrow;
-#[cfg(feature = "ndarray")]
-pub use tea_core::ndarray;
-#[cfg(feature = "polars")]
-pub use tea_core::polars;
 
 #[cfg(feature = "agg")]
 pub mod agg;
