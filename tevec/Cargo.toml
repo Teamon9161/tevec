@@ -16,6 +16,7 @@ rolling = ["tea-rolling"]
 map = ["tea-map"]
 agg = ["tea-agg"]
 stat = ["statrs", "ffi"]
+fdiff = ["stat", "rolling"]
 
 # backends
 polars = ["tea-core/polars"]
@@ -49,3 +50,4 @@ harness = false
 [[bench]]
 name = "fdiff"
 harness = false
+required-features = ["fdiff"]

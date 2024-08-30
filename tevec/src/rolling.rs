@@ -1,7 +1,7 @@
 use tea_core::prelude::*;
 pub use tea_rolling::*;
 
-#[cfg(feature = "stat")]
+#[cfg(feature = "fdiff")]
 fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
     let mut sign = if window % 2 == 0 { 1. } else { -1. };
     (0..window)
@@ -14,7 +14,7 @@ fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
 }
 
 pub trait RollingFinal<T>: Vec1View<T> {
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     #[no_out]
     fn ts_fdiff<O: Vec1<U>, U: Clone>(
         &self,
@@ -40,7 +40,7 @@ pub trait RollingFinal<T>: Vec1View<T> {
 }
 
 pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     #[no_out]
     fn ts_vfdiff<O: Vec1<U>, U: Clone>(
         &self,
@@ -89,13 +89,13 @@ impl<I: Vec1View<T>, T> RollingFinal<T> for I {}
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     use tea_core::testing::*;
 
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     use super::*;
 
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     #[test]
     fn test_binom() {
         let res = ffi::binom(2.2, 3.1);
@@ -105,7 +105,7 @@ mod tests {
         assert_eq!(ffi::binom(0.5, 600.), -1.9206126162302755e-5);
     }
 
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     #[test]
     fn test_fdiff_coef() {
         let res = fdiff_coef(0.3, 5);
@@ -118,7 +118,7 @@ mod tests {
         assert_vec1d_equal_numeric(&res, &vec![-0.0625, -0.125, -0.5, 1.], Some(EPS));
     }
 
-    #[cfg(feature = "stat")]
+    #[cfg(feature = "fdiff")]
     #[test]
     fn test_fdiff() {
         let arr = vec![7, 4, 2, 5, 1, 2];

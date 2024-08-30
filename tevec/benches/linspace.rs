@@ -14,7 +14,7 @@ fn bench_linspace_vec(c: &mut Criterion) {
 criterion_group!(benches, bench_linspace_vec);
 criterion_main!(benches);
 
-// #[cfg(feature = "pl")]
+// #[cfg(feature = "polars")]
 // #[bench]
 // fn bench_linspace_pl(b: &mut Bencher) {
 //     use tea_core::polars::prelude::*;

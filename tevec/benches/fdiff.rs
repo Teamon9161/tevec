@@ -1,11 +1,7 @@
-#[cfg(all(feature = "rolling", feature = "stat"))]
 use criterion::{criterion_group, criterion_main, Criterion};
-#[cfg(all(feature = "rolling", feature = "stat"))]
 use tevec::prelude::*;
-#[cfg(all(feature = "rolling", feature = "stat"))]
 const LENGTH: usize = 1_000_000;
 
-#[cfg(all(feature = "rolling", feature = "stat"))]
 fn bench_fdiff_vec(c: &mut Criterion) {
     let data: Vec<f64> = Vec1Create::linspace(Some(-2.), 19., LENGTH);
     c.bench_function("fdiff_vec", |b| {
@@ -15,7 +11,6 @@ fn bench_fdiff_vec(c: &mut Criterion) {
     });
 }
 
-#[cfg(all(feature = "rolling", feature = "stat"))]
 fn bench_vfdiff_vec(c: &mut Criterion) {
     let data: Vec<f64> = Vec1Create::linspace(Some(-2.), 19., LENGTH);
     c.bench_function("fdiff_vec", |b| {
@@ -25,20 +20,18 @@ fn bench_vfdiff_vec(c: &mut Criterion) {
     });
 }
 
-// #[cfg(feature = "pl")]
-// #[bench]
-// fn bench_fdiff_pl(b: &mut Bencher) {
-//     use tea_core::polars::prelude::*;
-//     let data: Float64Chunked = Vec1Create::linspace(Some(-2.), 19., LENGTH);
-//     b.iter(|| {
-//         let _res: Float64Chunked = data.ts_fdiff(0.5, 600, None);
-//     });
-// }
+#[cfg(feature = "polars")]
+#[bench]
+fn bench_fdiff_pl(b: &mut Bencher) {
+    use tea_core::polars::prelude::*;
+    let data: Float64Chunked = Vec1Create::linspace(Some(-2.), 19., LENGTH);
+    b.iter(|| {
+        let _res: Float64Chunked = data.ts_vfdiff(0.5, 600, None);
+    });
+}
 
-#[cfg(all(feature = "rolling", feature = "stat"))]
+#[cfg(not(feature = "polars"))]
 criterion_group!(benches, bench_fdiff_vec, bench_vfdiff_vec);
-#[cfg(all(feature = "rolling", feature = "stat"))]
+#[cfg(feature = "polars")]
+criterion_group!(benches, bench_fdiff_vec, bench_vfdiff_vec, bench_fdiff_pl);
 criterion_main!(benches);
-
-#[cfg(not(all(feature = "rolling", feature = "stat")))]
-fn main() {}
