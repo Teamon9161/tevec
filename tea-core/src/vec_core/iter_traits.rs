@@ -2,8 +2,10 @@ use std::iter::IntoIterator;
 
 use tea_dtype::IsNone;
 
-pub trait TIterator: Iterator + DoubleEndedIterator {}
-impl<I: Iterator + DoubleEndedIterator> TIterator for I {}
+use super::trusted::TrustedLen;
+
+pub trait TIterator: Iterator + DoubleEndedIterator + TrustedLen {}
+impl<I: Iterator + DoubleEndedIterator + TrustedLen> TIterator for I {}
 
 pub trait IterBasic: IntoIterator + Sized {
     #[inline]

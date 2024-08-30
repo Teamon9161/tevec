@@ -13,14 +13,12 @@ macro_rules! impl_vec1 {
             }
 
             impl<T: Clone> TIter<T> for $ty {
-                // type Item = T;
-
                 #[inline]
-                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
+                fn titer<'a>(&'a self) -> impl TIterator<Item = T>
                 where
                     T: 'a,
                 {
-                    TrustIter::new(self.iter().cloned(), self.len())
+                    self.iter().cloned()
                 }
             }
         )*
@@ -29,7 +27,6 @@ macro_rules! impl_vec1 {
     (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
         $(
             impl<T: Clone $(, const $N: usize)?> Slice<T> for $ty {
-                // type Element = T;
                 type Output<'a> = <Self as std::ops::Index<std::ops::Range<usize>>>::Output
                 where T: 'a;
                 #[inline]
@@ -42,6 +39,11 @@ macro_rules! impl_vec1 {
             }
 
             impl<T: Clone $(, const $N: usize)?> Vec1View<T> for $ty {
+                #[inline]
+                fn get_backend_name(&self) -> &'static str {
+                    "vec"
+                }
+
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> T {
                     self.get_unchecked(index).clone()
@@ -158,14 +160,12 @@ impl<T, const N: usize> GetLen for [T; N] {
 }
 
 impl<T: Clone, const N: usize> TIter<T> for [T; N] {
-    // type Item = T;
-
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
+    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
     where
         T: 'a,
     {
-        TrustIter::new(self.iter().cloned(), self.len())
+        self.iter().cloned()
     }
 }
 

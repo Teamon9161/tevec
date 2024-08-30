@@ -6,7 +6,7 @@ use tea_error::{tbail, TResult};
 
 use super::super::iter::{OptIter, TIter};
 use super::super::iter_traits::TIterator;
-use super::super::trusted::TrustIter;
+// use super::super::trusted::TrustIter;
 use super::super::uninit::UninitRefMut;
 use super::own::{Vec1, Vec1Collect};
 use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
@@ -24,6 +24,8 @@ pub trait Slice<T> {
 }
 
 pub trait Vec1View<T>: TIter<T> + Slice<T> {
+    fn get_backend_name(&self) -> &'static str;
+
     /// Get the value at the index
     ///
     /// # Safety
@@ -37,23 +39,20 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
     }
 
     #[inline]
-    fn iter_cast<'a, U>(&'a self) -> TrustIter<impl TIterator<Item = U>>
+    fn iter_cast<'a, U>(&'a self) -> impl TIterator<Item = U>
     where
         T: 'a + Cast<U>,
     {
-        TrustIter::new(self.titer().map(|v| v.cast()), self.len())
+        self.titer().map(|v| v.cast())
     }
 
     #[inline]
-    fn opt_iter_cast<'a, U>(&'a self) -> TrustIter<impl TIterator<Item = Option<U>>>
+    fn opt_iter_cast<'a, U>(&'a self) -> impl TIterator<Item = Option<U>>
     where
         T: IsNone + 'a,
         <T as IsNone>::Inner: Cast<U>,
     {
-        TrustIter::new(
-            self.titer().map(|v| v.to_opt().map(Cast::<U>::cast)),
-            self.len(),
-        )
+        self.titer().map(|v| v.to_opt().map(Cast::<U>::cast))
     }
 
     #[inline]
@@ -69,11 +68,11 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
     }
 
     #[inline]
-    fn to_opt_iter<'a>(&'a self) -> TrustIter<impl TIterator<Item = Option<T::Inner>>>
+    fn to_opt_iter<'a>(&'a self) -> impl TIterator<Item = Option<T::Inner>>
     where
         T: IsNone + 'a,
     {
-        TrustIter::new(self.titer().map(|v| v.to_opt()), self.len())
+        self.titer().map(|v| v.to_opt())
     }
 
     /// if the value is valid, return it, otherwise return None
@@ -444,7 +443,7 @@ impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
     // type Item = I::Item;
 
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
+    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
     where
         T: 'a,
     {
@@ -468,6 +467,11 @@ impl<S: Slice<T>, T> Slice<T> for std::sync::Arc<S> {
 }
 
 impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
+    #[inline]
+    fn get_backend_name(&self) -> &'static str {
+        (**self).get_backend_name()
+    }
+
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         (**self).uget(index)

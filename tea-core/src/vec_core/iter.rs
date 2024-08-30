@@ -5,35 +5,38 @@ use crate::prelude::*;
 
 /// A trait indicating that a type can be referenced to a Trusted and DoubleEnded iterator.
 pub trait TIter<T>: GetLen {
-    // type Item;
-
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
+    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
     where
         Self: 'a,
         T: 'a;
 
     #[inline]
-    fn map<'a, U, F>(&'a self, f: F) -> TrustIter<impl TIterator<Item = U>>
+    fn map<'a, U, F>(&'a self, f: F) -> impl TIterator<Item = U>
     where
         F: FnMut(T) -> U,
         T: 'a,
     {
-        TrustIter::new(self.titer().map(f), self.len())
+        self.titer().map(f)
     }
 }
 
 /// A trait indicating that a type can be converted into a Trusted and DoubleEnded iterator.
-pub trait IntoTIter: IntoIterator {
-    fn into_titer(self) -> TrustIter<Self::IntoIter>
+pub trait IntoTIter: IntoIterator
+where
+    Self::IntoIter: TIterator,
+{
+    fn into_titer(self) -> Self::IntoIter
     where
         Self: Sized;
 }
 
-impl<I: IntoIterator + GetLen> IntoTIter for I {
+impl<I: IntoIterator + GetLen> IntoTIter for I
+where
+    Self::IntoIter: TIterator,
+{
     #[inline]
-    fn into_titer(self) -> TrustIter<Self::IntoIter> {
-        let len = self.len();
-        TrustIter::new(self.into_iter(), len)
+    fn into_titer(self) -> Self::IntoIter {
+        self.into_iter()
     }
 }
 
@@ -56,11 +59,11 @@ impl<V: Vec1View<T>, T: IsNone> TIter<Option<<T as IsNone>::Inner>> for OptIter<
     // type Item = Option<<T as IsNone>::Inner>;
 
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = Option<<T as IsNone>::Inner>>>
+    fn titer<'a>(&'a self) -> impl TIterator<Item = Option<<T as IsNone>::Inner>>
     where
         Self: 'a,
     {
-        TrustIter::new(self.view.titer().map(|v| v.to_opt()), self.len())
+        self.view.titer().map(|v| v.to_opt())
     }
 }
 
@@ -89,6 +92,11 @@ impl<'a, T: IsNone + 'a, V: Vec1View<T>> Vec1View<Option<T::Inner>> for OptIter<
 where
     for<'b> V::Output<'b>: TIter<T>,
 {
+    #[inline]
+    fn get_backend_name(&self) -> &'static str {
+        self.view.get_backend_name()
+    }
+
     #[inline]
     unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
         self.view.uget(index).to_opt()

@@ -12,10 +12,10 @@ macro_rules! impl_for_ca {
         $(
             impl TIter<Option<$real>> for $ForType {
                 #[inline]
-                fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item=Option<$real>>>
+                fn titer<'a>(&'a self) -> impl TIterator<Item=Option<$real>>
                 where Option<$real>: 'a
                 {
-                    TrustIter::new(self.into_iter(), self.len())
+                    self.into_iter()
                 }
             }
         )*
@@ -42,6 +42,11 @@ macro_rules! impl_for_ca {
 
             impl Vec1View<Option<$real>> for $ForType
             {
+                #[inline]
+                fn get_backend_name(&self) -> &'static str {
+                    "polars"
+                }
+
                 #[inline]
                 unsafe fn uget(&self, index: usize) -> Option<$real> {
                     self.get_unchecked(index)
@@ -90,7 +95,8 @@ macro_rules! impl_for_ca {
 
             #[inline]
             fn collect_from_trusted<I: Iterator<Item = Option<$real>>+TrustedLen>(iter: I) -> Self {
-                iter.collect_trusted()
+                let len = iter.len();
+                unsafe{iter.trust_my_length(len)}.collect_trusted()
             }
 
             #[inline]
@@ -100,7 +106,8 @@ macro_rules! impl_for_ca {
             where
                 Option<$real>: std::fmt::Debug,
             {
-                iter.try_collect_ca_trusted("")
+                let len = iter.len();
+                unsafe{iter.trust_my_length(len)}.try_collect_ca_trusted("")
             }
         })*
     };
@@ -156,11 +163,11 @@ impl_for_ca!(
 
 impl<'a: 's, 's> TIter<Option<&'s str>> for &'a ChunkedArray<StringType> {
     #[inline]
-    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = Option<&'s str>>>
+    fn titer<'b>(&'b self) -> impl TIterator<Item = Option<&'s str>>
     where
         Option<&'s str>: 'b,
     {
-        TrustIter::new(self.into_iter(), self.len())
+        self.into_iter()
     }
 }
 
@@ -190,6 +197,11 @@ impl<'b, 's> Slice<Option<&'b str>> for &'s ChunkedArray<StringType> {
 
 impl<'s: 'a, 'a> Vec1View<Option<&'a str>> for &'s ChunkedArray<StringType> {
     #[inline]
+    fn get_backend_name(&self) -> &'static str {
+        "polars"
+    }
+
+    #[inline]
     unsafe fn uget(&self, index: usize) -> Option<&'a str> {
         self.get_unchecked(index)
     }
@@ -206,7 +218,7 @@ impl GetLen for DatetimeChunked {
 #[cfg(feature = "time")]
 impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
     #[inline]
-    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = DateTime<unit::Nanosecond>>>
+    fn titer<'b>(&'b self) -> impl TIterator<Item = DateTime<unit::Nanosecond>>
     where
         DateTime<unit::Nanosecond>: 'b,
     {
@@ -214,7 +226,7 @@ impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
         match self.dtype() {
             DataType::Datetime(TimeUnit::Nanoseconds, _) => {
                 // TODO(Teamon): support timezone in future
-                TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
+                self.into_iter().map(|v| v.cast())
             },
             _ => unreachable!("datetime chunked should be nanoseconds unit"),
         }
@@ -224,7 +236,7 @@ impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
 #[cfg(feature = "time")]
 impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
     #[inline]
-    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = DateTime<unit::Millisecond>>>
+    fn titer<'b>(&'b self) -> impl TIterator<Item = DateTime<unit::Millisecond>>
     where
         DateTime<unit::Millisecond>: 'b,
     {
@@ -232,7 +244,7 @@ impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
                 // TODO(Teamon): support timezone in future
-                TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
+                self.into_iter().map(|v| v.cast())
             },
             _ => unreachable!("datetime chunked should be milliseconds unit"),
         }
@@ -242,7 +254,7 @@ impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
 #[cfg(feature = "time")]
 impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
     #[inline]
-    fn titer<'b>(&'b self) -> TrustIter<impl TIterator<Item = DateTime<unit::Microsecond>>>
+    fn titer<'b>(&'b self) -> impl TIterator<Item = DateTime<unit::Microsecond>>
     where
         DateTime<unit::Microsecond>: 'b,
     {
@@ -250,7 +262,7 @@ impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
                 // TODO(Teamon): support timezone in future
-                TrustIter::new(self.into_iter().map(|v| v.cast()), self.len())
+                self.into_iter().map(|v| v.cast())
             },
             _ => unreachable!("datetime chunked should be microseconds unit"),
         }

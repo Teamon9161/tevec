@@ -16,30 +16,8 @@ use tea_error::TResult;
 /// # Safety
 /// This trait must only be implemented when the contract is upheld.
 /// Consumers of this trait must inspect Iterator::size_hint()’s upper bound.
-#[cfg(not(feature = "polars"))]
+// #[cfg(not(feature = "polars"))]
 pub unsafe trait TrustedLen: Iterator {
-    #[inline]
-    fn len(&self) -> usize {
-        self.size_hint().1.unwrap()
-    }
-
-    #[inline]
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-}
-
-/// An iterator of known, fixed size.
-///
-/// A trait denoting Rusts' unstable [TrustedLen](https://doc.rust-lang.org/std/iter/trait.TrustedLen.html).
-/// This is re-defined here and implemented for some iterators until `std::iter::TrustedLen`
-/// is stabilized.
-///
-/// # Safety
-/// This trait must only be implemented when the contract is upheld.
-/// Consumers of this trait must inspect Iterator::size_hint()’s upper bound.
-#[cfg(feature = "polars")]
-pub unsafe trait TrustedLen: Iterator + PlTrustedLen {
     #[inline]
     fn len(&self) -> usize {
         self.size_hint().1.unwrap()
@@ -125,6 +103,11 @@ where
     I: TrustedLen + Iterator<Item = B>,
 {
 }
+
+#[cfg(feature = "ndarray")]
+unsafe impl<'a, A, D: ndarray::Dimension> TrustedLen for ndarray::iter::Iter<'a, A, D> {}
+#[cfg(feature = "ndarray")]
+unsafe impl<'a, A, D: ndarray::Dimension> TrustedLen for ndarray::iter::IterMut<'a, A, D> {}
 
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoIter<K, V> {}
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}

@@ -14,11 +14,11 @@ impl<S: Data<Elem = T>, T> GetLen for ArrayBase<S, Ix1> {
 
 impl<S: Data<Elem = T>, T: Clone> TIter<T> for ArrayBase<S, Ix1> {
     #[inline]
-    fn titer<'a>(&'a self) -> TrustIter<impl TIterator<Item = T>>
+    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
     where
         T: 'a,
     {
-        TrustIter::new(self.iter().cloned(), self.len())
+        self.iter().cloned()
     }
 }
 
@@ -40,6 +40,11 @@ impl<S: Data<Elem = T>, T: Clone> Slice<T> for ArrayBase<S, Ix1> {
 }
 
 impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
+    #[inline]
+    fn get_backend_name(&self) -> &'static str {
+        "ndarray"
+    }
+
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
         self.uget(index).clone()

@@ -30,6 +30,10 @@ polars = { version = ">=0.37, <0.43", optional = true, default-features = false,
 criterion = "0.5"
 
 
+# [[bench]]
+# name = "agg"
+# harness = false
+
 [[bench]]
-name = "agg"
+name = "rolling_custom"
 harness = false
