@@ -6,4 +6,5 @@ pub use ndarray;
 pub use polars;
 #[cfg(feature = "polars")]
 pub use polars::export::arrow;
+#[allow(unused_imports)]
 pub use tea_dtype::export::*;

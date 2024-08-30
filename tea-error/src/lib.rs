@@ -2,8 +2,8 @@ use std::borrow::Cow;
 use std::ops::Deref;
 
 pub use anyhow::{anyhow, bail, ensure, Result};
-#[cfg(feature = "polars")]
-use polars::prelude::PolarsError;
+// #[cfg(feature = "polars")]
+// use polars::prelude::PolarsError;
 use thiserror::Error;
 
 #[derive(Debug)]
@@ -121,12 +121,12 @@ macro_rules! tensure {
     };
 }
 
-#[cfg(feature = "polars")]
-impl From<TError> for PolarsError {
-    fn from(e: TError) -> Self {
-        PolarsError::ComputeError(format!("{}", e).into())
-    }
-}
+// #[cfg(feature = "polars")]
+// impl From<TError> for PolarsError {
+//     fn from(e: TError) -> Self {
+//         PolarsError::ComputeError(format!("{}", e).into())
+//     }
+// }
 
 // Not public, referenced by macros only.
 #[doc(hidden)]

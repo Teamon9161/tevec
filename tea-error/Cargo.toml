@@ -13,4 +13,3 @@ default = []
 [dependencies]
 anyhow = { workspace = true }
 thiserror = { workspace = true }
-polars = { version = "0.41", optional = true, default-features = false }

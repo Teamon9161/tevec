@@ -9,11 +9,11 @@ description = "Core data structures and traits for tevec."
 
 [features]
 default = []
-# default = ["ndarray", "time", "pl"]
+# default = ["ndarray", "time", "polars"]
 
 ndarray = ["dep:ndarray"]
-polars = ["dep:polars", "tea-error/polars"]
-time = ["tea-dtype/time"]
+polars = ["dep:polars"]
+time = ["tea-dtype/time", "polars?/dtype-datetime", "polars?/dtype-duration"]
 serde = ["tea-dtype/serde"]
 
 [dependencies]
@@ -21,11 +21,9 @@ num-traits = { workspace = true }
 tea-error = { workspace = true }
 tea-dtype = { workspace = true, default-features = false }
 serde = "1.0"
-ndarray = { version = "0.16", optional = true, features = ["rayon"] }
-polars = { version = "0.41", optional = true, default-features = false, features = [
+ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
+polars = { version = ">=0.37, <0.43", optional = true, default-features = false, features = [
     "dtype-struct",
-    "dtype-datetime",
-    "dtype-duration",
 ] }
 
 [dev-dependencies]
