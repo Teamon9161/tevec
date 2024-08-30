@@ -8,6 +8,7 @@ use polars::prelude::PolarsIterator;
 use tea_error::TResult;
 
 /// An iterator of known, fixed size.
+///
 /// A trait denoting Rusts' unstable [TrustedLen](https://doc.rust-lang.org/std/iter/trait.TrustedLen.html).
 /// This is re-defined here and implemented for some iterators until `std::iter::TrustedLen`
 /// is stabilized.
@@ -29,6 +30,7 @@ pub unsafe trait TrustedLen: Iterator {
 }
 
 /// An iterator of known, fixed size.
+///
 /// A trait denoting Rusts' unstable [TrustedLen](https://doc.rust-lang.org/std/iter/trait.TrustedLen.html).
 /// This is re-defined here and implemented for some iterators until `std::iter::TrustedLen`
 /// is stabilized.
