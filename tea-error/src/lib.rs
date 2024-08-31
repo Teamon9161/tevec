@@ -2,8 +2,6 @@ use std::borrow::Cow;
 use std::ops::Deref;
 
 pub use anyhow::{anyhow, bail, ensure, Result};
-// #[cfg(feature = "polars")]
-// use polars::prelude::PolarsError;
 use thiserror::Error;
 
 #[derive(Debug)]

@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::mem::MaybeUninit;
 
 use ndarray::{Array1, ArrayBase, ArrayView1, ArrayViewMut1, Data, DataMut, Ix1};
@@ -22,24 +21,20 @@ impl<S: Data<Elem = T>, T: Clone> TIter<T> for ArrayBase<S, Ix1> {
     }
 }
 
-impl<S: Data<Elem = T>, T: Clone> Slice<T> for ArrayBase<S, Ix1> {
-    // type Element = T;
-    type Output<'a> = ArrayView1<'a, T>
+impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
+    type SliceOutput<'a> = ArrayView1<'a, T> where Self: 'a, T: 'a;
+
+    #[inline]
+    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
     where
         Self: 'a,
-        T: 'a;
-    #[inline]
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
-    where
         T: 'a,
     {
         use ndarray::s;
         let view = self.slice(s![start..end]);
-        Ok(Cow::Owned(view))
+        Ok(view)
     }
-}
 
-impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
     #[inline]
     fn get_backend_name(&self) -> &'static str {
         "ndarray"

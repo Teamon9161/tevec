@@ -26,19 +26,26 @@ macro_rules! impl_vec1 {
 
     (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
         $(
-            impl<T: Clone $(, const $N: usize)?> Slice<T> for $ty {
-                type Output<'a> = <Self as std::ops::Index<std::ops::Range<usize>>>::Output
-                where T: 'a;
+            impl<T: Clone $(, const $N: usize)?> Vec1View<T> for $ty {
+                type SliceOutput<'a> = &'a <Self as std::ops::Index<std::ops::Range<usize>>>::Output where Self: 'a;
+
                 #[inline]
-                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>>
-                where T: 'a
+                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
+                where
+                    T: 'a,
                 {
                     use std::ops::Index;
-                    Ok(std::borrow::Cow::Borrowed(self.index(start..end)))
+                    Ok(self.index(start..end))
                 }
-            }
 
-            impl<T: Clone $(, const $N: usize)?> Vec1View<T> for $ty {
+                #[inline]
+                unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
+                where
+                    T: 'a,
+                {
+                    Ok(self.get_unchecked(start..end))
+                }
+
                 #[inline]
                 fn get_backend_name(&self) -> &'static str {
                     "vec"
@@ -53,6 +60,33 @@ macro_rules! impl_vec1 {
                 fn $slice(&self) -> Option<&[T]> {
                     Some(self)
                 })?
+
+                /// Rolling and apply a custom funtion to each window
+                ///
+                /// this should be a faster implemention than default as
+                /// we read value directly by ptr
+                #[inline]
+                fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
+                    &'a self,
+                    window: usize,
+                    f: F,
+                    out: Option<O::UninitRefMut<'_>>,
+                ) -> Option<O>
+                where
+                    F: FnMut(Self::SliceOutput<'a>) -> OT,
+                    T: 'a,
+                {
+                    let len = self.len();
+                    if let Some(out) = out {
+                        self.rolling_custom_to::<O, _, _>(window, f, out);
+                        None
+                    } else {
+                        use crate::prelude::UninitVec;
+                        let mut out = O::uninit(len);
+                        self.rolling_custom_to::<O, _, _>(window, f, O::uninit_ref_mut(&mut out));
+                        Some(unsafe { out.assume_init() })
+                    }
+                }
 
                 #[inline]
                 /// this should be a faster implemention than default as
@@ -101,9 +135,10 @@ macro_rules! impl_vec1 {
                     }
                 }
 
+
+                // this should be a faster implemention than default as
+                // we read value directly by ptr
                 #[inline]
-                /// this should be a faster implemention than default as
-                /// we read value directly by ptr
                 fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
                     &self,
                     window: usize,
@@ -124,9 +159,10 @@ macro_rules! impl_vec1 {
                     }
                 }
 
+
+                // this should be a faster implemention than default as
+                // we read value directly by ptr
                 #[inline]
-                /// this should be a faster implemention than default as
-                /// we read value directly by ptr
                 fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
                     &self,
                     other: &V2,
@@ -135,7 +171,7 @@ macro_rules! impl_vec1 {
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
+                    F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
                 {
                     let len = self.len();
                     if let Some(out) = out {
@@ -173,30 +209,25 @@ impl_vec1!(
     to_iter
     Vec<T>,
     [T],
-    // &[T],
+    &[T],
 );
 
-// impl<T: Clone> IntoTIter for Vec<T> {
-//     #[inline]
-//     fn into_titer(self) -> TrustIter<Self::IntoIter> {
-//         let len = self.len();
-//         self.into_iter().to_trust(len)
-//     }
-// }
+impl<T> GetLen for &mut [T] {
+    #[inline]
+    fn len(&self) -> usize {
+        (**self).len()
+    }
+}
 
-// impl<'a, T> IntoTIter for &'a [T] {
-//     fn into_titer(self) -> TrustIter<Self::IntoIter> {
-//         let len = self.len();
-//         self.into_iter().to_trust(len)
-//     }
-// }
-
-// impl<'a, T> IntoTIter for &'a mut [T] {
-//     fn into_titer(self) -> TrustIter<Self::IntoIter> {
-//         let len = self.len();
-//         self.into_iter().to_trust(len)
-//     }
-// }
+impl<T: Clone> TIter<T> for &mut [T] {
+    #[inline]
+    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
+    where
+        T: 'a,
+    {
+        self.iter().cloned()
+    }
+}
 
 impl_vec1!(
     view
@@ -282,13 +313,6 @@ impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
     }
 }
 
-impl<T> GetLen for &mut [MaybeUninit<T>] {
-    #[inline]
-    fn len(&self) -> usize {
-        (**self).len()
-    }
-}
-
 impl<T> UninitRefMut<T> for &mut [MaybeUninit<T>] {
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
@@ -318,15 +342,14 @@ mod tests {
         assert_eq!(unsafe { slice.uget(2) }, 3);
     }
 
-    // #[test]
-    // fn test_slice() {
-    //     // use super::CollectTrustedToVec;
-    //     let v = vec![1, 2, 4, 5, 2];
-    //     let res = v.slice(0, 3).unwrap().titer().collect_trusted_to_vec();
-    //     assert_eq!(&res, &[1, 2, 4]);
-    //     let res = v.slice(2, 4).unwrap().titer().collect_trusted_to_vec();
-    //     assert_eq!(&res, &[4, 5, 2]);
-    // }
+    #[test]
+    fn test_slice() {
+        let v = vec![1, 2, 4, 5, 2];
+        let res = v.slice(0, 3).unwrap().titer().collect_trusted_to_vec();
+        assert_eq!(&res, &[1, 2, 4]);
+        let res = v.slice(2, 4).unwrap().titer().collect_trusted_to_vec();
+        assert_eq!(&res, &[4, 5]);
+    }
 
     #[test]
     fn test_get_mut() {

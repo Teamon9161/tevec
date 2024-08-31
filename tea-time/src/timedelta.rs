@@ -9,6 +9,20 @@ use crate::convert::*;
 #[cfg(feature = "serde")]
 #[serde_with::serde_as]
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+/// Represents a duration of time with both months and a more precise duration.
+///
+/// This struct combines a number of months with a `chrono::Duration` to represent
+/// time intervals that may include calendar-specific units (months) as well as
+/// fixed-length durations.
+///
+/// # Fields
+///
+/// * `months`: The number of months in the time delta.
+/// * `inner`: A `chrono::Duration` representing the precise duration beyond whole months.
+///
+/// # Serialization
+///
+/// When the "serde" feature is enabled, this struct can be serialized and deserialized.
 pub struct TimeDelta {
     pub months: i32,
     // #[cfg_attr(feature = "serde", serde_as(as = "serde_with::DurationSeconds<i64>"))]
@@ -18,6 +32,20 @@ pub struct TimeDelta {
 
 #[cfg(not(feature = "serde"))]
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
+/// Represents a duration of time with both months and a more precise duration.
+///
+/// This struct combines a number of months with a `chrono::Duration` to represent
+/// time intervals that may include calendar-specific units (months) as well as
+/// fixed-length durations.
+///
+/// # Fields
+///
+/// * `months`: The number of months in the time delta.
+/// * `inner`: A `chrono::Duration` representing the precise duration beyond whole months.
+///
+/// # Serialization
+///
+/// When the "serde" feature is enabled, this struct can be serialized and deserialized.
 pub struct TimeDelta {
     pub months: i32,
     pub inner: Duration,
@@ -40,20 +68,53 @@ impl From<&str> for TimeDelta {
 }
 
 impl TimeDelta {
-    /// 1ns // 1 nanosecond
-    /// 1us // 1 microsecond
-    /// 1ms // 1 millisecond
-    /// 1s  // 1 second
-    /// 1m  // 1 minute
-    /// 1h  // 1 hour
-    /// 1d  // 1 day
-    /// 1w  // 1 week
-    /// 1mo // 1 calendar month
-    /// 1y  // 1 calendar year
-    ///
     /// Parse timedelta from string
     ///
     /// for example: "2y1mo-3d5h-2m3s"
+    /// Parses a string representation of a duration into a `TimeDelta`.
+    ///
+    /// This function supports a variety of time units and can handle complex duration strings.
+    ///
+    /// # Supported Units
+    ///
+    /// - `ns`: nanoseconds
+    ///
+    /// - `us`: microseconds
+    ///
+    /// - `ms`: milliseconds
+    ///
+    /// - `s`: seconds
+    ///
+    /// - `m`: minutes
+    ///
+    /// - `h`: hours
+    ///
+    /// - `d`: days
+    ///
+    /// - `w`: weeks
+    ///
+    /// - `mo`: months
+    ///
+    /// - `y`: years
+    ///
+    /// # Format
+    /// The duration string should be in the format of `<number><unit>`, and multiple such pairs can be combined.
+    /// For example: "2y1mo-3d5h-2m3s" represents 2 years, 1 month, minus 3 days, 5 hours, minus 2 minutes, and 3 seconds.
+    ///
+    /// # Arguments
+    /// * `duration` - A string slice that holds the duration to be parsed.
+    ///
+    /// # Returns
+    /// * `TResult<Self>` - A Result containing the parsed `TimeDelta` if successful, or an error if parsing fails.
+    ///
+    /// # Examples
+    /// ```
+    /// use tea_time::TimeDelta;
+    ///
+    /// let td = TimeDelta::parse("1y2mo3d4h5m6s").unwrap();
+    /// assert_eq!(td.months, 14); // 1 year and 2 months
+    /// assert_eq!(td.inner, chrono::Duration::seconds(3 * 86400 + 4 * 3600 + 5 * 60 + 6));
+    /// ```
     pub fn parse(duration: &str) -> TResult<Self> {
         let mut nsecs = 0;
         let mut secs = 0;

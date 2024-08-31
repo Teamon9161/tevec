@@ -14,6 +14,16 @@ use crate::TimeDelta;
 #[derive(Clone, Copy, Hash, Eq, PartialEq, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(transparent)]
+/// Represents a date and time with a specific time unit precision.
+///
+/// # Type Parameters
+///
+/// * `U`: The time unit precision, defaulting to `Nanosecond`. Must implement `TimeUnitTrait`.
+///
+/// # Fields
+///
+/// * `0`: An `i64` representing the timestamp in the specified time unit.
+/// * `PhantomData<U>`: A zero-sized type used to "mark" the time unit without affecting the struct's memory layout.
 pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 
 impl<U: TimeUnitTrait> std::fmt::Debug for DateTime<U>
@@ -48,31 +58,69 @@ const TIME_RULE_VEC: [&str; 11] = [
 ];
 
 impl<U: TimeUnitTrait> DateTime<U> {
+    /// Creates a new `DateTime` instance with the given timestamp.
+    ///
+    /// # Arguments
+    ///
+    /// * `dt` - An `i64` representing the timestamp in the specified time unit.
+    ///
+    /// # Returns
+    ///
+    /// A new `DateTime<U>` instance.
     #[inline]
     pub fn new(dt: i64) -> Self {
         Self(dt, PhantomData)
     }
 
+    /// Checks if the `DateTime` instance represents "Not-a-Time" (NaT).
+    ///
+    /// # Returns
+    ///
+    /// `true` if the instance is NaT, `false` otherwise.
     #[inline]
     pub fn is_nat(&self) -> bool {
         self.0 == i64::MIN
     }
 
+    /// Checks if the `DateTime` instance represents a valid time (not NaT).
+    ///
+    /// # Returns
+    ///
+    /// `true` if the instance is not NaT, `false` otherwise.
     #[inline]
     pub fn is_not_nat(&self) -> bool {
         self.0 != i64::MIN
     }
 
+    /// Creates a new `DateTime` instance representing "Not-a-Time" (NaT).
+    ///
+    /// # Returns
+    ///
+    /// A new `DateTime<U>` instance representing NaT.
     #[inline]
     pub fn nat() -> Self {
         Self(i64::MIN, PhantomData)
     }
 
+    /// Converts the `DateTime` instance to its underlying `i64` timestamp.
+    ///
+    /// # Returns
+    ///
+    /// The `i64` timestamp value.
     #[inline]
     pub fn into_i64(self) -> i64 {
         self.0
     }
 
+    /// Creates a `DateTime` instance from an optional `i64` timestamp.
+    ///
+    /// # Arguments
+    ///
+    /// * `v` - An `Option<i64>` representing the timestamp.
+    ///
+    /// # Returns
+    ///
+    /// A new `DateTime<U>` instance. If `v` is `None`, returns NaT.
     #[inline]
     pub fn from_opt_i64(v: Option<i64>) -> Self {
         if let Some(v) = v {
@@ -82,6 +130,11 @@ impl<U: TimeUnitTrait> DateTime<U> {
         }
     }
 
+    /// Converts the `DateTime` instance to an optional `i64` timestamp.
+    ///
+    /// # Returns
+    ///
+    /// `Some(i64)` if the instance is not NaT, `None` otherwise.
     #[inline]
     pub fn into_opt_i64(self) -> Option<i64> {
         if self.is_nat() {
@@ -91,6 +144,11 @@ impl<U: TimeUnitTrait> DateTime<U> {
         }
     }
 
+    /// Converts the `DateTime` instance to a `chrono::DateTime<Utc>`.
+    ///
+    /// # Returns
+    ///
+    /// `Some(CrDateTime<Utc>)` if the conversion is successful, `None` if the instance is NaT.
     #[inline]
     pub fn to_cr(&self) -> Option<CrDateTime<Utc>>
     where
@@ -103,6 +161,16 @@ impl<U: TimeUnitTrait> DateTime<U> {
         }
     }
 
+    /// Parses a string into a `DateTime` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `s` - The string to parse.
+    /// * `fmt` - An optional format string. If `None`, tries multiple common formats.
+    ///
+    /// # Returns
+    ///
+    /// A `TResult<Self>` containing the parsed `DateTime` or an error.
     #[inline(always)]
     pub fn parse(s: &str, fmt: Option<&str>) -> TResult<Self>
     where
@@ -128,6 +196,15 @@ impl<U: TimeUnitTrait> DateTime<U> {
         }
     }
 
+    /// Formats the `DateTime` instance as a string.
+    ///
+    /// # Arguments
+    ///
+    /// * `fmt` - An optional format string. If `None`, uses "%Y-%m-%d %H:%M:%S.%f".
+    ///
+    /// # Returns
+    ///
+    /// A formatted string representation of the `DateTime`.
     #[inline]
     pub fn strftime(&self, fmt: Option<&str>) -> String
     where
@@ -142,6 +219,15 @@ impl<U: TimeUnitTrait> DateTime<U> {
         }
     }
 
+    /// Truncates the `DateTime` to a specified duration.
+    ///
+    /// # Arguments
+    ///
+    /// * `duration` - A `TimeDelta` specifying the truncation interval.
+    ///
+    /// # Returns
+    ///
+    /// A new `DateTime<U>` instance truncated to the specified duration.
     pub fn duration_trunc(self, duration: TimeDelta) -> Self
     where
         Self: TryInto<CrDateTime<Utc>> + From<CrDateTime<Utc>>,
@@ -184,31 +270,61 @@ impl<U: TimeUnitTrait> DateTime<U>
 where
     Self: TryInto<CrDateTime<Utc>>,
 {
+    /// Returns the time component of the DateTime as a NaiveTime.
+    ///
+    /// # Returns
+    ///
+    /// `Option<NaiveTime>`: The time component if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn time(&self) -> Option<NaiveTime> {
         self.to_cr().map(|dt| dt.time())
     }
 
+    /// Returns the day of the month (1-31).
+    ///
+    /// # Returns
+    ///
+    /// `Option<usize>`: The day of the month if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn day(&self) -> Option<usize> {
         self.to_cr().map(|dt| dt.day() as usize)
     }
 
+    /// Returns the month (1-12).
+    ///
+    /// # Returns
+    ///
+    /// `Option<usize>`: The month if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn month(&self) -> Option<usize> {
         self.to_cr().map(|dt| dt.month() as usize)
     }
 
+    /// Returns the hour (0-23).
+    ///
+    /// # Returns
+    ///
+    /// `Option<usize>`: The hour if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn hour(&self) -> Option<usize> {
         self.to_cr().map(|dt| dt.hour() as usize)
     }
 
+    /// Returns the minute (0-59).
+    ///
+    /// # Returns
+    ///
+    /// `Option<usize>`: The minute if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn minute(&self) -> Option<usize> {
         self.to_cr().map(|dt| dt.minute() as usize)
     }
 
+    /// Returns the second (0-59).
+    ///
+    /// # Returns
+    ///
+    /// `Option<usize>`: The second if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn second(&self) -> Option<usize> {
         self.to_cr().map(|dt| dt.second() as usize)

@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::marker::PhantomData;
 
 use tea_dtype::{Cast, IsNone};
@@ -6,25 +5,102 @@ use tea_error::{tbail, TResult};
 
 use super::super::iter::{OptIter, TIter};
 use super::super::iter_traits::TIterator;
-// use super::super::trusted::TrustIter;
 use super::super::uninit::UninitRefMut;
 use super::own::{Vec1, Vec1Collect};
 use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
 
-pub trait Slice<T> {
-    // lifetime 'a is needed for ndarray backend, ArrayView has lifetime 'a
-    type Output<'a>: ToOwned + ?Sized
+/// A trait representing a view into a vector-like structure.
+///
+/// This trait provides methods for accessing and manipulating data in a vector-like structure
+/// without necessarily owning the data. It allows for operations such as slicing, indexing,
+/// and iterating over the elements.
+///
+/// The trait is generic over the type `T`, which represents the type of elements stored in the vector.
+///
+/// Implementations of this trait should provide efficient access to the underlying data
+/// and support various operations that are common for vector-like structures.
+///
+/// # Type Parameters
+///
+/// * `T`: The type of elements stored in the vector-like structure.
+///
+/// # Associated Types
+///
+/// * `SliceOutput<'a>`: The type returned by the `slice` method. This type must implement `ToOwned`
+///   to allow conversion to an owned type if needed.
+///
+/// Implementations of this trait might include views into contiguous memory arrays,
+/// database columns, or other data structures that can be logically viewed as a vector.
+pub trait Vec1View<T>: TIter<T> {
+    type SliceOutput<'a>: ToOwned
     where
         Self: 'a,
+        // this constraint is needed for ndarray backend
         T: 'a;
 
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
-    where
-        T: 'a; // this contraint is needed for polars StringChunked
-}
-
-pub trait Vec1View<T>: TIter<T> + Slice<T> {
+    /// Returns the name of the backend implementation.
+    ///
+    /// This method is useful for debugging and logging purposes, allowing
+    /// identification of which specific backend is being used at runtime.
+    ///
+    /// Additionally, this method can be used to implement backend-specific
+    /// optimizations or behaviors in certain methods. By checking the backend
+    /// name, code can be written to take advantage of specific backend
+    /// capabilities or work around limitations.
+    ///
+    /// # Returns
+    ///
+    /// A static string slice containing the name of the backend.
     fn get_backend_name(&self) -> &'static str;
+
+    /// Attempts to create a slice of the vector from the given start and end indices.
+    ///
+    /// # Arguments
+    ///
+    /// * `start` - The starting index of the slice.
+    /// * `end` - The ending index of the slice (exclusive).
+    ///
+    /// # Returns
+    ///
+    /// Returns a `TResult` containing the slice if successful, or an error if slicing is not supported for this backend.
+    ///
+    /// # Note
+    ///
+    /// This default implementation returns an error, indicating that slicing is not supported.
+    /// Backends that support slicing should override this method.
+    #[inline]
+    fn slice<'a>(&'a self, _start: usize, _end: usize) -> TResult<Self::SliceOutput<'a>>
+    where
+        T: 'a,
+    {
+        tbail!("slice is not supported for this backend")
+    }
+
+    #[inline]
+    /// Creates an unsafe slice of the vector from the given start and end indices.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that:
+    /// - `start` is less than or equal to `end`.
+    /// - `end` is less than or equal to the length of the array.
+    /// - The memory range from `start` to `end` is valid and properly initialized.
+    ///
+    /// # Arguments
+    ///
+    /// * `start` - The starting index of the slice.
+    /// * `end` - The ending index of the slice (exclusive).
+    ///
+    /// # Returns
+    ///
+    /// Returns a `TResult<Self::SliceOutput<'a>>` representing the portion of the array from `start` to `end`.
+    /// The actual type returned depends on the specific implementation of `Vec1View`.
+    unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
+    where
+        T: 'a,
+    {
+        self.slice(start, end)
+    }
 
     /// Get the value at the index
     ///
@@ -111,9 +187,10 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
 
     #[inline]
     /// Rolling and apply a custom funtion to each window, but it won't collect result
-    fn rolling_custom_iter<U, F>(&self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
+    fn rolling_custom_iter<'a, U, F>(&'a self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
     where
-        F: FnMut(Cow<'_, <Self as Slice<T>>::Output<'_>>) -> U,
+        F: FnMut(Self::SliceOutput<'a>) -> U,
+        T: 'a,
     {
         (1..self.len() + 1)
             .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
@@ -123,14 +200,16 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
 
     /// Rolling and apply a custom funtion to each window
     #[inline]
-    fn rolling_custom<O: Vec1<OT>, OT: Clone, F>(
-        &self,
+    fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
+        &'a self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        F: FnMut(Cow<'_, <Self as Slice<T>>::Output<'_>>) -> OT,
+        F: FnMut(Self::SliceOutput<'a>) -> OT,
+        Self: 'a,
+        T: 'a,
     {
         let iter = self.rolling_custom_iter(window, f);
         if let Some(mut out) = out {
@@ -138,6 +217,44 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
             None
         } else {
             Some(iter.collect_trusted_vec1())
+        }
+    }
+
+    /// Rolling and apply a custom funtion to each window
+    ///
+    /// Different with `rolling_custom`, the caller should pass a mut reference
+    /// of uninit vec.
+    /// Be careful to use this function as it will panic in polars backend.
+    /// use `rolling_custom` instead
+    #[inline]
+    fn rolling_custom_to<'a, O: Vec1<OT>, OT, F>(
+        &'a self,
+        window: usize,
+        mut f: F,
+        mut out: O::UninitRefMut<'_>,
+    ) where
+        F: FnMut(Self::SliceOutput<'a>) -> OT,
+        Self: 'a,
+        T: 'a,
+    {
+        let len = self.len();
+        let window = window.min(len);
+        if window == 0 {
+            return;
+        }
+        // within the first window
+        for i in 0..window - 1 {
+            unsafe {
+                let slice = self.uslice(0, i + 1).unwrap();
+                out.uset(i, f(slice))
+            }
+        }
+        // other windows
+        for (start, end) in (window - 1..len).enumerate() {
+            unsafe {
+                let slice = self.uslice(start, end + 1).unwrap();
+                out.uset(end, f(slice))
+            }
         }
     }
 
@@ -152,15 +269,14 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
     ) -> Option<O>
     where
         V2: Vec1View<T2>,
-        F: FnMut(&<Self as Slice<T>>::Output<'_>, &<V2 as Slice<T2>>::Output<'_>) -> OT,
-        // O::Item: Clone,
+        F: FnMut(Self::SliceOutput<'_>, V2::SliceOutput<'_>) -> OT,
     {
         let iter = (1..self.len() + 1)
             .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
-            .map(|(end, start)| {
+            .map(|(end, start)| unsafe {
                 f(
-                    self.slice(start, end).unwrap().as_ref(),
-                    other.slice(start, end).unwrap().as_ref(),
+                    self.uslice(start, end).unwrap(),
+                    other.uslice(start, end).unwrap(),
                 )
             });
         if let Some(mut out) = out {
@@ -440,8 +556,6 @@ pub trait Vec1View<T>: TIter<T> + Slice<T> {
 }
 
 impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
-    // type Item = I::Item;
-
     #[inline]
     fn titer<'a>(&'a self) -> impl TIterator<Item = T>
     where
@@ -451,22 +565,28 @@ impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
     }
 }
 
-impl<S: Slice<T>, T> Slice<T> for std::sync::Arc<S> {
-    type Output<'a> = S::Output<'a>
+impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
+    type SliceOutput<'a> = V::SliceOutput<'a>
     where
         Self: 'a,
         T: 'a;
 
     #[inline]
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
+    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
     where
         T: 'a,
     {
         (**self).slice(start, end)
     }
-}
 
-impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
+    #[inline]
+    unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
+    where
+        T: 'a,
+    {
+        (**self).uslice(start, end)
+    }
+
     #[inline]
     fn get_backend_name(&self) -> &'static str {
         (**self).get_backend_name()
@@ -480,6 +600,20 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     #[inline]
     fn try_as_slice(&self) -> Option<&[T]> {
         (**self).try_as_slice()
+    }
+
+    #[inline]
+    fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
+        &'a self,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        F: FnMut(Self::SliceOutput<'a>) -> OT,
+        T: 'a,
+    {
+        (**self).rolling_custom(window, f, out)
     }
 
     #[inline]
@@ -511,7 +645,6 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     {
         (**self).rolling2_apply(other, window, f, out)
     }
-
     #[inline]
     fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
         &self,

@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use polars::export::arrow::legacy::utils::CustomIterTools;
 use polars::prelude::*;
 #[cfg(feature = "time")]
@@ -23,25 +21,26 @@ macro_rules! impl_for_ca {
 
     (view $type: ty, $real: ty => $($ForType: ty),*) => {
         $(
-            impl Slice<Option<$real>> for $ForType {
-                type Output<'a> = ChunkedArray<$type>
+            impl Vec1View<Option<$real>> for $ForType
+            {
+                type SliceOutput<'a> = ChunkedArray<$type>
                 where
                     Self: 'a,
                     Option<$real>: 'a;
+
                 #[inline]
-                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<std::borrow::Cow<'a, Self::Output<'a>>>
-                where Option<$real>: 'a,
+                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
+                where
+                    Self: 'a,
+                    Option<$real>: 'a,
                 {
                     if end < start {
                         tbail!("end index: {} should be large than start index: {} in slice", end, start);
                     }
                     let len = end - start;
-                    Ok(std::borrow::Cow::Owned((*self).slice(start as i64, len)))
+                    Ok((*self).slice(start as i64, len))
                 }
-            }
 
-            impl Vec1View<Option<$real>> for $ForType
-            {
                 #[inline]
                 fn get_backend_name(&self) -> &'static str {
                     "polars"
@@ -171,17 +170,17 @@ impl<'a: 's, 's> TIter<Option<&'s str>> for &'a ChunkedArray<StringType> {
     }
 }
 
-impl<'b, 's> Slice<Option<&'b str>> for &'s ChunkedArray<StringType> {
-    // type Element = Option<&str>;
-    type Output<'a> = ChunkedArray<StringType>
+impl<'s: 'a, 'a> Vec1View<Option<&'a str>> for &'s ChunkedArray<StringType> {
+    type SliceOutput<'b> = ChunkedArray<StringType>
     where
-        Self: 'a,
-        Option<&'b str>: 'a;
+        Self: 'b,
+        Option<&'a str>: 'b;
 
     #[inline]
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Cow<'a, Self::Output<'a>>>
+    fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Self::SliceOutput<'b>>
     where
-        Option<&'b str>: 'a,
+        Self: 'b,
+        Option<&'a str>: 'b,
     {
         if end < start {
             tbail!(
@@ -191,11 +190,9 @@ impl<'b, 's> Slice<Option<&'b str>> for &'s ChunkedArray<StringType> {
             );
         }
         let len = end - start;
-        Ok(std::borrow::Cow::Owned((*self).slice(start as i64, len)))
+        Ok((*self).slice(start as i64, len))
     }
-}
 
-impl<'s: 'a, 'a> Vec1View<Option<&'a str>> for &'s ChunkedArray<StringType> {
     #[inline]
     fn get_backend_name(&self) -> &'static str {
         "polars"

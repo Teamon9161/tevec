@@ -24,7 +24,7 @@ pub trait RollingFinal<T>: Vec1View<T> {
     ) -> O
     where
         T: Cast<f64>,
-        for<'a> Self::Output<'a>: TIter<T>,
+        for<'a> Self::SliceOutput<'a>: TIter<T>,
         f64: Cast<U>,
     {
         let coef = fdiff_coef(d, window);
@@ -51,7 +51,7 @@ pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
     ) -> O
     where
         T::Inner: Number,
-        for<'a> Self::Output<'a>: TIter<T>,
+        for<'a> Self::SliceOutput<'a>: TIter<T>,
         f64: Cast<U>,
     {
         let min_periods = min_periods.unwrap_or(window / 2).min(window);

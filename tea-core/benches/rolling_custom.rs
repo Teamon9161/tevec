@@ -8,17 +8,18 @@ fn bench_rolling_custom_hand(c: &mut Criterion) {
     let data: Vec<_> = (0..LENGTH as i32).collect();
     c.bench_function("rolling_custom_hand", |b| {
         b.iter(|| {
+            let len = data.len();
+            let window = WINDOW.min(len);
             let mut out = Vec::uninit(LENGTH);
-            for i in 0..WINDOW - 1 {
+            for i in 0..window - 1 {
                 let slice = &data[0..i + 1];
                 let sum: i32 = Iterator::sum(slice.iter());
                 unsafe {
                     out.uset(i, sum);
                 }
             }
-            for (start, end) in (WINDOW - 1..LENGTH).enumerate() {
-                use std::ops::Index;
-                let slice = std::borrow::Cow::Borrowed(data.index(start..end));
+            for (start, end) in (window - 1..len).enumerate() {
+                let slice = &data[start..end + 1];
                 let sum = Iterator::sum(slice.iter());
                 unsafe {
                     out.uset(end, sum);
@@ -33,12 +34,8 @@ fn bench_rolling_custom_trait(c: &mut Criterion) {
     let data: Vec<_> = (0..LENGTH as i32).collect();
     c.bench_function("rolling_custom_trait", |b| {
         b.iter(|| {
-            let mut out: Vec<_> = Vec::uninit(LENGTH);
-            data.rolling_custom::<Vec<i32>, _, _>(
-                WINDOW,
-                |x| Iterator::sum(x.titer()),
-                Some(&mut out),
-            );
+            let _out =
+                data.rolling_custom::<Vec<i32>, _, _>(WINDOW, |x| Iterator::sum(x.iter()), None);
         })
     });
 }
