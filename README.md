@@ -3,15 +3,18 @@
 [![Crates.io Version](https://img.shields.io/crates/v/tevec)](https://docs.rs/tevec/latest/tevec/)
 
 ## Introduction
-A crate to provide financial quantitative analysis functions across different backends (currently **Vec** & **Ndarray** & **Polars**). almost entirely implemented with Rust `traits` to facilitate the future support of additional backends.
+Tevec is a powerful Rust crate designed for financial quantitative analysis, supporting multiple backends including **Vec**, **Ndarray**, and **Polars**. The crate leverages Rust's trait system to provide a flexible and extensible framework for future backend integrations.
 
-Currently, it is mainly divided into three categories of functions:
+Tevec's functionality is categorized into three main types:
 * Rolling functions
 * Mapping functions
 * Aggregation functions
 
 ## Installation
-add `tevec = "0.3"` to your `Cargo.toml`
+To include Tevec in your project, add the following line to your `Cargo.toml`:
+```toml
+tevec = "0.4"
+```
 
 ## Basic Usage
 First, import the common trait names to call the corresponding methods.
@@ -61,5 +64,21 @@ Some mapping functions return an `Iterator`, allowing for chained calls without 
 
 **stat**: Statistic Functions
 
-
 **time**: `DateTime` and `TimeDelta` structs
+
+## Contributing
+
+Contributions to Tevec are welcome! Here's how you can contribute:
+
+1. Fork the repository
+2. Create a new branch for your feature or bug fix
+3. Make your changes and write tests if applicable
+4. Run `make format` to ensure your code follows the project's style guidelines
+5. Run `make test` to make sure all tests pass
+6. Submit a pull request with a clear description of your changes
+
+Please make sure to update tests as appropriate and adhere to the existing coding style.
+
+## License
+
+This project is licensed under the MIT License.
