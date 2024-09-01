@@ -284,10 +284,7 @@ impl<T: Clone> Vec1<T> for Vec<T> {
     #[inline]
     fn try_collect_from_trusted<I: Iterator<Item = TResult<T>> + TrustedLen>(
         iter: I,
-    ) -> TResult<Self>
-    where
-        T: std::fmt::Debug,
-    {
+    ) -> TResult<Self> {
         iter.try_collect_trusted_to_vec()
     }
 

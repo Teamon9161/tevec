@@ -21,6 +21,7 @@ fdiff = ["stat", "rolling"]
 # backends
 polars = ["tea-core/polars"]
 ndarray = ["tea-core/ndarray"]
+vecdeque = ["tea-core/vecdeque"]
 
 # dtype
 time = ["tea-dtype/time", "tea-core/time"]

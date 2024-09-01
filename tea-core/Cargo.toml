@@ -11,6 +11,7 @@ description = "Core data structures and traits for tevec."
 default = []
 # default = ["ndarray", "time", "polars"]
 
+vecdeque = []
 ndarray = ["dep:ndarray"]
 polars = ["dep:polars"]
 time = ["tea-dtype/time", "polars?/dtype-datetime", "polars?/dtype-duration"]

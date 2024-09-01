@@ -112,6 +112,10 @@ unsafe impl<'a, A, D: ndarray::Dimension> TrustedLen for ndarray::iter::IterMut<
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoIter<K, V> {}
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}
 
+#[cfg(feature = "vecdeque")]
+unsafe impl<T> TrustedLen for std::collections::vec_deque::IntoIter<T> {}
+#[cfg(feature = "vecdeque")]
+unsafe impl<'a, T> TrustedLen for std::collections::vec_deque::Iter<'a, T> {}
 #[derive(Clone)]
 pub struct TrustIter<I: Iterator> {
     iter: I,
@@ -187,7 +191,6 @@ pub trait CollectTrusted<T> {
     where
         I: IntoIterator<Item = TResult<T>>,
         I::IntoIter: TrustedLen,
-        T: std::fmt::Debug,
         Self: Sized;
 }
 
@@ -221,7 +224,6 @@ impl<T> CollectTrusted<T> for Vec<T> {
         I: IntoIterator<Item = TResult<T>>,
         I::IntoIter: TrustedLen,
         Self: Sized,
-        T: std::fmt::Debug,
     {
         let iter = iter.into_iter();
         let len = iter
@@ -232,12 +234,9 @@ impl<T> CollectTrusted<T> for Vec<T> {
         let mut ptr = vec.as_mut_ptr();
         unsafe {
             for v in iter {
-                if let Ok(v) = v {
-                    std::ptr::write(ptr, v);
-                    ptr = ptr.add(1);
-                } else {
-                    return Err(v.unwrap_err());
-                }
+                let v = v?;
+                std::ptr::write(ptr, v);
+                ptr = ptr.add(1);
             }
             vec.set_len(len);
         }
@@ -252,9 +251,7 @@ pub trait CollectTrustedToVec: Iterator + TrustedLen + Sized {
     }
 }
 
-pub trait TryCollectTrustedToVec<T: std::fmt::Debug>:
-    Iterator<Item = TResult<T>> + TrustedLen + Sized
-{
+pub trait TryCollectTrustedToVec<T>: Iterator<Item = TResult<T>> + TrustedLen + Sized {
     #[inline(always)]
     fn try_collect_trusted_to_vec(self) -> TResult<Vec<T>> {
         CollectTrusted::<T>::try_collect_from_trusted(self)
@@ -262,4 +259,4 @@ pub trait TryCollectTrustedToVec<T: std::fmt::Debug>:
 }
 
 impl<T: TrustedLen> CollectTrustedToVec for T {}
-impl<I: TrustedLen<Item = TResult<T>> + Sized, T: std::fmt::Debug> TryCollectTrustedToVec<T> for I {}
+impl<I: TrustedLen<Item = TResult<T>> + Sized, T> TryCollectTrustedToVec<T> for I {}
