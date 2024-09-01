@@ -50,9 +50,34 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
         self.as_slice_memory_order()
     }
 
+    // this should be a faster implemention than default as
+    // we read value directly by ptr
     #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
+    fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
+        &'a self,
+        window: usize,
+        f: F,
+        out: Option<O::UninitRefMut<'_>>,
+    ) -> Option<O>
+    where
+        F: FnMut(Self::SliceOutput<'a>) -> OT,
+        T: 'a,
+    {
+        let len = self.len();
+        if let Some(out) = out {
+            self.rolling_custom_to::<O, _, _>(window, f, out);
+            None
+        } else {
+            use crate::prelude::UninitVec;
+            let mut out = O::uninit(len);
+            self.rolling_custom_to::<O, _, _>(window, f, O::uninit_ref_mut(&mut out));
+            Some(unsafe { out.assume_init() })
+        }
+    }
+
+    #[inline]
+    // this should be a faster implemention than default as
+    // we read value directly by ptr
     fn rolling_apply<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
@@ -74,8 +99,8 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
     }
 
     #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
+    // this should be a faster implemention than default as
+    // we read value directly by ptr
     fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
@@ -98,8 +123,8 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
     }
 
     #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
+    // this should be a faster implemention than default as
+    // we read value directly by ptr
     fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
@@ -121,8 +146,8 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
     }
 
     #[inline]
-    /// this should be a faster implemention than default as
-    /// we read value directly by ptr
+    // this should be a faster implemention than default as
+    // we read value directly by ptr
     fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,

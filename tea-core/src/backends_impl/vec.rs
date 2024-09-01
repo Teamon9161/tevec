@@ -61,10 +61,9 @@ macro_rules! impl_vec1 {
                     Some(self)
                 })?
 
-                /// Rolling and apply a custom funtion to each window
-                ///
-                /// this should be a faster implemention than default as
-                /// we read value directly by ptr
+
+                // this should be a faster implemention than default as
+                // we read value directly by ptr
                 #[inline]
                 fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
                     &'a self,
@@ -89,8 +88,8 @@ macro_rules! impl_vec1 {
                 }
 
                 #[inline]
-                /// this should be a faster implemention than default as
-                /// we read value directly by ptr
+                // this should be a faster implemention than default as
+                // we read value directly by ptr
                 fn rolling_apply<O: Vec1<OT>, OT, F>(
                     &self,
                     window: usize,
@@ -112,8 +111,8 @@ macro_rules! impl_vec1 {
                 }
 
                 #[inline]
-                /// this should be a faster implemention than default as
-                /// we read value directly by ptr
+                // this should be a faster implemention than default as
+                // we read value directly by ptr
                 fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
                     &self,
                     other: &V2,
