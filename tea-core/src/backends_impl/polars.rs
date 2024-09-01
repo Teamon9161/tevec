@@ -102,8 +102,6 @@ macro_rules! impl_for_ca {
             fn try_collect_from_trusted<I: Iterator<Item = TResult<Option<$real>>> + TrustedLen>(
                 iter: I,
             ) -> TResult<Self>
-            where
-                Option<$real>: std::fmt::Debug,
             {
                 let len = iter.len();
                 unsafe{iter.trust_my_length(len)}.try_collect_ca_trusted("")

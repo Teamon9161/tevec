@@ -3,7 +3,7 @@
 [![Crates.io Version](https://img.shields.io/crates/v/tevec)](https://docs.rs/tevec/latest/tevec/)
 
 ## Introduction
-Tevec is a powerful Rust crate designed for financial quantitative analysis, supporting multiple backends including **Vec**, **Ndarray**, and **Polars**. The crate leverages Rust's trait system to provide a flexible and extensible framework for future backend integrations.
+Tevec is a powerful Rust crate designed for financial quantitative analysis, supporting multiple backends including **Vec**, **VecDeque**, **Ndarray**, and **Polars**. The crate leverages Rust's trait system to provide a flexible and extensible framework for future backend integrations.
 
 Tevec's functionality is categorized into three main types:
 * Rolling functions
@@ -55,6 +55,7 @@ Some mapping functions return an `Iterator`, allowing for chained calls without 
 
 **ndarray**: For `Ndarray` backend
 
+**vecdeque**: For `VecDeque` backend
 
 **agg**:  Aggregate Functions
 

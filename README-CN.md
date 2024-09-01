@@ -4,7 +4,7 @@
 
 
 ## 介绍
-**Tevec**是一个为不同backend (目前 **Vec** & **Ndarray** & **Polars**)提供金融量化分析常用方法和函数的库，几乎完全使用Rust Trait实现以便于在未来支持更多backend。
+**Tevec**是一个为不同backend (目前 **Vec** & **VecDeque** & **Ndarray** & **Polars**)提供金融量化分析常用方法和函数的库，几乎完全使用Rust Trait实现以便于在未来支持更多backend。
 目前主要分为三类函数：
 
 * 滚动函数
