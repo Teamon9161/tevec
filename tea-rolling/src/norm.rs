@@ -1,6 +1,24 @@
 use tea_core::prelude::*;
 
+/// Trait for rolling window normalization operations on valid (non-None) elements.
 pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
+    /// Calculates the rolling z-score (standard score) for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling z-scores.
+    ///
+    /// # Notes
+    ///
+    /// The z-score is calculated as (x - mean) / standard_deviation.
+    /// If the standard deviation is zero or if there are fewer than `min_periods` valid observations,
+    /// the result will be NaN.
     #[no_out]
     fn ts_vzscore<O: Vec1<U>, U>(
         &self,
@@ -54,6 +72,23 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling min-max normalization for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling min-max normalized values.
+    ///
+    /// # Notes
+    ///
+    /// The min-max normalization is calculated as (x - min) / (max - min).
+    /// If max equals min or if there are fewer than `min_periods` valid observations,
+    /// the result will be NaN.
     #[no_out]
     fn ts_vminmaxnorm<O: Vec1<U>, U>(
         &self,

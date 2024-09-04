@@ -1,6 +1,17 @@
 use tea_core::prelude::*;
-
+/// Trait for rolling window regression operations on valid (non-None) elements.
 pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
+    /// Calculates the rolling regression (predicted value) for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling regression predicted values.
     #[no_out]
     fn ts_vreg<O: Vec1<U>, U>(
         &self,
@@ -50,6 +61,17 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling time series forecast for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling time series forecast values.
     #[no_out]
     fn ts_vtsf<O: Vec1<U>, U>(
         &self,
@@ -99,6 +121,17 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling regression slope for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling regression slope values.
     #[no_out]
     fn ts_vreg_slope<O: Vec1<U>, U>(
         &self,
@@ -146,6 +179,17 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling regression intercept for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling regression intercept values.
     #[no_out]
     fn ts_vreg_intercept<O: Vec1<U>, U>(
         &self,
@@ -194,6 +238,17 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling regression residual mean for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling regression residual mean values.
     #[no_out]
     fn ts_vreg_resid_mean<O: Vec1<U>, U>(
         &self,
@@ -253,7 +308,20 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
     }
 }
 
+/// Trait for rolling window regression operations on valid (non-None) elements with two input vectors.
 pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
+    /// Calculates the rolling regression alpha (intercept) for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The second input vector for the regression.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling regression alpha values.
     #[no_out]
     fn ts_vregx_alpha<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
@@ -308,6 +376,18 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling regression beta (slope) for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The second input vector for the regression.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling regression beta values.
     #[no_out]
     fn ts_vregx_beta<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
@@ -360,6 +440,18 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling mean of regression residuals for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The second input vector for the regression.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling mean of regression residuals.
     #[no_out]
     fn ts_vregx_resid_mean<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
@@ -425,6 +517,18 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling standard deviation of regression residuals for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The second input vector for the regression.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling standard deviation of regression residuals.
     #[no_out]
     fn ts_vregx_resid_std<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
@@ -490,6 +594,18 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling skewness of regression residuals for valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The second input vector for the regression.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling skewness of regression residuals.
     #[no_out]
     fn ts_vregx_resid_skew<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,

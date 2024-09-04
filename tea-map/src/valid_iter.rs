@@ -9,6 +9,22 @@ pub enum Keep {
 }
 
 pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
+    /// Computes the absolute value of each element in the iterator, ignoring None values.
+    ///
+    /// This method is similar to `abs()`, but it can handle None values.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(-1), None, Some(2), Some(-3)];
+    /// let result: Vec<_> = v.titer().vabs().collect();
+    /// assert_eq!(result, vec![Some(1), None, Some(2), Some(3)]);
+    /// ```
+    ///
+    /// See also: [`abs()`](crate::MapBasic::abs)
     #[inline]
     fn vabs(self) -> impl TrustedLen<Item = T>
     where
@@ -17,8 +33,23 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         self.map(|v| v.vabs())
     }
 
-    /// Forward fill value where the mask is true
-    /// value: value to fill if head values are still none after forward fill
+    /// Forward fill values where the mask is true, ignoring None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `mask_func` - A function that returns true for values that should be filled.
+    /// * `value` - An optional value to fill if head values are still None after forward fill.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(2), None, Some(3)];
+    /// let result: Vec<_> = v.titer().ffill_mask(|x| x.is_none(), Some(Some(0))).collect();
+    /// assert_eq!(result, vec![Some(1), Some(1), Some(2), Some(2), Some(3)]);
+    /// ```
     fn ffill_mask<F: Fn(&T) -> bool>(
         self,
         mask_func: F,
@@ -43,15 +74,46 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         self.map(f)
     }
 
+    /// Forward fill None values.
+    ///
+    /// This method is similar to `ffill()`, but it can handle None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - An optional value to fill if head values are still None after forward fill.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(2), None, Some(3)];
+    /// let result: Vec<_> = v.titer().ffill(Some(Some(0))).collect();
+    /// assert_eq!(result, vec![Some(1), Some(1), Some(2), Some(2), Some(3)]);
+    /// ```
     #[inline]
-    /// Forward fill value
-    /// value: value to fill if head values are still none after forward fill
     fn ffill(self, value: Option<T>) -> impl TrustedLen<Item = T> {
         self.ffill_mask(T::is_none, value)
     }
 
-    /// Backward fill value where the mask is true
-    /// value: value to fill if tails values are still none after backward fill
+    /// Backward fill values where the mask is true, ignoring None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `mask_func` - A function that returns true for values that should be filled.
+    /// * `value` - An optional value to fill if tail values are still None after backward fill.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(2), None, Some(3)];
+    /// let result: Vec<_> = v.titer().bfill_mask(|x| x.is_none(), Some(Some(0))).collect();
+    /// assert_eq!(result, vec![Some(1), Some(2), Some(2), Some(3), Some(3)]);
+    /// ```
     fn bfill_mask<F: Fn(&T) -> bool>(
         self,
         mask_func: F,
@@ -81,9 +143,25 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         self.rev().map(f).collect_trusted_to_vec().into_iter().rev()
     }
 
+    /// Backward fill None values.
+    ///
+    /// This method is similar to `bfill()`, but it can handle None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - An optional value to fill if tail values are still None after backward fill.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(2), None, Some(3)];
+    /// let result: Vec<_> = v.titer().bfill(Some(Some(0))).collect();
+    /// assert_eq!(result, vec![Some(1), Some(2), Some(2), Some(3), Some(3)]);
+    /// ```
     #[inline]
-    /// Backward fill value
-    /// value: value to fill if tails values are still none after backward fill
     fn bfill(self, value: Option<T>) -> impl TrustedLen<Item = T>
     where
         Self: DoubleEndedIterator<Item = T>,
@@ -91,6 +169,25 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         self.bfill_mask(T::is_none, value)
     }
 
+    /// Clip (limit) the values in an iterator, ignoring None values.
+    ///
+    /// This method is similar to `clip()`, but it can handle None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `lower` - The lower bound.
+    /// * `upper` - The upper bound.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(3), Some(5), Some(7)];
+    /// let result: Vec<_> = v.titer().vclip(Some(2), Some(6)).collect();
+    /// assert_eq!(result, vec![Some(2), None, Some(3), Some(5), Some(6)]);
+    /// ```
     #[inline]
     fn vclip<'a>(self, lower: T, upper: T) -> Box<dyn TrustedLen<Item = T> + 'a>
     where
@@ -142,18 +239,72 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
+    /// Fill values where the mask is true, ignoring None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `mask_func` - A function that returns true for values that should be filled.
+    /// * `value` - The value to fill with.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(3), Some(4), Some(5)];
+    /// let result: Vec<_> = v.titer().fill_mask(|x| x.map_or(false, |v| v % 2 == 0), Some(0)).collect();
+    /// assert_eq!(result, vec![Some(1), None, Some(3), Some(0), Some(5)]);
+    /// ```
     #[inline]
-    /// Fill value where the mask is true
     fn fill_mask<F: Fn(&T) -> bool>(self, mask_func: F, value: T) -> impl TrustedLen<Item = T> {
         self.map(move |v| if mask_func(&v) { value.clone() } else { v })
     }
 
+    /// Fill None values with a specified value.
+    ///
+    /// This method is similar to `fill()`, but it can handle None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The value to fill None values with.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(3), None, Some(5)];
+    /// let result: Vec<_> = v.titer().fill(Some(0)).collect();
+    /// assert_eq!(result, vec![Some(1), Some(0), Some(3), Some(0), Some(5)]);
+    /// ```
     #[inline]
-    /// Fill value where T is none
     fn fill(self, value: T) -> impl TrustedLen<Item = T> {
         self.fill_mask(T::is_none, value)
     }
 
+    /// Shift the elements in the iterator, ignoring None values.
+    ///
+    /// This method is similar to [`shift()`](crate::MapBasic::shift), but it can handle None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - The number of positions to shift. Positive values shift right, negative values shift left.
+    /// * `value` - An optional value to fill the vacated positions.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(3), Some(4), Some(5)];
+    /// let result: Vec<_> = v.titer().vshift(2, Some(Some(0))).collect();
+    /// assert_eq!(result, vec![Some(0), Some(0), Some(1), None, Some(3)]);
+    /// ```
+    ///
+    /// See also: [`shift()`](crate::MapBasic::shift)
     fn vshift<'a>(self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
     where
         T: Clone + 'a,
@@ -181,11 +332,56 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
+    /// Drop None values from the iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), None, Some(3), None, Some(5)];
+    /// let result: Vec<_> = v.titer().drop_none().collect();
+    /// assert_eq!(result, vec![Some(1), Some(3), Some(5)]);
+    /// ```
     #[inline]
     fn drop_none(self) -> impl Iterator<Item = T> {
         self.filter(T::not_none)
     }
-
+    /// Categorize values into bins.
+    ///
+    /// This function categorizes the values in the iterator into bins defined by the `bins` parameter.
+    /// It assigns labels to each bin as specified by the `labels` parameter.
+    ///
+    /// # Arguments
+    ///
+    /// * `bins` - A slice of bin edges.
+    /// * `labels` - A slice of labels for each bin.
+    /// * `right` - If true, intervals are closed on the right. If false, intervals are closed on the left.
+    /// * `add_bounds` - If true, adds -∞ and +∞ as the first and last bin edges respectively.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `TResult` containing a boxed `TrustedLen` iterator of `TResult<T2>` items.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The number of labels doesn't match the number of bins (accounting for `add_bounds`).
+    /// - A value falls outside the bin ranges.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![1, 3, 5, 7, 9];
+    /// let bins = vec![4, 8];
+    /// let labels = vec!["low", "medium", "high"];
+    /// let result: Vec<_> = v.titer().vcut(&bins, &labels, true, true).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    /// assert_eq!(result, vec!["low", "low", "medium", "medium", "high"]);
+    /// ```
     fn vcut<'a, V2, V3, T2>(
         self,
         bins: &'a V2,
@@ -260,6 +456,29 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
+    /// Returns indices of unique elements in a sorted iterator, keeping either the first or last occurrence.
+    ///
+    /// # Arguments
+    ///
+    /// * `keep` - Specifies whether to keep the first or last occurrence of each unique element.
+    ///
+    /// # Returns
+    ///
+    /// A boxed iterator yielding indices of unique elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::{MapValidBasic, Keep};
+    ///
+    /// let v = vec![Some(1), Some(1), Some(2), Some(2), Some(3)];
+    /// let result: Vec<_> = v.titer().vsorted_unique_idx(Keep::First).collect();
+    /// assert_eq!(result, vec![0, 2, 4]);
+    ///
+    /// let result: Vec<_> = v.titer().vsorted_unique_idx(Keep::Last).collect();
+    /// assert_eq!(result, vec![1, 3, 4]);
+    /// ```
     fn vsorted_unique_idx<'a>(self, keep: Keep) -> Box<dyn Iterator<Item = usize> + 'a>
     where
         T::Inner: PartialEq + 'a + std::fmt::Debug,
@@ -319,6 +538,24 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         }
     }
 
+    /// Returns an iterator over unique elements in a sorted iterator.
+    ///
+    /// This method removes consecutive duplicate elements from the iterator.
+    ///
+    /// # Returns
+    ///
+    /// An iterator yielding unique elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapValidBasic;
+    ///
+    /// let v = vec![Some(1), Some(1), Some(2), Some(2), Some(3)];
+    /// let result: Vec<_> = v.titer().vsorted_unique().collect();
+    /// assert_eq!(result, vec![Some(1), Some(2), Some(3)]);
+    /// ```
     #[allow(clippy::unnecessary_filter_map)]
     fn vsorted_unique<'a>(self) -> impl Iterator<Item = T> + 'a
     where

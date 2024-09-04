@@ -1,6 +1,22 @@
 use tea_core::prelude::*;
 
+/// Trait for rolling window operations on valid (non-None) elements.
 pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
+    /// Calculates the rolling sum of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling sums.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_sum`]
     #[no_out]
     fn ts_vsum<O: Vec1<U>, U>(
         &self,
@@ -39,6 +55,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling mean of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling means.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_mean`]
     #[no_out]
     fn ts_vmean<O: Vec1<U>, U>(
         &self,
@@ -77,6 +108,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the exponentially weighted moving average of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the exponentially weighted moving averages.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_ewm`]
     #[no_out]
     fn ts_vewm<O: Vec1<U>, U>(
         &self,
@@ -120,6 +166,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the weighted moving average of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the weighted moving averages.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_wma`]
     #[no_out]
     fn ts_vwma<O: Vec1<U>, U>(
         &self,
@@ -163,6 +224,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling standard deviation of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling standard deviations.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_std`]
     #[no_out]
     fn ts_vstd<O: Vec1<U>, U>(
         &self,
@@ -215,6 +291,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling variance of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling variances.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_var`]
     #[no_out]
     fn ts_vvar<O: Vec1<U>, U>(
         &self,
@@ -267,6 +358,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling skewness of valid elements within a window.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling skewness values.
+    ///
+    /// # See Also
+    ///
+    /// [`RollingFeature::ts_skew`]
     #[no_out]
     fn ts_vskew<O: Vec1<U>, U>(
         &self,
@@ -328,6 +434,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling kurtosis for the vector, handling None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling kurtosis values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_kurt`](RollingFeature::ts_kurt) - The version of this function that doesn't handle None values.
     #[no_out]
     fn ts_vkurt<O: Vec1<U>, U>(
         &self,
@@ -399,6 +520,21 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
 }
 
 pub trait RollingFeature<T: Clone>: Vec1View<T> {
+    /// Calculates the rolling sum for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling sum values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vsum`](RollingValidFeature::ts_vsum) - The version of this function that handles None values.
     #[no_out]
     fn ts_sum<O: Vec1<U>, U>(
         &self,
@@ -433,6 +569,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling mean for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling mean values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vmean`](RollingValidFeature::ts_vmean) - The version of this function that handles None values.
     #[no_out]
     fn ts_mean<O: Vec1<U>, U>(
         &self,
@@ -467,6 +618,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the exponentially weighted moving average for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the exponentially weighted moving average values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vewm`](RollingValidFeature::ts_vewm) - The version of this function that handles None values.
     #[no_out]
     fn ts_ewm<O: Vec1<U>, U>(
         &self,
@@ -506,6 +672,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the weighted moving average for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the weighted moving average values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vwma`](RollingValidFeature::ts_vwma) - The version of this function that handles None values.
     #[no_out]
     fn ts_wma<O: Vec1<U>, U>(
         &self,
@@ -546,6 +727,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling standard deviation for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling standard deviation values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vstd`](RollingValidFeature::ts_vstd) - The version of this function that handles None values.
     #[no_out]
     fn ts_std<O: Vec1<U>, U>(
         &self,
@@ -595,6 +791,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling variance for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling variance values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vvar`](RollingValidFeature::ts_vvar) - The version of this function that handles None values.
     #[no_out]
     fn ts_var<O: Vec1<U>, U>(
         &self,
@@ -644,6 +855,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling skewness for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling skewness values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vskew`](RollingValidFeature::ts_vskew) - The version of this function that handles None values.
     #[no_out]
     fn ts_skew<O: Vec1<U>, U>(
         &self,
@@ -702,6 +928,21 @@ pub trait RollingFeature<T: Clone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling kurtosis for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling kurtosis values.
+    ///
+    /// # See Also
+    ///
+    /// [`ts_vkurt`](RollingValidFeature::ts_vkurt) - The version of this function that handles None values.
     #[no_out]
     fn ts_kurt<O: Vec1<U>, U>(
         &self,

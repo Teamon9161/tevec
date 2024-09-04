@@ -1,7 +1,18 @@
 use super::linspace::{linspace, range};
 use super::prelude::*;
-
+/// A trait for creating one-dimensional vectors with various initialization methods.
 pub trait Vec1Create<T: IsNone>: Vec1<T> {
+    /// Creates a vector with values in a specified range.
+    ///
+    /// # Arguments
+    ///
+    /// * `start` - The starting value of the range. If `None`, defaults to zero.
+    /// * `end` - The end value of the range (exclusive).
+    /// * `step` - The step size between values. If `None`, defaults to one.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing values from `start` to `end` (exclusive) with the specified `step`.
     #[inline]
     fn range(start: Option<T::Inner>, end: T::Inner, step: Option<T::Inner>) -> Self
     where
@@ -13,6 +24,17 @@ pub trait Vec1Create<T: IsNone>: Vec1<T> {
         Self::collect_from_trusted(range(start, end, step).map(T::from_inner))
     }
 
+    /// Creates a vector with linearly spaced values.
+    ///
+    /// # Arguments
+    ///
+    /// * `start` - The starting value of the linear space. If `None`, defaults to zero.
+    /// * `end` - The end value of the linear space.
+    /// * `num` - The number of points to generate.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing `num` linearly spaced values from `start` to `end` (inclusive).
     #[inline]
     fn linspace(start: Option<T::Inner>, end: T::Inner, num: usize) -> Self
     where

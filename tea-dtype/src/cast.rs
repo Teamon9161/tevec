@@ -1,6 +1,24 @@
 use crate::*;
-
+/// A trait for types that can be cast to another type.
+///
+/// This trait provides a method to convert a value of one type into a value of another type.
+/// The conversion is typically lossless, but this is not guaranteed for all implementations.
 pub trait Cast<T> {
+    /// Casts the value to the target type `T`.
+    ///
+    /// # Returns
+    ///
+    /// Returns the value cast to type `T`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_dtype::Cast;
+    ///
+    /// let x: i32 = 42;
+    /// let y: f64 = x.cast();
+    /// assert_eq!(y, 42.0);
+    /// ```
     fn cast(self) -> T;
 }
 

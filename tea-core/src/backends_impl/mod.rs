@@ -1,3 +1,4 @@
+mod arc;
 #[cfg(feature = "ndarray")]
 mod ndarray;
 #[cfg(feature = "polars")]

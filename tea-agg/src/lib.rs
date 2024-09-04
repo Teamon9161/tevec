@@ -2,10 +2,18 @@ mod vec_valid;
 
 use tea_core::prelude::*;
 pub use vec_valid::*;
-
+/// Extension trait providing additional aggregation methods for iterables with potentially invalid (None) values.
 pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
+    /// Computes the sum of valid values filtered by a mask, along with the count of valid elements.
+    ///
+    /// # Arguments
+    ///
+    /// * `mask` - An iterable of boolean-like values used to filter the input.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing the count of valid elements and their sum.
     #[inline]
-    /// only sum the value by the mask
     fn n_vsum_filter<U, I>(self, mask: I) -> (usize, T::Inner)
     where
         I: IntoIterator<Item = U>,
@@ -29,8 +37,16 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
             .vfold_n(T::Inner::zero(), |acc, x| acc + x)
     }
 
+    /// Computes the sum of valid values filtered by a mask.
+    ///
+    /// # Arguments
+    ///
+    /// * `mask` - An iterable of boolean-like values used to filter the input.
+    ///
+    /// # Returns
+    ///
+    /// The sum of valid elements, or None if no valid elements are found.
     #[inline]
-    /// only sum the value by the mask
     fn n_sum_filter<U, I>(self, mask: I) -> Option<T::Inner>
     where
         I: IntoIterator<Item = U>,
@@ -46,8 +62,17 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
+    /// Computes the mean of valid values filtered by a mask.
+    ///
+    /// # Arguments
+    ///
+    /// * `mask` - An iterable of boolean-like values used to filter the input.
+    /// * `min_periods` - The minimum number of valid elements required to compute the mean.
+    ///
+    /// # Returns
+    ///
+    /// The mean of valid elements, or NaN if the number of valid elements is less than `min_periods`.
     #[inline]
-    /// only mean the value by the mask
     fn vmean_filter<U, I>(self, mask: I, min_periods: usize) -> f64
     where
         I: IntoIterator<Item = U>,
@@ -63,7 +88,15 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
     }
 
-    /// kurtosis of the data
+    /// Computes the kurtosis of the data.
+    ///
+    /// # Arguments
+    ///
+    /// * `min_periods` - The minimum number of valid elements required to compute the kurtosis.
+    ///
+    /// # Returns
+    ///
+    /// The kurtosis of the data, or NaN if the number of valid elements is less than `min_periods`.
     fn vkurt(self, min_periods: usize) -> f64
     where
         T::Inner: Number,

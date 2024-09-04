@@ -1,6 +1,18 @@
 use tea_core::prelude::*;
 pub use tea_rolling::*;
-
+/// Calculates the coefficients for fractional differencing.
+///
+/// This function computes the coefficients used in fractional differencing,
+/// which is a generalization of integer differencing to non-integer orders.
+///
+/// # Arguments
+///
+/// * `d` - The order of fractional differencing.
+/// * `window` - The size of the window for which to calculate coefficients.
+///
+/// # Returns
+///
+/// A vector of coefficients for fractional differencing.
 #[cfg(feature = "fdiff")]
 fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
     let mut sign = if window % 2 == 0 { 1. } else { -1. };
@@ -13,7 +25,22 @@ fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
         .collect_trusted_to_vec()
 }
 
+/// Trait for performing rolling operations on vectors.
 pub trait RollingFinal<T>: Vec1View<T> {
+    /// Performs fractional differencing on the vector.
+    ///
+    /// This method applies fractional differencing to the vector using the specified
+    /// order and window size.
+    ///
+    /// # Arguments
+    ///
+    /// * `d` - The order of fractional differencing.
+    /// * `window` - The size of the window for the rolling operation.
+    /// * `out` - An optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the fractionally differenced values.
     #[cfg(feature = "fdiff")]
     #[no_out]
     fn ts_fdiff<O: Vec1<U>, U: Clone>(
@@ -39,7 +66,23 @@ pub trait RollingFinal<T>: Vec1View<T> {
     }
 }
 
+/// Trait for performing rolling operations on vectors with valid (non-None) elements.
 pub trait RollingValidFinal<T: IsNone>: Vec1View<T> {
+    /// Performs fractional differencing on the vector, handling None values.
+    ///
+    /// This method applies fractional differencing to the vector using the specified
+    /// order and window size, while properly handling None values in the input.
+    ///
+    /// # Arguments
+    ///
+    /// * `d` - The order of fractional differencing.
+    /// * `window` - The size of the window for the rolling operation.
+    /// * `min_periods` - The minimum number of valid values required to compute a result.
+    /// * `out` - An optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the fractionally differenced values, with NaN for insufficient data.
     #[cfg(feature = "fdiff")]
     #[no_out]
     fn ts_vfdiff<O: Vec1<U>, U: Clone>(

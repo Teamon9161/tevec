@@ -1,16 +1,33 @@
 use tea_core::prelude::*;
-
+/// Enum representing different methods for calculating quantiles.
 #[derive(Copy, Clone)]
 pub enum QuantileMethod {
+    /// Linear interpolation between closest ranks.
     Linear,
+    /// Use the lower of the two nearest ranks.
     Lower,
+    /// Use the higher of the two nearest ranks.
     Higher,
+    /// Use the average of the two nearest ranks.
     MidPoint,
 }
 
+/// Extension trait providing additional aggregation methods for vectors with potentially invalid (None) values.
 pub trait VecAggValidExt<T: IsNone>: Vec1View<T> {
-    /// Calculate the quantile of the vector.
-    /// return error if q is not between 0 and 1.
+    /// Calculate the quantile of the vector, ignoring NaN or None values.
+    ///
+    /// # Arguments
+    ///
+    /// * `q` - The quantile to calculate, must be between 0 and 1.
+    /// * `method` - The method to use for quantile calculation.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `TResult<f64>` containing the calculated quantile value.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `q` is not between 0 and 1.
     fn vquantile(&self, q: f64, method: QuantileMethod) -> TResult<f64>
     where
         T: Cast<f64>,
@@ -78,7 +95,11 @@ pub trait VecAggValidExt<T: IsNone>: Vec1View<T> {
         }
     }
 
-    /// Calculate the median of the vector.
+    /// Calculate the median of the vector, ignoring NaN or None values.
+    ///
+    /// # Returns
+    ///
+    /// Returns the median value as an `f64`.
     #[inline]
     fn vmedian(&self) -> f64
     where

@@ -69,7 +69,22 @@ where
         self.into_iter()
     }
 }
-
+/// An iterator adapter that wraps a `Vec1View` and converts its items to `Option` types.
+///
+/// This struct provides a way to iterate over a `Vec1View` while converting each item
+/// to an `Option` type. It's particularly useful when working with types that implement
+/// the `IsNone` trait, allowing for a uniform representation of potentially absent values.
+///
+/// # Type Parameters
+///
+/// * `'a`: The lifetime of the reference to the underlying `Vec1View`.
+/// * `V`: The type of the underlying `Vec1View`.
+/// * `T`: The item type of the `Vec1View`.
+///
+/// # Fields
+///
+/// * `view`: A reference to the underlying `Vec1View`.
+/// * `item`: A `PhantomData` to carry the item type `T`.
 pub struct OptIter<'a, V: Vec1View<T>, T> {
     pub view: &'a V,
     pub item: PhantomData<T>,

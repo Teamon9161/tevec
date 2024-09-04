@@ -46,6 +46,7 @@ where
 
 unsafe impl<I> TrustedLen for std::iter::Enumerate<I> where I: TrustedLen {}
 
+unsafe impl<I> TrustedLen for std::iter::Empty<I> {}
 unsafe impl<A, B> TrustedLen for std::iter::Zip<A, B>
 where
     A: TrustedLen,
@@ -116,6 +117,20 @@ unsafe impl<'a, A, D: ndarray::Dimension> TrustedLen for ndarray::iter::IterMut<
 unsafe impl<T> TrustedLen for std::collections::vec_deque::IntoIter<T> {}
 #[cfg(feature = "vecdeque")]
 unsafe impl<'a, T> TrustedLen for std::collections::vec_deque::Iter<'a, T> {}
+
+/// A wrapper struct for an iterator with a known length.
+///
+/// `TrustIter` wraps an iterator and stores its length, allowing it to implement
+/// `TrustedLen` and provide more efficient size hints.
+///
+/// # Type Parameters
+///
+/// * `I`: The type of the wrapped iterator, which must implement `Iterator`.
+///
+/// # Fields
+///
+/// * `iter`: The wrapped iterator.
+/// * `len`: The known length of the iterator.
 #[derive(Clone)]
 pub struct TrustIter<I: Iterator> {
     iter: I,
@@ -164,7 +179,21 @@ where
 unsafe impl<I: Iterator> PlTrustedLen for TrustIter<I> {}
 unsafe impl<I: Iterator> TrustedLen for TrustIter<I> {}
 
+/// A trait for converting an iterator into a `TrustIter`.
+///
+/// This trait provides a method to wrap an iterator with a known length
+/// into a `TrustIter`, which implements `TrustedLen`.
 pub trait ToTrustIter: IntoIterator {
+    /// Converts the iterator into a `TrustIter` with a known length.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The iterator to be converted.
+    /// * `len` - The known length of the iterator.
+    ///
+    /// # Returns
+    ///
+    /// A `TrustIter` wrapping the original iterator with the specified length.
     fn to_trust(self, len: usize) -> TrustIter<Self::IntoIter>;
 }
 
@@ -173,20 +202,41 @@ impl<I: IntoIterator> ToTrustIter for I {
         TrustIter::new(self.into_iter(), len)
     }
 }
-
-// /// The remain length of the iterator can be trusted
-// ///
-// /// # Safety
-// ///
-// /// the size hint of the iterator should be correct
-// pub unsafe trait TrustedLen {}
-
+/// A trait for collecting items from a trusted iterator into a collection.
+///
+/// This trait provides methods to efficiently collect items from iterators
+/// that implement `TrustedLen`, allowing for optimized memory allocation
+/// and item placement.
 pub trait CollectTrusted<T> {
+    /// Collects items from a trusted iterator into the implementing collection.
+    ///
+    /// This method assumes that the iterator's length is known and trusted,
+    /// allowing for more efficient collection of items.
+    ///
+    /// # Arguments
+    ///
+    /// * `i` - An iterator with items of type `T` and implementing `TrustedLen`.
+    ///
+    /// # Returns
+    ///
+    /// The collection containing all items from the iterator.
     fn collect_from_trusted<I>(i: I) -> Self
     where
         I: IntoIterator<Item = T>,
         I::IntoIter: TrustedLen;
 
+    /// Attempts to collect items from a trusted iterator that may produce errors.
+    ///
+    /// This method is similar to `collect_from_trusted`, but handles iterators
+    /// that may produce `TResult<T>` items, allowing for error propagation.
+    ///
+    /// # Arguments
+    ///
+    /// * `i` - An iterator with items of type `TResult<T>` and implementing `TrustedLen`.
+    ///
+    /// # Returns
+    ///
+    /// A `TResult` containing either the successfully collected items or an error.
     fn try_collect_from_trusted<I>(i: I) -> TResult<Self>
     where
         I: IntoIterator<Item = TResult<T>>,
@@ -244,14 +294,45 @@ impl<T> CollectTrusted<T> for Vec<T> {
     }
 }
 
+/// A trait for iterators that can be collected into a `Vec` with a trusted length.
+///
+/// This trait is implemented for all iterators that implement `TrustedLen`,
+/// allowing for efficient collection into a `Vec` without unnecessary reallocations.
 pub trait CollectTrustedToVec: Iterator + TrustedLen + Sized {
+    /// Collects the iterator into a `Vec` using the trusted length information.
+    ///
+    /// This method is more efficient than the standard `collect()` method for
+    /// iterators with a known length, as it can allocate the exact amount of
+    /// memory needed upfront.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec` containing all the items from the iterator.
     #[inline(always)]
     fn collect_trusted_to_vec(self) -> Vec<Self::Item> {
         CollectTrusted::<Self::Item>::collect_from_trusted(self)
     }
 }
 
+/// A trait for iterators that can be collected into a `Vec` with a trusted length,
+/// where each item is a `Result`.
+///
+/// This trait is implemented for all iterators that implement `TrustedLen` and
+/// yield `Result` items, allowing for efficient collection into a `Vec` while
+/// propagating any errors encountered during iteration.
 pub trait TryCollectTrustedToVec<T>: Iterator<Item = TResult<T>> + TrustedLen + Sized {
+    /// Attempts to collect the iterator into a `Vec` using the trusted length information.
+    ///
+    /// This method is more efficient than the standard `collect()` method for
+    /// iterators with a known length, as it can allocate the exact amount of
+    /// memory needed upfront. If any item in the iterator is an `Err`, the
+    /// collection process is short-circuited and the error is returned.
+    ///
+    /// # Returns
+    ///
+    /// A `TResult` containing either:
+    /// - `Ok(Vec<T>)`: A `Vec` containing all the successfully collected items.
+    /// - `Err(E)`: The first error encountered during iteration.
     #[inline(always)]
     fn try_collect_trusted_to_vec(self) -> TResult<Vec<T>> {
         CollectTrusted::<T>::try_collect_from_trusted(self)

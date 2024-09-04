@@ -57,6 +57,13 @@ where
 
 impl<T> ExactSizeIterator for Linspace<T> where Linspace<T>: Iterator {}
 
+/// Creates a vector with linearly spaced values.
+///
+/// # Arguments
+///
+/// * `start` - The starting value of the linear space.
+/// * `end` - The end value of the linear space.
+/// * `n` - The number of points to generate.
 #[inline]
 pub fn linspace<T>(a: T, b: T, n: usize) -> Linspace<T>
 where
@@ -77,6 +84,13 @@ where
     }
 }
 
+/// Creates a vector with values in a specified range.
+///
+/// # Arguments
+///
+/// * `start` - The starting value of the range.
+/// * `end` - The end value of the range (exclusive).
+/// * `step` - The step size between values.
 #[inline]
 pub fn range<T>(a: T, b: T, step: T) -> Linspace<T>
 where

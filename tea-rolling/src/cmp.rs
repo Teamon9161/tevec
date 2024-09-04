@@ -1,8 +1,22 @@
 use std::cmp::{min, Ordering};
 
 use tea_core::prelude::*;
-
+/// Trait for performing rolling comparison operations on valid elements in vectors.
+///
+/// This trait provides methods for calculating rolling minimum, maximum, argmin, argmax,
+/// and rank operations on vectors of potentially nullable elements.
 pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
+    /// Calculates the rolling argmin (index of minimum value) for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling argmin values.
     #[no_out]
     fn ts_vargmin<O: Vec1<U>, U>(
         &self,
@@ -70,6 +84,17 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling minimum for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling minimum values.
     #[no_out]
     fn ts_vmin<O: Vec1<U>, U>(
         &self,
@@ -133,6 +158,17 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling argmax (index of maximum value) for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling argmax values.
     #[no_out]
     fn ts_vargmax<O: Vec1<U>, U>(
         &self,
@@ -200,6 +236,17 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling maximum for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling maximum values.
     #[no_out]
     fn ts_vmax<O: Vec1<U>, U>(
         &self,
@@ -263,6 +310,19 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling rank for the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `pct` - If true, return percentage rank, otherwise return absolute rank.
+    /// * `rev` - If true, rank in descending order, otherwise rank in ascending order.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling rank values.
     #[no_out]
     fn ts_vrank<O: Vec1<U>, U>(
         &self,

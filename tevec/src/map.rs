@@ -2,16 +2,43 @@
 use tea_agg::*;
 use tea_core::prelude::*;
 pub use tea_map::*;
-
+/// Enum representing different methods for winsorizing data.
 #[cfg(feature = "agg")]
 #[derive(Copy, Clone)]
 pub enum WinsorizeMethod {
+    /// Winsorize based on quantiles.
     Quantile,
+    /// Winsorize based on median absolute deviation (MAD).
     Median,
+    /// Winsorize based on standard deviations from the mean.
     Sigma,
 }
 
+/// Trait for performing mapping operations on vectors with valid (non-None) elements.
 pub trait MapValidFinal<T: IsNone>: Vec1View<T> {
+    /// Winsorizes the data using the specified method.
+    ///
+    /// # Arguments
+    ///
+    /// * `method` - The winsorization method to use (Quantile, Median, or Sigma).
+    /// * `method_params` - Optional parameter specific to the chosen method:
+    ///   - For Quantile: The quantile value (default: 0.01).
+    ///   - For Median: The number of MADs to use for clipping (default: 3).
+    ///   - For Sigma: The number of standard deviations to use for clipping (default: 3).
+    ///
+    /// # Returns
+    ///
+    /// A `TResult` containing a boxed iterator of winsorized values as `f64`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tevec::prelude::*;
+    /// use tevec::map::WinsorizeMethod;
+    ///
+    /// let data = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    /// let winsorized: Vec<f64> = data.winsorize(WinsorizeMethod::Quantile, Some(0.1))?.collect();
+    /// ```
     #[cfg(feature = "agg")]
     fn winsorize<'a>(
         &'a self,

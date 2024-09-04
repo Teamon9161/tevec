@@ -1,5 +1,3 @@
-// mod match_enum;
-
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
@@ -7,6 +5,18 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, parse_quote, Data, DeriveInput, FnArg, ItemFn, ReturnType};
 
+/// Parses the parameters of a function signature.
+///
+/// This function extracts the patterns from the function's input arguments,
+/// filtering out any `self` parameters.
+///
+/// # Arguments
+///
+/// * `sig` - A reference to the function signature to parse.
+///
+/// # Returns
+///
+/// A vector of boxed patterns representing the function's parameters.
 #[allow(clippy::vec_box)]
 pub(crate) fn parse_params(sig: &syn::Signature) -> Vec<Box<syn::Pat>> {
     sig.inputs
@@ -21,6 +31,19 @@ pub(crate) fn parse_params(sig: &syn::Signature) -> Vec<Box<syn::Pat>> {
         .collect()
 }
 
+/// Transforms a function to handle optional output.
+///
+/// This function takes a function and modifies it to return an `Option` of its original return type.
+/// It also creates a wrapper function that calls the modified function and unwraps the result.
+///
+/// # Arguments
+///
+/// * `attr` - The attributes applied to the function.
+/// * `func` - The original function to transform.
+///
+/// # Returns
+///
+/// A `TokenStream2` containing the modified function and its wrapper.
 fn no_output_transform(attr: TokenStream, func: ItemFn) -> TokenStream2 {
     let attr: TokenStream2 = attr.into();
     let mut fn_sig = func.sig;
@@ -63,6 +86,10 @@ fn no_output_transform(attr: TokenStream, func: ItemFn) -> TokenStream2 {
     }
 }
 
+/// Procedural macro to transform a function to handle optional output.
+///
+/// This macro modifies the function to return an `Option` of its original return type
+/// and creates a wrapper function that calls the modified function and unwraps the result.
 #[proc_macro_attribute]
 pub fn no_out(attr: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
@@ -70,6 +97,21 @@ pub fn no_out(attr: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::from(out)
 }
 
+/// Procedural macro to derive the `GetDtype` trait for enums.
+///
+/// This macro generates an implementation of the `GetDtype` trait for an enum,
+/// providing a `dtype` method that returns the appropriate `DataType` for each variant.
+///
+/// # Usage
+///
+/// ```
+/// #[derive(GetDtype)]
+/// enum MyEnum {
+///     Variant1(Type1),
+///     Variant2(Type2),
+///     // ...
+/// }
+/// ```
 #[proc_macro_derive(GetDtype)]
 pub fn derive_get_data_type(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

@@ -4,11 +4,26 @@ mod vec_map;
 use tea_core::prelude::*;
 pub use valid_iter::{Keep, MapValidBasic};
 pub use vec_map::MapValidVec;
-
+/// A trait for basic mapping operations on trusted length iterators.
+///
+/// This trait provides methods for common operations like absolute value and shifting,
+/// which can be applied to iterators with a known length.
 pub trait MapBasic: TrustedLen
 where
     Self: Sized,
 {
+    /// Applies the absolute value function to each element in the iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapBasic;
+    ///
+    /// let v = vec![-1, 2, -3, 4, -5];
+    /// let result: Vec<_> = v.titer().abs().collect();
+    /// assert_eq!(result, vec![1, 2, 3, 4, 5]);
+    /// ```
     #[inline]
     fn abs(self) -> impl TrustedLen<Item = Self::Item>
     where
@@ -17,6 +32,25 @@ where
         self.map(|v| v.abs())
     }
 
+    /// Shifts the elements of the iterator by `n` positions, filling in with the provided `value`.
+    ///
+    /// - If `n` is positive, shifts right and prepends `value`.
+    /// - If `n` is negative, shifts left and appends `value`.
+    /// - If `n` is zero, returns the original iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use tea_map::MapBasic;
+    ///
+    /// let v = vec![1, 2, 3, 4, 5];
+    /// let result: Vec<_> = v.titer().shift(2, 0).collect();
+    /// assert_eq!(result, vec![0, 0, 1, 2, 3]);
+    ///
+    /// let result: Vec<_> = v.titer().shift(-2, 0).collect();
+    /// assert_eq!(result, vec![3, 4, 5, 0, 0]);
+    /// ```
     fn shift<'a>(self, n: i32, value: Self::Item) -> Box<dyn TrustedLen<Item = Self::Item> + 'a>
     where
         Self::Item: Clone + 'a,

@@ -1,8 +1,21 @@
 use std::ops::Sub;
 
 use tea_core::prelude::*;
-
+/// Trait for vector-like types that support map operations on valid elements.
+///
+/// This trait provides methods for performing various operations on vectors,
+/// such as calculating differences, percentage changes, rankings, and partitions.
 pub trait MapValidVec<T: IsNone>: Vec1View<T> {
+    /// Calculates the difference between elements in the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - The lag for the difference calculation. Positive values look forward, negative values look backward.
+    /// * `value` - The value to use for padding when there are not enough elements.
+    ///
+    /// # Returns
+    ///
+    /// A boxed iterator of differences.
     fn vdiff<'a>(&'a self, n: i32, value: Option<T>) -> Box<dyn TrustedLen<Item = T> + 'a>
     where
         T: Clone + Sub<Output = T> + Zero + 'a,
@@ -35,6 +48,15 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         }
     }
 
+    /// Calculates the percentage change between elements in the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - The lag for the percentage change calculation. Positive values look forward, negative values look backward.
+    ///
+    /// # Returns
+    ///
+    /// A boxed iterator of percentage changes.
     fn vpct_change<'a>(&'a self, n: i32) -> Box<dyn TrustedLen<Item = f64> + 'a>
     where
         T: Clone + Cast<f64> + 'a,
@@ -83,6 +105,16 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         }
     }
 
+    /// Calculates the rank of elements in the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `pct` - If true, returns percentage ranks.
+    /// * `rev` - If true, ranks in descending order.
+    ///
+    /// # Returns
+    ///
+    /// A vector of ranks.
     fn vrank<O: Vec1<OT>, OT: IsNone>(&self, pct: bool, rev: bool) -> O
     where
         T: IsNone + PartialEq,
@@ -245,8 +277,17 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         unsafe { out.assume_init() }
     }
 
-    /// return -1 if there are not enough valid elements
-    /// sort: whether to sort the result by the size of the element
+    /// Returns the indices of the kth smallest elements.
+    ///
+    /// # Arguments
+    ///
+    /// * `kth` - The k-th smallest element to find.
+    /// * `sort` - If true, sort the result.
+    /// * `rev` - If true, find the kth largest elements instead.
+    ///
+    /// # Returns
+    ///
+    /// A boxed iterator of indices.
     fn varg_partition<'a>(
         &'a self,
         kth: usize,

@@ -108,12 +108,37 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// The index should be less than the length of the array
     unsafe fn uget(&self, index: usize) -> T;
-
+    /// Attempts to return a reference to the underlying slice of the vector.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(&[T])` if the vector's data is contiguous in memory and can be represented as a slice.
+    /// - `None` if the vector's data cannot be represented as a contiguous slice.
+    ///
+    /// # Note
+    ///
+    /// This method is useful for backends that store data in a contiguous memory layout.
+    /// It allows for efficient access to the underlying data without copying.
+    /// The default implementation returns `None`, indicating that the data is not
+    /// available as a contiguous slice. Backends that can provide this should override this method.
     #[inline(always)]
     fn try_as_slice(&self) -> Option<&[T]> {
         None
     }
 
+    /// Creates an iterator that casts each element of the vector to a new type.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `U`: The type to cast each element to.
+    ///
+    /// # Returns
+    ///
+    /// An iterator over the vector's elements, with each element cast to type `U`.
+    ///
+    /// # Note
+    ///
+    /// This method relies on the `Cast` trait being implemented for the conversion from `T` to `U`.
     #[inline]
     fn iter_cast<'a, U>(&'a self) -> impl TIterator<Item = U>
     where
@@ -122,6 +147,20 @@ pub trait Vec1View<T>: TIter<T> {
         self.titer().map(|v| v.cast())
     }
 
+    /// Creates an iterator that optionally casts each element of the vector to a new type.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `U`: The type to cast each element to.
+    ///
+    /// # Returns
+    ///
+    /// An iterator over the vector's elements, with each element optionally cast to type `U`.
+    ///
+    /// # Note
+    ///
+    /// This method is useful when dealing with vectors that may contain null or invalid values.
+    /// It uses the `IsNone` trait to determine if an element should be considered as `None`.
     #[inline]
     fn opt_iter_cast<'a, U>(&'a self) -> impl TIterator<Item = Option<U>>
     where
@@ -131,6 +170,16 @@ pub trait Vec1View<T>: TIter<T> {
         self.titer().map(|v| v.to_opt().map(Cast::<U>::cast))
     }
 
+    /// Creates an `OptIter` for the vector.
+    ///
+    /// # Returns
+    ///
+    /// An `OptIter` instance that allows iterating over the vector's elements as `Option` values.
+    ///
+    /// # Note
+    ///
+    /// This method is useful for treating the vector's elements as optional values,
+    /// which is particularly helpful when dealing with data that may contain null or invalid entries.
     #[inline]
     fn opt(&self) -> OptIter<Self, T>
     where
@@ -143,6 +192,16 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Creates an iterator that converts each element of the vector to an `Option`.
+    ///
+    /// # Returns
+    ///
+    /// An iterator over the vector's elements, with each element converted to `Option<T::Inner>`.
+    ///
+    /// # Note
+    ///
+    /// This method is useful for explicitly handling potential null or invalid values in the vector.
+    /// It relies on the `IsNone` trait to determine how to convert each element to an `Option`.
     #[inline]
     fn to_opt_iter<'a>(&'a self) -> impl TIterator<Item = Option<T::Inner>>
     where
@@ -151,11 +210,25 @@ pub trait Vec1View<T>: TIter<T> {
         self.titer().map(|v| v.to_opt())
     }
 
-    /// if the value is valid, return it, otherwise return None
+    /// Retrieves the value at the specified index as an `Option`, if it's valid.
     ///
     /// # Safety
     ///
-    /// The index should be less than the length of the array
+    /// The caller must ensure that the index is less than the length of the array.
+    ///
+    /// # Arguments
+    ///
+    /// * `index`: The index of the element to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(T::Inner)` if the value at the index is valid.
+    /// - `None` if the value is invalid or represents a null value.
+    ///
+    /// # Note
+    ///
+    /// This method is unsafe because it doesn't perform bounds checking. It's the caller's
+    /// responsibility to ensure that the index is valid.
     #[inline]
     unsafe fn uvget(&self, index: usize) -> Option<T::Inner>
     where
@@ -164,6 +237,20 @@ pub trait Vec1View<T>: TIter<T> {
         self.uget(index).to_opt()
     }
 
+    /// Safely retrieves the value at the specified index.
+    ///
+    /// # Arguments
+    ///
+    /// * `index`: The index of the element to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(T)` if the index is within bounds.
+    /// - `Err(TError)` if the index is out of bounds.
+    ///
+    /// # Note
+    ///
+    /// This method performs bounds checking and is safe to use.
     #[inline]
     fn get(&self, index: usize) -> TResult<T> {
         if index < self.len() {
@@ -173,6 +260,20 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Safely retrieves the value at the specified index as an `Option`.
+    ///
+    /// # Arguments
+    ///
+    /// * `index`: The index of the element to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(T::Inner)` if the index is within bounds and the value is valid.
+    /// - `None` if the index is out of bounds or the value is invalid.
+    ///
+    /// # Note
+    ///
+    /// This method combines bounds checking with null value handling.
     #[inline]
     fn vget(&self, index: usize) -> Option<T::Inner>
     where
@@ -185,8 +286,27 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Applies a custom function to rolling windows of the vector.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `U`: The type returned by the custom function for each window.
+    /// - `F`: The type of the custom function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The custom function to apply to each window.
+    ///
+    /// # Returns
+    ///
+    /// An iterator over the results of applying the custom function to each window.
+    ///
+    /// # Note
+    ///
+    /// This method creates an iterator that doesn't collect results, making it memory-efficient
+    /// for large datasets or when further processing of the results is needed.
     #[inline]
-    /// Rolling and apply a custom funtion to each window, but it won't collect result
     fn rolling_custom_iter<'a, U, F>(&'a self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
     where
         F: FnMut(Self::SliceOutput<'a>) -> U,
@@ -198,7 +318,28 @@ pub trait Vec1View<T>: TIter<T> {
             .to_trust(self.len())
     }
 
-    /// Rolling and apply a custom funtion to each window
+    /// Applies a custom function to rolling windows of the vector and collects the results.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `F`: The type of the custom function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The custom function to apply to each window.
+    /// * `out`: An optional pre-allocated output buffer.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(O)` if `out` is `None`, containing the collected results.
+    /// - `None` if `out` is `Some`, in which case the results are written to the provided buffer.
+    ///
+    /// # Note
+    ///
+    /// This method allows for efficient in-place computation when an output buffer is provided.
     #[inline]
     fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
         &'a self,
@@ -220,12 +361,24 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
-    /// Rolling and apply a custom funtion to each window
+    /// Applies a custom function to rolling windows of the vector and writes the results to a provided buffer.
     ///
-    /// Different with `rolling_custom`, the caller should pass a mut reference
-    /// of uninit vec.
-    /// Be careful to use this function as it will panic in polars backend.
-    /// use `rolling_custom` instead
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `F`: The type of the custom function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The custom function to apply to each window.
+    /// * `out`: A mutable reference to an uninitialized output buffer.
+    ///
+    /// # Note
+    ///
+    /// This method is more efficient than `rolling_custom` when you have a pre-allocated buffer,
+    /// but it may panic with certain backends (e.g., Polars). Use `rolling_custom` for a safer alternative.
     #[inline]
     fn rolling_custom_to<'a, O: Vec1<OT>, OT, F>(
         &'a self,
@@ -258,7 +411,32 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
-    /// Rolling and apply a custom funtion to each window of two vecs
+    /// Applies a custom function to rolling windows of two vectors simultaneously.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `V2`: The type of the second input vector.
+    /// - `T2`: The type of elements in the second input vector.
+    /// - `F`: The type of the custom function.
+    ///
+    /// # Arguments
+    ///
+    /// * `other`: A reference to the second input vector.
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The custom function to apply to each pair of windows.
+    /// * `out`: An optional pre-allocated output buffer.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(O)` if `out` is `None`, containing the collected results.
+    /// - `None` if `out` is `Some`, in which case the results are written to the provided buffer.
+    ///
+    /// # Note
+    ///
+    /// This method is useful for operations that need to consider two vectors simultaneously,
+    /// such as computing rolling correlations or differences between two time series.
     #[inline]
     fn rolling2_custom<O: Vec1<OT>, OT: Clone, V2, T2, F>(
         &self,
@@ -288,9 +466,31 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
-    /// Rolling and apply a function, the function accept whether to
-    /// move element from the window and a value to be added to
-    /// the window
+    /// Applies a rolling function that considers both the removal and addition of elements in the window.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes an `Option<T>` (the element being removed, if any)
+    ///        and a `T` (the element being added).
+    /// * `out`: An optional pre-allocated output buffer.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(O)` if `out` is `None`, containing the collected results.
+    /// - `None` if `out` is `Some`, in which case the results are written to the provided buffer.
+    ///
+    /// # Note
+    ///
+    /// This method is particularly useful for implementing efficient rolling calculations
+    /// where you can update the result based on the elements entering and leaving the window,
+    /// rather than recomputing from scratch for each window.
     #[inline]
     fn rolling_apply<O: Vec1<OT>, OT, F>(
         &self,
@@ -319,14 +519,39 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
-    /// Rolling and apply a function, the function accept whether to
-    /// move element from the window and a value to be added to
-    /// the window.
+    /// Applies a rolling function that considers both the removal and addition of elements in the window,
+    /// writing results to a provided buffer.
     ///
-    /// Different with `rolling_apply`, the caller should pass a mut reference
-    /// of uninit vec.
-    /// Be careful to use this function as it will panic in polars backend.
-    /// use `rolling_apply` instead
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes an `Option<T>` (the element being removed, if any)
+    ///        and a `T` (the element being added).
+    /// * `out`: A mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Behavior
+    ///
+    /// This method applies a rolling function to the vector, considering both elements
+    /// entering and leaving the window. It writes the results directly to the provided
+    /// output buffer.
+    ///
+    /// # Safety
+    ///
+    /// This method uses unsafe operations for performance reasons. It assumes that:
+    /// - The `window` size is valid (greater than 0 and not larger than the vector's length).
+    /// - The `out` buffer has sufficient capacity to store the results.
+    ///
+    /// # Note
+    ///
+    /// This method is more efficient than `rolling_apply` when you have a pre-allocated
+    /// buffer. However, it may not be supported by all backends (e.g., it will panic
+    /// in the Polars backend). For broader compatibility, use `rolling_apply` instead.
     #[inline]
     fn rolling_apply_to<O: Vec1<OT>, OT, F>(
         &self,
@@ -359,9 +584,34 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
-    /// Rolling and apply a function to both vecs, the function accept whether to
-    /// move element from the window and a value to be added to
-    /// the window
+    /// Applies a rolling function to two vectors simultaneously, considering both
+    /// the removal and addition of elements in the window.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `V2`: The type of the second input vector.
+    /// - `T2`: The type of elements in the second input vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `other`: A reference to the second input vector.
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes an `Option<(T, T2)>` (the elements being removed, if any)
+    ///        and a `(T, T2)` (the elements being added).
+    /// * `out`: An optional mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(O)` if `out` is `None`, containing the collected results.
+    /// - `None` if `out` is `Some`, in which case the results are written to the provided buffer.
+    ///
+    /// # Note
+    ///
+    /// This method is particularly useful for implementing efficient rolling calculations
+    /// that depend on two input vectors simultaneously.
     #[inline]
     fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
@@ -392,15 +642,37 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
-    #[inline]
-    /// Rolling and apply a function to both vecs, the function accept whether to
-    /// move element from the window and a value to be added to
-    /// the window.
+    /// Applies a rolling function to two vectors simultaneously, writing results to a provided buffer.
     ///
-    /// Different with `rolling_apply`, the caller should pass a mut reference
-    /// of uninit vec.
-    /// Be careful to use this function as it will panic in polars backend.
-    /// use `rolling_apply` instead
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `V2`: The type of the second input vector.
+    /// - `T2`: The type of elements in the second input vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `other`: A reference to the second input vector.
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes an `Option<(T, T2)>` (the elements being removed, if any)
+    ///        and a `(T, T2)` (the elements being added).
+    /// * `out`: A mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Safety
+    ///
+    /// This method uses unsafe operations for performance reasons. It assumes that:
+    /// - The `window` size is valid (greater than 0 and not larger than the vector's length).
+    /// - The `out` buffer has sufficient capacity to store the results.
+    /// - Both input vectors have the same length.
+    ///
+    /// # Note
+    ///
+    /// This method is more efficient than `rolling2_apply` when you have a pre-allocated
+    /// buffer. However, it may not be supported by all backends (e.g., it will panic
+    /// in the Polars backend). For broader compatibility, use `rolling2_apply` instead.
+    #[inline]
     fn rolling2_apply_to<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
@@ -433,6 +705,30 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Applies a rolling function that considers the index of elements in the window.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes `Option<usize>` (the start index),
+    ///        `usize` (the end index), and `T` (the current element).
+    /// * `out`: An optional mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(O)` if `out` is `None`, containing the collected results.
+    /// - `None` if `out` is `Some`, in which case the results are written to the provided buffer.
+    ///
+    /// # Note
+    ///
+    /// This method is useful when the rolling calculation needs to consider the
+    /// position of elements within the vector.
     #[inline]
     fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
         &self,
@@ -462,9 +758,34 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Applies a rolling function that considers the index of elements in the window,
+    /// writing results to a provided buffer.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes `Option<usize>` (the start index),
+    ///        `usize` (the end index), and `T` (the current element).
+    /// * `out`: A mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Safety
+    ///
+    /// This method uses unsafe operations for performance reasons. It assumes that:
+    /// - The `window` size is valid (greater than 0 and not larger than the vector's length).
+    /// - The `out` buffer has sufficient capacity to store the results.
+    ///
+    /// # Note
+    ///
+    /// This method is more efficient than `rolling_apply_idx` when you have a pre-allocated
+    /// buffer. However, it may not be supported by all backends (e.g., it will panic
+    /// in the Polars backend). For broader compatibility, use `rolling_apply_idx` instead.
     #[inline]
-    /// be careful to use this function as it will panic in polars backend.
-    /// use rolling_apply_idx instead
     fn rolling_apply_idx_to<O: Vec1<OT>, OT, F>(
         &self,
         window: usize,
@@ -492,6 +813,33 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Applies a rolling function to two vectors simultaneously, considering the index of elements in the window.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `V2`: The type of the second input vector.
+    /// - `T2`: The type of elements in the second input vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `other`: A reference to the second input vector.
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes `Option<usize>` (the start index),
+    ///        `usize` (the end index), and `(T, T2)` (the current elements from both vectors).
+    /// * `out`: An optional mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(O)` if `out` is `None`, containing the collected results.
+    /// - `None` if `out` is `Some`, in which case the results are written to the provided buffer.
+    ///
+    /// # Note
+    ///
+    /// This method is useful when the rolling calculation needs to consider both
+    /// the position of elements and values from two input vectors simultaneously.
     #[inline]
     fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
@@ -523,9 +871,44 @@ pub trait Vec1View<T>: TIter<T> {
         }
     }
 
+    /// Applies a rolling function to two vectors simultaneously, considering the index of elements in the window,
+    /// writing results to a provided buffer.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `O`: The output vector type.
+    /// - `OT`: The type of elements in the output vector.
+    /// - `V2`: The type of the second input vector.
+    /// - `T2`: The type of elements in the second input vector.
+    /// - `F`: The type of the rolling function.
+    ///
+    /// # Arguments
+    ///
+    /// * `other`: A reference to the second input vector.
+    /// * `window`: The size of the rolling window.
+    /// * `f`: The function to apply. It takes `Option<usize>` (the start index of the window),
+    ///        `usize` (the end index of the window), and `(T, T2)` (the current elements from both vectors).
+    /// * `out`: A mutable reference to an uninitialized buffer to store the results.
+    ///
+    /// # Behavior
+    ///
+    /// This method applies a rolling function to two vectors simultaneously, considering both
+    /// the position of elements and values from both input vectors. It writes the results directly
+    /// to the provided output buffer.
+    ///
+    /// # Safety
+    ///
+    /// This method uses unsafe operations for performance reasons. It assumes that:
+    /// - The `window` size is valid (greater than 0 and not larger than the vector's length).
+    /// - The `out` buffer has sufficient capacity to store the results.
+    /// - Both input vectors have the same length.
+    ///
+    /// # Note
+    ///
+    /// This method is more efficient than `rolling2_apply_idx` when you have a pre-allocated
+    /// buffer. However, it may not be supported by all backends (e.g., it will panic
+    /// in the Polars backend). For broader compatibility, use `rolling2_apply_idx` instead.
     #[inline]
-    /// be careful to use this function as it will panic in polars backend.
-    /// use rolling2_apply_idx instead
     fn rolling2_apply_idx_to<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
         &self,
         other: &V2,
@@ -533,7 +916,6 @@ pub trait Vec1View<T>: TIter<T> {
         mut f: F,
         mut out: O::UninitRefMut<'_>,
     ) where
-        // start, end, value
         F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
     {
         let len = self.len();
@@ -552,125 +934,5 @@ pub trait Vec1View<T>: TIter<T> {
         for (start, end) in (window - 1..len).enumerate() {
             unsafe { out.uset(end, f(Some(start), end, (self.uget(end), other.uget(end)))) }
         }
-    }
-}
-
-impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
-    #[inline]
-    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-    where
-        T: 'a,
-    {
-        (**self).titer()
-    }
-}
-
-impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
-    type SliceOutput<'a> = V::SliceOutput<'a>
-    where
-        Self: 'a,
-        T: 'a;
-
-    #[inline]
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
-        (**self).slice(start, end)
-    }
-
-    #[inline]
-    unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
-        (**self).uslice(start, end)
-    }
-
-    #[inline]
-    fn get_backend_name(&self) -> &'static str {
-        (**self).get_backend_name()
-    }
-
-    #[inline]
-    unsafe fn uget(&self, index: usize) -> T {
-        (**self).uget(index)
-    }
-
-    #[inline]
-    fn try_as_slice(&self) -> Option<&[T]> {
-        (**self).try_as_slice()
-    }
-
-    #[inline]
-    fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
-        &'a self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        F: FnMut(Self::SliceOutput<'a>) -> OT,
-        T: 'a,
-    {
-        (**self).rolling_custom(window, f, out)
-    }
-
-    #[inline]
-    fn rolling_apply<O: Vec1<OT>, OT, F>(
-        &self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        T: Clone,
-        F: FnMut(Option<T>, T) -> OT,
-    {
-        (**self).rolling_apply(window, f, out)
-    }
-
-    #[inline]
-    fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        T: Clone,
-        T2: Clone,
-        F: FnMut(Option<(T, T2)>, (T, T2)) -> OT,
-    {
-        (**self).rolling2_apply(other, window, f, out)
-    }
-    #[inline]
-    fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
-        &self,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        // start, end, value
-        F: FnMut(Option<usize>, usize, T) -> OT,
-    {
-        (**self).rolling_apply_idx(window, f, out)
-    }
-
-    #[inline]
-    fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
-        window: usize,
-        f: F,
-        out: Option<O::UninitRefMut<'_>>,
-    ) -> Option<O>
-    where
-        // start, end, value
-        F: FnMut(Option<usize>, usize, (T, T2)) -> OT,
-    {
-        (**self).rolling2_apply_idx(other, window, f, out)
     }
 }

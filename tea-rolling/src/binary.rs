@@ -1,6 +1,22 @@
 use tea_core::prelude::*;
 
+/// Trait for performing rolling binary operations on valid elements in vectors.
+///
+/// This trait provides methods for calculating rolling covariance and correlation
+/// between two vectors of potentially nullable elements.
 pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
+    /// Calculates the rolling covariance between two vectors.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The other vector to calculate covariance with.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling covariance values.
     #[no_out]
     fn ts_vcov<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,
@@ -50,6 +66,18 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
         )
     }
 
+    /// Calculates the rolling correlation between two vectors.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The other vector to calculate correlation with.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations in window required to have a value.
+    /// * `out` - Optional output buffer to store the results.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing the rolling correlation values.
     #[no_out]
     fn ts_vcorr<O: Vec1<U>, U, V2: Vec1View<T2>, T2: IsNone>(
         &self,

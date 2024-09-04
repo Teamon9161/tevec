@@ -62,7 +62,6 @@ where
     /// # Returns
     ///
     /// Returns a new instance of `Self` that is considered to be in the "none" state.
-    /// ```
     // TODO: some type doesn't have none value, so it should return a `TResult<Self>`
     fn none() -> Self;
 

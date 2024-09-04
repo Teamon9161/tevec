@@ -2,16 +2,30 @@ pub use tea_agg::*;
 use tea_core::prelude::*;
 #[cfg(feature = "map")]
 use tea_map::*;
-
+/// Enum representing different correlation methods.
 #[derive(Default, Clone, Copy)]
 pub enum CorrMethod {
+    /// Pearson correlation coefficient (default).
     #[default]
     Pearson,
+    /// Spearman's rank correlation coefficient.
     #[cfg(feature = "map")]
     Spearman,
 }
 
+/// Trait for aggregation operations on vectors with valid (non-None) elements.
 pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
+    /// Calculates the correlation between two vectors using the specified method.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The other vector to correlate with.
+    /// * `min_periods` - The minimum number of valid pairs required to compute the correlation.
+    /// * `method` - The correlation method to use (Pearson or Spearman).
+    ///
+    /// # Returns
+    ///
+    /// The correlation coefficient as a floating-point number.
     #[cfg(feature = "map")]
     fn vcorr<V2: Vec1View<T>>(
         &self,
@@ -37,6 +51,17 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
         }
     }
 
+    /// Calculates the half-life of the autocorrelation of the vector.
+    ///
+    /// The half-life is defined as the lag at which the autocorrelation drops to 0.5.
+    ///
+    /// # Arguments
+    ///
+    /// * `min_periods` - The minimum number of valid pairs required to compute correlations.
+    ///
+    /// # Returns
+    ///
+    /// The half-life as a usize.
     #[cfg(feature = "map")]
     fn half_life(&self, min_periods: Option<usize>) -> usize
     where

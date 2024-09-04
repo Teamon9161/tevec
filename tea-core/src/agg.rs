@@ -896,6 +896,32 @@ pub trait AggBasic: IntoIterator + Sized {
         self.n_sum().1
     }
 
+    /// Returns the mean of all elements in the iterator.
+    ///
+    /// This method calculates the arithmetic mean of all elements in the iterator.
+    /// It first computes the sum and count of all elements using the `n_sum` method,
+    /// then divides the sum by the count to get the mean.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `Self::Item`: Must implement `Zero` and be castable to `f64`.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(f64)`: The mean value if the iterator is not empty.
+    /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let numbers = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+    /// assert_eq!(numbers.titer().mean(), Some(3.0));
+    ///
+    /// let empty: Vec<f64> = vec![];
+    /// assert_eq!(empty.titer().mean(), None);
+    /// ```
     #[inline]
     fn mean(self) -> Option<f64>
     where
@@ -905,6 +931,31 @@ pub trait AggBasic: IntoIterator + Sized {
         sum.map(|v| v.cast() / len as f64)
     }
 
+    /// Returns the maximum element in the iterator.
+    ///
+    /// This method iterates through all elements and returns the maximum value.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `Self::Item`: Must implement the `Number` trait.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(Self::Item)`: The maximum value if the iterator is not empty.
+    /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use std::iter::empty;
+    ///
+    /// let numbers = vec![1, 5, 3, 2, 4];
+    /// assert_eq!(AggBasic::max(numbers.titer()), Some(5));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(AggBasic::max(empty.titer()), None);
+    /// ```
     #[inline]
     fn max(self) -> Option<Self::Item>
     where
@@ -916,6 +967,30 @@ pub trait AggBasic: IntoIterator + Sized {
         })
     }
 
+    /// Returns the minimum element in the iterator.
+    ///
+    /// This method iterates through all elements and returns the minimum value.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `Self::Item`: Must implement the `Number` trait.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(Self::Item)`: The minimum value if the iterator is not empty.
+    /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use std::iter::empty;
+    /// let numbers = vec![5, 1, 3, 2, 4];
+    /// assert_eq!(AggBasic::min(numbers.titer()), Some(1));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(AggBasic::min(empty.titer()), None);
+    /// ```
     #[inline]
     fn min(self) -> Option<Self::Item>
     where
@@ -927,6 +1002,30 @@ pub trait AggBasic: IntoIterator + Sized {
         })
     }
 
+    /// Returns the index of the maximum element in the iterator.
+    ///
+    /// This method iterates through all elements and returns the index of the maximum value.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `Self::Item`: Must implement `PartialOrd`.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(usize)`: The index of the maximum value if the iterator is not empty.
+    /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let numbers = vec![1, 5, 3, 2, 4];
+    /// assert_eq!(numbers.titer().argmax(), Some(1));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(empty.titer().argmax(), None);
+    /// ```
     #[inline]
     fn argmax(self) -> Option<usize>
     where
@@ -951,6 +1050,30 @@ pub trait AggBasic: IntoIterator + Sized {
         max_idx
     }
 
+    /// Returns the index of the minimum element in the iterator.
+    ///
+    /// This method iterates through all elements and returns the index of the minimum value.
+    ///
+    /// # Type Parameters
+    ///
+    /// - `Self::Item`: Must implement `PartialOrd`.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(usize)`: The index of the minimum value if the iterator is not empty.
+    /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let numbers = vec![5, 1, 3, 2, 4];
+    /// assert_eq!(numbers.titer().argmin(), Some(1));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(empty.titer().argmin(), None);
+    /// ```
     #[inline]
     fn argmin(self) -> Option<usize>
     where
