@@ -350,12 +350,14 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                     let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                     sum_a += va;
                     sum_b += vb;
-                    sum_b2 += vb.powi(2);
+                    sum_b2 += vb * vb;
                     sum_ab += va * vb;
                 };
                 let res = if n >= min_periods {
+                    // β = (n Σxy - Σx Σy) / (n Σx² - (Σx)²)
                     let beta =
                         (n.f64() * sum_ab - sum_a * sum_b) / (n.f64() * sum_b2 - sum_b.powi(2));
+                    // α = (Σy - β Σx) / n
                     (sum_a - beta * sum_b) / n.f64()
                 } else {
                     f64::NAN
@@ -366,7 +368,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                         let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                         sum_a -= va;
                         sum_b -= vb;
-                        sum_b2 -= vb.powi(2);
+                        sum_b2 -= vb * vb;
                         sum_ab -= va * vb;
                     };
                 }
@@ -416,10 +418,11 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                     let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                     sum_a += va;
                     sum_b += vb;
-                    sum_b2 += vb.powi(2);
+                    sum_b2 += vb * vb;
                     sum_ab += va * vb;
                 };
                 let res = if n >= min_periods {
+                    // β = (n Σxy - Σx Σy) / (n Σx² - (Σx)²)
                     (n.f64() * sum_ab - sum_a * sum_b) / (n.f64() * sum_b2 - sum_b.powi(2))
                 } else {
                     f64::NAN
@@ -430,7 +433,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                         let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                         sum_a -= va;
                         sum_b -= vb;
-                        sum_b2 -= vb.powi(2);
+                        sum_b2 -= vb * vb;
                         sum_ab -= va * vb;
                     };
                 }
@@ -480,7 +483,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                     let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                     sum_a += va;
                     sum_b += vb;
-                    sum_b2 += vb.powi(2);
+                    sum_b2 += vb * vb;
                     sum_ab += va * vb;
                 };
                 let res = if n >= min_periods {
@@ -507,7 +510,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                         let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                         sum_a -= va;
                         sum_b -= vb;
-                        sum_b2 -= vb.powi(2);
+                        sum_b2 -= vb * vb;
                         sum_ab -= va * vb;
                     };
                 }
@@ -557,7 +560,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                     let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                     sum_a += va;
                     sum_b += vb;
-                    sum_b2 += vb.powi(2);
+                    sum_b2 += vb * vb;
                     sum_ab += va * vb;
                 };
                 let res = if n >= min_periods {
@@ -584,7 +587,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                         let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                         sum_a -= va;
                         sum_b -= vb;
-                        sum_b2 -= vb.powi(2);
+                        sum_b2 -= vb * vb;
                         sum_ab -= va * vb;
                     };
                 }
@@ -634,7 +637,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                     let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                     sum_a += va;
                     sum_b += vb;
-                    sum_b2 += vb.powi(2);
+                    sum_b2 += vb * vb;
                     sum_ab += va * vb;
                 };
                 let res = if n >= min_periods {
@@ -661,7 +664,7 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                         let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
                         sum_a -= va;
                         sum_b -= vb;
-                        sum_b2 -= vb.powi(2);
+                        sum_b2 -= vb * vb;
                         sum_ab -= va * vb;
                     };
                 }
@@ -669,6 +672,98 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
             },
             out,
         )
+    }
+
+    /// Calculates rolling regression statistics for two vectors.
+    ///
+    /// This function computes rolling regression statistics (alpha, beta, and sum of squared errors)
+    /// for two input vectors over a specified window size.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The second input vector for regression.
+    /// * `window` - The size of the rolling window.
+    /// * `min_periods` - The minimum number of observations required to have a value; defaults to `window / 2`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `O` - The output vector type, must implement `Vec1<(U, U, U)>`.
+    /// * `U` - The type of the output elements.
+    /// * `V2` - The type of the second input vector, must implement `Vec1View<T2>`.
+    /// * `T2` - The element type of the second input vector, must implement `IsNone`.
+    ///
+    /// # Returns
+    ///
+    /// Returns a vector of tuples `(alpha, beta, sse)` where:
+    /// * `alpha` is the y-intercept of the regression line.
+    /// * `beta` is the slope of the regression line.
+    /// * `sse` is the sum of squared errors.
+    ///
+    /// # Notes
+    ///
+    /// - The function uses a rolling window approach to calculate regression statistics.
+    /// - NaN values are returned for windows with insufficient observations.
+    /// - The calculation assumes that `T::Inner` and `T2::Inner` implement `Number`.
+    /// - The output type `U` must be able to be cast from `f64`.
+    fn ts_vregx_all<O: Vec1<(U, U, U)>, U, V2: Vec1View<T2>, T2: IsNone>(
+        &self,
+        other: &V2,
+        window: usize,
+        min_periods: Option<usize>,
+    ) -> O
+    where
+        T::Inner: Number,
+        T2::Inner: Number,
+        f64: Cast<U>,
+    {
+        let min_periods = min_periods.unwrap_or(window / 2).min(window);
+        let mut sum_a = 0.;
+        let mut sum_b = 0.;
+        let mut sum_b2 = 0.;
+        let mut sum_ab = 0.;
+        let mut sum_a2 = 0.;
+        let mut n = 0;
+        self.rolling2_apply(
+            other,
+            window,
+            |remove_values, (va, vb)| {
+                if va.not_none() && vb.not_none() {
+                    n += 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a += va;
+                    sum_a2 += va * va;
+                    sum_b += vb;
+                    sum_b2 += vb * vb;
+                    sum_ab += va * vb;
+                };
+                let (alpha, beta, sse) = if n >= min_periods {
+                    // β = (n Σxy - Σx Σy) / (n Σx² - (Σx)²)
+                    let beta =
+                        (n.f64() * sum_ab - sum_a * sum_b) / (n.f64() * sum_b2 - sum_b.powi(2));
+                    // α = (Σy - β Σx) / n
+                    let alpha = (sum_a - beta * sum_b) / n.f64();
+                    // SSE = Σy² - α Σy - β Σxy
+                    let sse = sum_a2 - alpha * sum_a - beta * sum_ab;
+                    (alpha, beta, sse)
+                } else {
+                    (f64::NAN, f64::NAN, f64::NAN)
+                };
+                if let Some((va, vb)) = remove_values {
+                    if va.not_none() && vb.not_none() {
+                        n -= 1;
+                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                        sum_a -= va;
+                        sum_a2 -= va * va;
+                        sum_b -= vb;
+                        sum_b2 -= vb * vb;
+                        sum_ab -= va * vb;
+                    };
+                }
+                (alpha.cast(), beta.cast(), sse.cast())
+            },
+            None,
+        )
+        .unwrap()
     }
 }
 

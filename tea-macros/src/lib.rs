@@ -44,10 +44,12 @@ pub(crate) fn parse_params(sig: &syn::Signature) -> Vec<Box<syn::Pat>> {
 /// # Returns
 ///
 /// A `TokenStream2` containing the modified function and its wrapper.
-fn no_output_transform(attr: TokenStream, func: ItemFn) -> TokenStream2 {
-    let attr: TokenStream2 = attr.into();
+fn no_output_transform(_attr: TokenStream, func: ItemFn) -> TokenStream2 {
+    // let attr: TokenStream2 = attr.into();
     let mut fn_sig = func.sig;
     let fn_block = func.block;
+    let fn_attrs = func.attrs;
+    let fn_vis = func.vis;
 
     let mut new_sig = fn_sig.clone();
     // change return type of original function
@@ -74,13 +76,20 @@ fn no_output_transform(attr: TokenStream, func: ItemFn) -> TokenStream2 {
         })
         .collect();
     let params = parse_params(&new_sig);
+
+    // Filter out #[inline] attribute from fn_attrs
+    let filtered_fn_attrs: Vec<_> = fn_attrs
+        .iter()
+        .filter(|attr| !attr.path().is_ident("inline"))
+        .collect();
+
     quote! {
-        #attr
-        #fn_sig #fn_block
+        #(#fn_attrs)*
+        #fn_vis #fn_sig #fn_block
 
         #[inline]
-        #attr
-        #new_sig {
+        #(#filtered_fn_attrs)*
+        #fn_vis #new_sig {
             self.#ori_func_name(#(#params,)* None).unwrap()
         }
     }
@@ -101,17 +110,6 @@ pub fn no_out(attr: TokenStream, input: TokenStream) -> TokenStream {
 ///
 /// This macro generates an implementation of the `GetDtype` trait for an enum,
 /// providing a `dtype` method that returns the appropriate `DataType` for each variant.
-///
-/// # Usage
-///
-/// ```
-/// #[derive(GetDtype)]
-/// enum MyEnum {
-///     Variant1(Type1),
-///     Variant2(Type2),
-///     // ...
-/// }
-/// ```
 #[proc_macro_derive(GetDtype)]
 pub fn derive_get_data_type(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

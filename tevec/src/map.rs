@@ -37,7 +37,7 @@ pub trait MapValidFinal<T: IsNone>: Vec1View<T> {
     /// use tevec::map::WinsorizeMethod;
     ///
     /// let data = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    /// let winsorized: Vec<f64> = data.winsorize(WinsorizeMethod::Quantile, Some(0.1))?.collect();
+    /// let winsorized: Vec<f64> = data.winsorize(WinsorizeMethod::Quantile, Some(0.1)).unwrap().collect();
     /// ```
     #[cfg(feature = "agg")]
     fn winsorize<'a>(
