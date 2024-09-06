@@ -19,6 +19,15 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Returns
     ///
     /// Returns the count of valid elements as a `usize`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), None, Some(2), None, Some(3)];
+    /// assert_eq!(vec.count_valid(), 3);
+    /// ```
     fn count_valid(self) -> usize {
         self.vfold_n((), |(), _| {}).0
     }
@@ -33,6 +42,18 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// Returns an `Option<T>`:
     /// - `Some(T)` if a valid element is found
     /// - `None` if no valid elements are found (i.e., all elements are None or the iterator is empty)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![None, Some(1), None, Some(2), Some(3)];
+    /// assert_eq!(vec.vfirst(), Some(Some(1)));
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vfirst(), None);
+    /// ```
     fn vfirst(self) -> Option<T> {
         self.into_iter().find(|v| v.not_none())
     }
@@ -47,6 +68,18 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// Returns an `Option<T>`:
     /// - `Some(T)` if a valid element is found
     /// - `None` if no valid elements are found (i.e., all elements are None or the iterator is empty)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), None, Some(2), None, Some(3)];
+    /// assert_eq!(vec.vlast(), Some(Some(3)));
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vlast(), None);
+    /// ```
     ///
     /// # Note
     ///
@@ -66,6 +99,15 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Returns
     ///
     /// Returns the count of `None` values as a `usize`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), None, Some(2), None, Some(3)];
+    /// assert_eq!(vec.count_none(), 2);
+    /// ```
     fn count_none(self) -> usize {
         let mut n = 0;
         self.into_iter().for_each(|v| {
@@ -89,6 +131,17 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Returns
     ///
     /// Returns the count of occurrences as a `usize`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), None, Some(2), Some(1), None, Some(3)];
+    /// assert_eq!(vec.titer().vcount_value(Some(1)), 2);
+    /// assert_eq!(vec.titer().vcount_value(None), 2);
+    /// assert_eq!(vec.vcount_value(Some(4)), 0);
+    /// ```
     fn vcount_value(self, value: T) -> usize
     where
         T::Inner: PartialEq,
@@ -129,6 +182,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// Returns a `bool`:
     /// - `true` if all valid elements satisfy the condition
     /// - `false` if any valid element does not satisfy the condition or the iterator is empty
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(true), Some(true), Some(false)];
+    /// assert_eq!(vec.vall(), false);
+    ///
+    /// let vec = vec![Some(true), Some(true), Some(true)];
+    /// assert_eq!(vec.vall(), true);
+    ///
+    /// let empty_vec: Vec<Option<bool>> = vec![];
+    /// assert_eq!(empty_vec.vall(), true); // All elements are None, so it satisfies the condition
+    /// ```
     fn vall(self) -> bool
     where
         T::Inner: BoolType,
@@ -150,6 +218,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Type Parameters
     ///
     /// - `T::Inner`: Must implement the `Zero` trait to provide a zero value for initialization
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(2), None, Some(3)];
+    /// assert_eq!(vec.vsum(), Some(6));
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vsum(), None);
+    ///
+    /// let all_none_vec: Vec<Option<f64>> = vec![None, None, None];
+    /// assert_eq!(all_none_vec.vsum(), None);
+    /// ```
     fn vsum(self) -> Option<T::Inner>
     where
         T::Inner: Zero,
@@ -178,6 +261,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Type Parameters
     ///
     /// - `T::Inner`: Must implement the `Number` trait to support arithmetic operations
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(2), None, Some(3)];
+    /// assert_eq!(vec.vmean(), 2.0);
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert!(empty_vec.vmean().is_nan());
+    ///
+    /// let all_none_vec: Vec<Option<f64>> = vec![None, None, None];
+    /// assert!(all_none_vec.vmean().is_nan());
+    /// ```
     fn vmean(self) -> f64
     where
         T::Inner: Number,
@@ -209,6 +307,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Type Parameters
     ///
     /// - `T::Inner`: Must implement the `Number` trait to support arithmetic operations
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(2), None, Some(3)];
+    /// let (mean, var) = vec.vmean_var(1);
+    /// assert_eq!(mean, 2.0);
+    /// assert!((var - 1.0).abs() < EPS);
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// let (mean, var) = empty_vec.vmean_var(1);
+    /// assert!(mean.is_nan() && var.is_nan());
+    /// ```
     fn vmean_var(self, min_periods: usize) -> (f64, f64)
     where
         T::Inner: Number,
@@ -248,6 +361,20 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// Returns an `f64` representing the variance of the data. If there are fewer valid elements
     /// than `min_periods`, returns `f64::NAN`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(2), None, Some(3)];
+    /// let var = vec.vvar(1);
+    /// assert!((var - 1.0).abs() < EPS);
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// let var = empty_vec.vvar(1);
+    /// assert!(var.is_nan());
+    /// ```
     #[inline]
     fn vvar(self, min_periods: usize) -> f64
     where
@@ -269,6 +396,20 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// Returns an `f64` representing the standard deviation of the data. If there are fewer valid elements
     /// than `min_periods`, returns `f64::NAN`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(2), None, Some(3)];
+    /// let std = vec.vstd(1);
+    /// assert!((std - 1.0).abs() < EPS);
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// let std = empty_vec.vstd(1);
+    /// assert!(std.is_nan());
+    /// ```
     #[inline]
     fn vstd(self, min_periods: usize) -> f64
     where
@@ -290,6 +431,20 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// Returns an `f64` representing the skewness of the data. If there are fewer valid elements
     /// than `min_periods`, or if the number of elements is less than 3, returns `f64::NAN`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(2), Some(3), Some(4), Some(5)];
+    /// let skew = vec.vskew(1);
+    /// assert!((skew - 0.0).abs() < EPS);
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// let skew = empty_vec.vskew(1);
+    /// assert!(skew.is_nan());
+    /// ```
     fn vskew(self, min_periods: usize) -> f64
     where
         T::Inner: Number,
@@ -332,6 +487,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// This method iterates through the vector and returns the maximum value.
     /// If the vector is empty or contains only `None` values, it returns `None`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(5), Some(3), Some(2), Some(4)];
+    /// assert_eq!(vec.vmax(), Some(5));
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vmax(), None);
+    ///
+    /// let none_vec: Vec<Option<i32>> = vec![None, None, None];
+    /// assert_eq!(none_vec.vmax(), None);
+    /// ```
     #[inline]
     fn vmax(self) -> Option<T::Inner>
     where
@@ -347,6 +517,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// This method iterates through the vector and returns the minimum value.
     /// If the vector is empty or contains only `None` values, it returns `None`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(5), Some(3), Some(2), Some(4)];
+    /// assert_eq!(vec.vmin(), Some(1));
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vmin(), None);
+    ///
+    /// let none_vec: Vec<Option<i32>> = vec![None, None, None];
+    /// assert_eq!(none_vec.vmin(), None);
+    /// ```
     #[inline]
     fn vmin(self) -> Option<T::Inner>
     where
@@ -362,6 +547,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// This method iterates through the vector and returns the index of the maximum value.
     /// If the vector is empty or contains only `None` values, it returns `None`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(1), Some(5), Some(3), Some(2), Some(4)];
+    /// assert_eq!(vec.vargmax(), Some(1)); // Index of 5
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vargmax(), None);
+    ///
+    /// let none_vec: Vec<Option<i32>> = vec![None, None, None];
+    /// assert_eq!(none_vec.vargmax(), None);
+    /// ```
     #[inline]
     fn vargmax(self) -> Option<usize>
     where
@@ -394,6 +594,21 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     ///
     /// This method iterates through the vector and returns the index of the minimum value.
     /// If the vector is empty or contains only `None` values, it returns `None`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let vec = vec![Some(3), Some(1), Some(4), Some(2), Some(5)];
+    /// assert_eq!(vec.vargmin(), Some(1)); // Index of 1
+    ///
+    /// let empty_vec: Vec<Option<i32>> = vec![];
+    /// assert_eq!(empty_vec.vargmin(), None);
+    ///
+    /// let none_vec: Vec<Option<i32>> = vec![None, None, None];
+    /// assert_eq!(none_vec.vargmin(), None);
+    /// ```
     #[inline]
     fn vargmin(self) -> Option<usize>
     where
@@ -582,6 +797,18 @@ pub trait AggBasic: IntoIterator + Sized {
     /// # Type Parameters
     ///
     /// * `Self::Item` - The type of items in the iterator, which must implement `BoolType`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let values = vec![false, false, true, false];
+    /// assert_eq!(values.any(), true);
+    ///
+    /// let empty: Vec<bool> = vec![];
+    /// assert_eq!(empty.any(), false);
+    /// ```
     #[inline]
     fn any(self) -> bool
     where
@@ -602,6 +829,21 @@ pub trait AggBasic: IntoIterator + Sized {
     /// # Type Parameters
     ///
     /// * `Self::Item` - The type of items in the iterator, which must implement `BoolType`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let values = vec![true, true, true];
+    /// assert_eq!(values.all(), true);
+    ///
+    /// let mixed = vec![true, false, true];
+    /// assert_eq!(mixed.all(), false);
+    ///
+    /// let empty: Vec<bool> = vec![];
+    /// assert_eq!(empty.all(), true);
+    /// ```
     #[inline]
     fn all(self) -> bool
     where
@@ -668,6 +910,18 @@ pub trait AggBasic: IntoIterator + Sized {
     ///
     /// - `Some(f64)`: The mean value if the iterator is not empty.
     /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let numbers = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+    /// assert_eq!(numbers.titer().mean(), Some(3.0));
+    ///
+    /// let empty: Vec<f64> = vec![];
+    /// assert_eq!(empty.titer().mean(), None);
+    /// ```
     #[inline]
     fn mean(self) -> Option<f64>
     where
@@ -689,6 +943,19 @@ pub trait AggBasic: IntoIterator + Sized {
     ///
     /// - `Some(Self::Item)`: The maximum value if the iterator is not empty.
     /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use std::iter::empty;
+    ///
+    /// let numbers = vec![1, 5, 3, 2, 4];
+    /// assert_eq!(AggBasic::max(numbers.titer()), Some(5));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(AggBasic::max(empty.titer()), None);
+    /// ```
     #[inline]
     fn max(self) -> Option<Self::Item>
     where
@@ -712,6 +979,18 @@ pub trait AggBasic: IntoIterator + Sized {
     ///
     /// - `Some(Self::Item)`: The minimum value if the iterator is not empty.
     /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    /// use std::iter::empty;
+    /// let numbers = vec![5, 1, 3, 2, 4];
+    /// assert_eq!(AggBasic::min(numbers.titer()), Some(1));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(AggBasic::min(empty.titer()), None);
+    /// ```
     #[inline]
     fn min(self) -> Option<Self::Item>
     where
@@ -735,6 +1014,18 @@ pub trait AggBasic: IntoIterator + Sized {
     ///
     /// - `Some(usize)`: The index of the maximum value if the iterator is not empty.
     /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let numbers = vec![1, 5, 3, 2, 4];
+    /// assert_eq!(numbers.titer().argmax(), Some(1));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(empty.titer().argmax(), None);
+    /// ```
     #[inline]
     fn argmax(self) -> Option<usize>
     where
@@ -771,6 +1062,18 @@ pub trait AggBasic: IntoIterator + Sized {
     ///
     /// - `Some(usize)`: The index of the minimum value if the iterator is not empty.
     /// - `None`: If the iterator is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tea_core::prelude::*;
+    ///
+    /// let numbers = vec![5, 1, 3, 2, 4];
+    /// assert_eq!(numbers.titer().argmin(), Some(1));
+    ///
+    /// let empty: Vec<i32> = vec![];
+    /// assert_eq!(empty.titer().argmin(), None);
+    /// ```
     #[inline]
     fn argmin(self) -> Option<usize>
     where
