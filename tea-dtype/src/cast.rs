@@ -153,6 +153,12 @@ macro_rules! impl_numeric_cast {
         }
 
         #[cfg(feature="time")]
+        impl Cast<Time> for $T {
+            #[inline] fn cast(self) -> Time { Cast::<i64>::cast(self).into() }
+        }
+
+
+        #[cfg(feature="time")]
         impl<U: TimeUnitTrait> Cast<DateTime<U>> for Option<$T> {
             #[inline] fn cast(self) -> DateTime<U> { self.map(|v| v.cast()).unwrap_or(DateTime::nat()) }
         }
@@ -160,6 +166,11 @@ macro_rules! impl_numeric_cast {
         #[cfg(feature="time")]
         impl Cast<TimeDelta> for Option<$T> {
             #[inline] fn cast(self) -> TimeDelta { self.map(|v| v.cast()).unwrap_or(TimeDelta::nat()) }
+        }
+
+        #[cfg(feature="time")]
+        impl Cast<Time> for Option<$T> {
+            #[inline] fn cast(self) -> Time { self.map(|v| v.cast()).unwrap_or(Time::nat()) }
         }
     };
 
@@ -213,6 +224,14 @@ impl Cast<TimeDelta> for bool {
     }
 }
 
+#[cfg(feature = "time")]
+impl Cast<Time> for bool {
+    #[inline]
+    fn cast(self) -> Time {
+        panic!("Should not cast bool to time")
+    }
+}
+
 impl Cast<String> for Option<bool> {
     #[inline]
     fn cast(self) -> String {
@@ -233,6 +252,14 @@ impl Cast<TimeDelta> for Option<bool> {
     #[inline]
     fn cast(self) -> TimeDelta {
         panic!("Should not cast option bool to timedelta")
+    }
+}
+
+#[cfg(feature = "time")]
+impl Cast<Time> for Option<bool> {
+    #[inline]
+    fn cast(self) -> Time {
+        panic!("Should not cast option bool to time")
     }
 }
 
@@ -260,6 +287,20 @@ macro_rules! impl_time_cast {
             }
 
             impl Cast<Option<$T>> for TimeDelta {
+                #[inline] fn cast(self) -> Option<$T> {
+                    if self.is_none() {
+                        None
+                    } else {
+                        Some(self.cast())
+                    }
+                 }
+            }
+
+            impl Cast<$T> for Time {
+                #[inline] fn cast(self) -> $T { Cast::<i64>::cast(self).cast() }
+            }
+
+            impl Cast<Option<$T>> for Time {
                 #[inline] fn cast(self) -> Option<$T> {
                     if self.is_none() {
                         None
@@ -310,6 +351,26 @@ impl Cast<Option<i64>> for TimeDelta {
             panic!("not support cast TimeDelta to i64 when months is not zero")
         } else {
             self.inner.num_microseconds().map(Some).unwrap_or(None)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl Cast<i64> for Time {
+    #[inline]
+    fn cast(self) -> i64 {
+        self.0
+    }
+}
+
+#[cfg(feature = "time")]
+impl Cast<Option<i64>> for Time {
+    #[inline]
+    fn cast(self) -> Option<i64> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self.0)
         }
     }
 }

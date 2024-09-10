@@ -167,7 +167,7 @@ impl TimeDelta {
     }
 
     #[inline(always)]
-    pub fn nat() -> Self {
+    pub const fn nat() -> Self {
         Self {
             months: i32::MIN,
             inner: Duration::seconds(0),
@@ -176,12 +176,118 @@ impl TimeDelta {
 
     #[allow(dead_code)]
     #[inline(always)]
-    pub fn is_nat(&self) -> bool {
+    pub const fn is_nat(&self) -> bool {
         self.months == i32::MIN
     }
 
     #[inline(always)]
-    pub fn is_not_nat(&self) -> bool {
+    pub const fn is_not_nat(&self) -> bool {
         self.months != i32::MIN
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_timedelta() {
+        let cases = vec![
+            (
+                "1d",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::days(1),
+                },
+            ),
+            (
+                "2w",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::weeks(2),
+                },
+            ),
+            (
+                "3mo",
+                TimeDelta {
+                    months: 3,
+                    inner: Duration::seconds(0),
+                },
+            ),
+            (
+                "1y2mo",
+                TimeDelta {
+                    months: 14,
+                    inner: Duration::seconds(0),
+                },
+            ),
+            (
+                "1d12h30m",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::days(1) + Duration::hours(12) + Duration::minutes(30),
+                },
+            ),
+            (
+                "1h30m45s",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::hours(1) + Duration::minutes(30) + Duration::seconds(45),
+                },
+            ),
+            (
+                "500ms",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::milliseconds(500),
+                },
+            ),
+            (
+                "1us",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::microseconds(1),
+                },
+            ),
+            (
+                "100ns",
+                TimeDelta {
+                    months: 0,
+                    inner: Duration::nanoseconds(100),
+                },
+            ),
+        ];
+
+        for (input, expected) in cases {
+            let result = TimeDelta::parse(input).unwrap();
+            assert_eq!(result, expected, "Failed for input: {}", input);
+        }
+    }
+
+    #[test]
+    fn test_parse_timedelta_errors() {
+        let error_cases = vec![
+            "1x",   // Invalid unit
+            "1.5d", // Fractional values not supported
+        ];
+
+        for input in error_cases {
+            assert!(
+                TimeDelta::parse(input).is_err(),
+                "Expected error for input: {}",
+                input
+            );
+        }
+    }
+
+    #[test]
+    fn test_nat_timedelta() {
+        let nat = TimeDelta::nat();
+        assert!(nat.is_nat());
+        assert!(!nat.is_not_nat());
+
+        let non_nat = TimeDelta::parse("1d").unwrap();
+        assert!(!non_nat.is_nat());
+        assert!(non_nat.is_not_nat());
     }
 }

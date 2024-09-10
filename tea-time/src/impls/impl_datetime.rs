@@ -6,6 +6,16 @@ use tea_error::*;
 
 use crate::*;
 
+// const fn try_into_chrono_datetime<U: TimeUnitTrait>(dt: DateTime<U>) -> CrDateTime<Utc> {
+//     match U::unit() {
+//         TimeUnit::Second => CrDateTime::from_timestamp(dt.0, 0).unwrap(),
+//         TimeUnit::Millisecond => CrDateTime::from_timestamp_millis(dt.0).unwrap(),
+//         TimeUnit::Microsecond => CrDateTime::from_timestamp_micros(dt.0).unwrap(),
+//         TimeUnit::Nanosecond => CrDateTime::from_timestamp_nanos(dt.0),
+//         _ => todo!(),
+//     }
+// }
+
 impl<U: TimeUnitTrait> From<i64> for DateTime<U> {
     #[inline]
     fn from(dt: i64) -> Self {

@@ -68,7 +68,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// A new `DateTime<U>` instance.
     #[inline]
-    pub fn new(dt: i64) -> Self {
+    pub const fn new(dt: i64) -> Self {
         Self(dt, PhantomData)
     }
 
@@ -78,7 +78,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// `true` if the instance is NaT, `false` otherwise.
     #[inline]
-    pub fn is_nat(&self) -> bool {
+    pub const fn is_nat(&self) -> bool {
         self.0 == i64::MIN
     }
 
@@ -88,7 +88,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// `true` if the instance is not NaT, `false` otherwise.
     #[inline]
-    pub fn is_not_nat(&self) -> bool {
+    pub const fn is_not_nat(&self) -> bool {
         self.0 != i64::MIN
     }
 
@@ -98,7 +98,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// A new `DateTime<U>` instance representing NaT.
     #[inline]
-    pub fn nat() -> Self {
+    pub const fn nat() -> Self {
         Self(i64::MIN, PhantomData)
     }
 
@@ -108,7 +108,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// The `i64` timestamp value.
     #[inline]
-    pub fn into_i64(self) -> i64 {
+    pub const fn into_i64(self) -> i64 {
         self.0
     }
 
@@ -122,7 +122,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// A new `DateTime<U>` instance. If `v` is `None`, returns NaT.
     #[inline]
-    pub fn from_opt_i64(v: Option<i64>) -> Self {
+    pub const fn from_opt_i64(v: Option<i64>) -> Self {
         if let Some(v) = v {
             Self::new(v)
         } else {
@@ -136,7 +136,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// `Some(i64)` if the instance is not NaT, `None` otherwise.
     #[inline]
-    pub fn into_opt_i64(self) -> Option<i64> {
+    pub const fn into_opt_i64(self) -> Option<i64> {
         if self.is_nat() {
             None
         } else {
@@ -150,7 +150,16 @@ impl<U: TimeUnitTrait> DateTime<U> {
     ///
     /// `Some(CrDateTime<Utc>)` if the conversion is successful, `None` if the instance is NaT.
     #[inline]
+    #[deprecated(since = "0.5.0", note = "use `as_cr` instead")]
     pub fn to_cr(&self) -> Option<CrDateTime<Utc>>
+    where
+        Self: TryInto<CrDateTime<Utc>>,
+    {
+        self.as_cr()
+    }
+
+    #[inline]
+    pub fn as_cr(&self) -> Option<CrDateTime<Utc>>
     where
         Self: TryInto<CrDateTime<Utc>>,
     {
@@ -215,7 +224,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
             "NaT".to_string()
         } else {
             let fmt = fmt.unwrap_or("%Y-%m-%d %H:%M:%S.%f");
-            self.to_cr().unwrap().format(fmt).to_string()
+            self.as_cr().unwrap().format(fmt).to_string()
         }
     }
 
@@ -236,7 +245,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
         if self.is_nat() {
             return self;
         }
-        let mut dt = self.to_cr().unwrap();
+        let mut dt = self.as_cr().unwrap();
         let dm = duration.months;
         if dm != 0 {
             let (flag, dt_year) = dt.year_ce();
@@ -277,7 +286,17 @@ where
     /// `Option<NaiveTime>`: The time component if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn time(&self) -> Option<NaiveTime> {
-        self.to_cr().map(|dt| dt.time())
+        self.as_cr().map(|dt| dt.time())
+    }
+
+    /// Returns the year.
+    ///
+    /// # Returns
+    ///
+    /// `Option<i32>`: The year if the DateTime is valid, or None if it's NaT.
+    #[inline(always)]
+    pub fn year(&self) -> Option<i32> {
+        self.as_cr().map(|dt| dt.year())
     }
 
     /// Returns the day of the month (1-31).
@@ -287,7 +306,7 @@ where
     /// `Option<usize>`: The day of the month if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn day(&self) -> Option<usize> {
-        self.to_cr().map(|dt| dt.day() as usize)
+        self.as_cr().map(|dt| dt.day() as usize)
     }
 
     /// Returns the month (1-12).
@@ -297,7 +316,7 @@ where
     /// `Option<usize>`: The month if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn month(&self) -> Option<usize> {
-        self.to_cr().map(|dt| dt.month() as usize)
+        self.as_cr().map(|dt| dt.month() as usize)
     }
 
     /// Returns the hour (0-23).
@@ -307,7 +326,7 @@ where
     /// `Option<usize>`: The hour if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn hour(&self) -> Option<usize> {
-        self.to_cr().map(|dt| dt.hour() as usize)
+        self.as_cr().map(|dt| dt.hour() as usize)
     }
 
     /// Returns the minute (0-59).
@@ -317,7 +336,7 @@ where
     /// `Option<usize>`: The minute if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn minute(&self) -> Option<usize> {
-        self.to_cr().map(|dt| dt.minute() as usize)
+        self.as_cr().map(|dt| dt.minute() as usize)
     }
 
     /// Returns the second (0-59).
@@ -327,7 +346,7 @@ where
     /// `Option<usize>`: The second if the DateTime is valid, or None if it's NaT.
     #[inline(always)]
     pub fn second(&self) -> Option<usize> {
-        self.to_cr().map(|dt| dt.second() as usize)
+        self.as_cr().map(|dt| dt.second() as usize)
     }
 }
 
@@ -344,5 +363,34 @@ mod tests {
         dt = "20220101".parse()?;
         dt = "2021/02/03".parse()?;
         Ok(())
+    }
+
+    #[test]
+    fn test_datetime_components() -> TResult<()> {
+        let dt: DateTime = "2023-05-15 14:30:45".parse()?;
+        assert_eq!(dt.year(), Some(2023));
+        assert_eq!(dt.month(), Some(5));
+        assert_eq!(dt.day(), Some(15));
+        assert_eq!(dt.hour(), Some(14));
+        assert_eq!(dt.minute(), Some(30));
+        assert_eq!(dt.second(), Some(45));
+        Ok(())
+    }
+
+    #[test]
+    fn test_nat_datetime() {
+        let nat_dt: DateTime = DateTime::nat();
+        assert!(nat_dt.is_nat());
+        assert_eq!(nat_dt.year(), None);
+        assert_eq!(nat_dt.month(), None);
+        assert_eq!(nat_dt.day(), None);
+        assert_eq!(nat_dt.hour(), None);
+        assert_eq!(nat_dt.minute(), None);
+        assert_eq!(nat_dt.second(), None);
+    }
+
+    #[test]
+    fn test_invalid_datetime_parse() {
+        assert!("invalid date".parse::<DateTime>().is_err());
     }
 }

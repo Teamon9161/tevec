@@ -13,7 +13,7 @@ default = ["time"]
 
 time = ["tea-time"]
 serde = ["tea-time?/serde"]
-dyn = []
+# dyn = []
 
 [dependencies]
 tea-time = { workspace = true, optional = true }

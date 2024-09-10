@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use chrono::{DateTime as CrDateTime, Months, Utc};
 
-use crate::{DateTime, TimeDelta, TimeUnitTrait};
+use crate::{DateTime, Time, TimeDelta, TimeUnitTrait};
 
 // TODO: improve performance for time operation
 
@@ -13,7 +13,7 @@ where
     type Output = DateTime<U>;
     fn add(self, rhs: TimeDelta) -> Self::Output {
         if self.is_not_nat() && rhs.is_not_nat() {
-            let dt = self.to_cr().unwrap();
+            let dt = self.as_cr().unwrap();
             let out = if rhs.months != 0 {
                 if rhs.months > 0 {
                     dt + Months::new(rhs.months as u32)
@@ -37,7 +37,7 @@ where
     type Output = DateTime<U>;
     fn sub(self, rhs: TimeDelta) -> Self::Output {
         if self.is_not_nat() && rhs.is_not_nat() {
-            let dt = self.to_cr().unwrap();
+            let dt = self.as_cr().unwrap();
             let out = if rhs.months != 0 {
                 if rhs.months > 0 {
                     dt - Months::new(rhs.months as u32)
@@ -63,8 +63,8 @@ where
         // TODO: improve performance
         // this can be done by implement unit conversion
         if self.is_not_nat() && rhs.is_not_nat() {
-            let dt1 = self.to_cr().unwrap();
-            let dt2 = rhs.to_cr().unwrap();
+            let dt1 = self.as_cr().unwrap();
+            let dt2 = rhs.as_cr().unwrap();
             let duration = dt1 - dt2;
             TimeDelta {
                 months: 0,
@@ -166,5 +166,91 @@ impl Div<TimeDelta> for TimeDelta {
         } else {
             panic!("not support div TimeDelta when one of them is nat")
         }
+    }
+}
+
+impl Add<TimeDelta> for Time {
+    type Output = Time;
+    fn add(self, rhs: TimeDelta) -> Self::Output {
+        if rhs.is_not_nat() {
+            if rhs.months != 0 {
+                panic!("not support add TimeDelta with months");
+            }
+            if let Some(nanos) = rhs.inner.num_nanoseconds() {
+                let nanos = self.0 + nanos;
+                return Time(nanos);
+            }
+        }
+        Time::nat()
+    }
+}
+
+impl Sub<TimeDelta> for Time {
+    type Output = Time;
+    fn sub(self, rhs: TimeDelta) -> Self::Output {
+        if rhs.is_not_nat() {
+            if rhs.months != 0 {
+                panic!("not support sub TimeDelta with months");
+            }
+            if let Some(nanos) = rhs.inner.num_nanoseconds() {
+                let nanos = self.0 - nanos;
+                return Time(nanos);
+            }
+        }
+        Time::nat()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::TimeDelta;
+
+    #[test]
+    fn test_time_add_timedelta() {
+        let time = Time::from_hms(12, 0, 0);
+        let delta = TimeDelta::parse("1h30m").unwrap();
+        let result = time + delta;
+        assert_eq!(result, Time::from_hms(13, 30, 0));
+    }
+
+    #[test]
+    fn test_time_sub_timedelta() {
+        let time = Time::from_hms(12, 0, 0);
+        let delta = TimeDelta::parse("1h30m").unwrap();
+        let result = time - delta;
+        assert_eq!(result, Time::from_hms(10, 30, 0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_time_add_timedelta_with_months() {
+        let time = Time::from_hms(12, 0, 0);
+        let delta = TimeDelta::parse("1mo1h30m").unwrap();
+        let _ = time + delta;
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_time_sub_timedelta_with_months() {
+        let time = Time::from_hms(12, 0, 0);
+        let delta = TimeDelta::parse("1mo1h30m").unwrap();
+        let _ = time - delta;
+    }
+
+    #[test]
+    fn test_time_add_nat_timedelta() {
+        let time = Time::from_hms(12, 0, 0);
+        let nat_delta = TimeDelta::nat();
+        let result = time + nat_delta;
+        assert_eq!(result, Time::nat());
+    }
+
+    #[test]
+    fn test_time_sub_nat_timedelta() {
+        let time = Time::from_hms(12, 0, 0);
+        let nat_delta = TimeDelta::nat();
+        let result = time - nat_delta;
+        assert_eq!(result, Time::nat());
     }
 }

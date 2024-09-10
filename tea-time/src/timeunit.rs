@@ -9,6 +9,7 @@ macro_rules! define_timeunit {
             pub struct $name;
 
             impl TimeUnitTrait for $name {
+                #[inline]
                 fn unit() -> TimeUnit {
                     TimeUnit::$name
                 }

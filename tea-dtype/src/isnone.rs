@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 #[cfg(feature = "time")]
-use tea_time::{DateTime, TimeDelta, TimeUnitTrait};
+use tea_time::{DateTime, Time, TimeDelta, TimeUnitTrait};
 
 use super::cast::Cast;
 use super::number::Number;
@@ -742,6 +742,65 @@ impl<Unit: TimeUnitTrait> IsNone for DateTime<Unit> {
 #[cfg(feature = "time")]
 impl IsNone for TimeDelta {
     type Inner = TimeDelta;
+    type Cast<U: IsNone<Inner = U> + Clone> = U;
+    #[inline]
+    fn is_none(&self) -> bool {
+        self.is_nat()
+    }
+
+    #[inline]
+    fn none() -> Self {
+        Self::nat()
+    }
+
+    #[inline]
+    fn to_opt(self) -> Option<Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline]
+    fn as_opt(&self) -> Option<&Self::Inner> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    #[inline(always)]
+    fn from_inner(inner: Self::Inner) -> Self {
+        inner
+    }
+
+    #[inline]
+    fn inner_cast<U: IsNone<Inner = U> + Clone>(inner: U) -> Self::Cast<U>
+    where
+        Self::Inner: Cast<U::Inner>,
+    {
+        Cast::<U>::cast(inner)
+    }
+
+    #[inline(always)]
+    fn unwrap(self) -> Self::Inner {
+        self
+    }
+
+    #[inline]
+    fn map<F, U: IsNone>(self, f: F) -> U
+    where
+        F: Fn(Self::Inner) -> U::Inner,
+    {
+        U::from_inner(f(self))
+    }
+}
+
+#[cfg(feature = "time")]
+impl IsNone for Time {
+    type Inner = Time;
     type Cast<U: IsNone<Inner = U> + Clone> = U;
     #[inline]
     fn is_none(&self) -> bool {
