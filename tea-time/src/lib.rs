@@ -4,7 +4,6 @@ mod timedelta;
 pub mod timeunit;
 
 pub mod convert;
-pub mod export;
 mod impls;
 
 pub use chrono::Timelike;

@@ -1,7 +1,6 @@
 mod bool_type;
 mod cast;
 mod datatype;
-pub mod export;
 mod isnone;
 mod number;
 
@@ -13,7 +12,6 @@ pub use isnone::{IntoCast, IsNone};
 pub use num_traits::{MulAdd, One, Zero};
 pub use number::Number;
 #[cfg(feature = "time")]
-pub use tea_time::{
-    export::chrono::{DateTime as CrDateTime, Utc},
-    unit, DateTime, Time, TimeDelta, TimeUnit, TimeUnitTrait, Timelike,
-};
+pub use tea_deps::chrono::{DateTime as CrDateTime, Utc};
+#[cfg(feature = "time")]
+pub use tea_time::{unit, DateTime, Time, TimeDelta, TimeUnit, TimeUnitTrait, Timelike};

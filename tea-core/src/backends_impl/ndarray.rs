@@ -1,6 +1,6 @@
 use std::mem::MaybeUninit;
 
-use ndarray::{Array1, ArrayBase, ArrayView1, ArrayViewMut1, Data, DataMut, Ix1};
+use tea_deps::ndarray::{Array1, ArrayBase, ArrayView1, ArrayViewMut1, Data, DataMut, Ix1};
 
 use crate::prelude::*;
 
@@ -30,7 +30,7 @@ impl<S: Data<Elem = T>, T: Clone> Vec1View<T> for ArrayBase<S, Ix1> {
         Self: 'a,
         T: 'a,
     {
-        use ndarray::s;
+        use tea_deps::ndarray::s;
         let view = self.slice(s![start..end]);
         Ok(view)
     }
@@ -251,7 +251,7 @@ impl<'a, T> UninitRefMut<T> for ArrayViewMut1<'a, MaybeUninit<T>> {
 
 #[cfg(test)]
 mod tests {
-    use ndarray::Array1;
+    use tea_deps::ndarray::Array1;
 
     use crate::prelude::*;
 

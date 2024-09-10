@@ -1,0 +1,25 @@
+[package]
+name = "tea-deps"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[features]
+default = []
+ndarray = ["dep:ndarray"]
+polars = ["dep:polars"]
+polars-lazy = ["polars", "polars/lazy"]
+time = [
+    "polars?/dtype-datetime",
+    "polars?/dtype-duration",
+    "polars?/temporal",
+    "dep:chrono",
+]
+
+
+[dependencies]
+ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
+polars = { version = ">=0.37, <0.43", optional = true, default-features = false }
+chrono = { version = "0.4", optional = true }

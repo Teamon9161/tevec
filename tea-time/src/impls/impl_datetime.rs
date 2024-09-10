@@ -23,6 +23,17 @@ impl<U: TimeUnitTrait> From<i64> for DateTime<U> {
     }
 }
 
+impl<U: TimeUnitTrait> From<Option<i64>> for DateTime<U> {
+    #[inline]
+    fn from(dt: Option<i64>) -> Self {
+        if let Some(dt) = dt {
+            DateTime::new(dt)
+        } else {
+            DateTime::nat()
+        }
+    }
+}
+
 impl<U: TimeUnitTrait> Default for DateTime<U> {
     #[inline]
     fn default() -> Self {

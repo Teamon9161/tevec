@@ -12,20 +12,18 @@ default = []
 # default = ["ndarray", "time", "polars"]
 
 vecdeque = []
-ndarray = ["dep:ndarray"]
-polars = ["dep:polars"]
-time = ["tea-dtype/time", "polars?/dtype-datetime", "polars?/dtype-duration"]
+ndarray = ["tea-deps/ndarray"]
+polars = ["tea-deps/polars", "tea-dtype/polars"]
+polars-lazy = ["tea-deps/polars-lazy", "tea-dtype/polars-lazy"]
+time = ["tea-dtype/time", "tea-deps/time"]
 serde = ["tea-dtype/serde"]
 
 [dependencies]
 num-traits = { workspace = true }
 tea-error = { workspace = true }
 tea-dtype = { workspace = true, default-features = false }
+tea-deps = { workspace = true, default-features = false }
 serde = "1.0"
-ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
-polars = { version = ">=0.37, <0.43", optional = true, default-features = false, features = [
-    "dtype-struct",
-] }
 
 [dev-dependencies]
 criterion = "0.5"

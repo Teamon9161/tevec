@@ -9,7 +9,7 @@ members = [
     "tea-rolling",
     "tea-macros",
     "tea-error",
-    # "tea-ffi",
+    "tea-deps",
 ]
 exclude = ["tea-ffi"]
 
@@ -28,6 +28,7 @@ num-traits = "0.2"
 anyhow = "1"
 thiserror = "1"
 
+tea-deps = { version = "0.4.2", path = "./tea-deps", default-features = false }
 tea-core = { version = "0.4.2", path = "./tea-core", default-features = false }
 tea-dtype = { version = "0.4.2", path = "./tea-dtype", default-features = false }
 tea-error = { version = "0.4.2", path = "./tea-error" }

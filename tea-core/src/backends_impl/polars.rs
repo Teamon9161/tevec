@@ -1,5 +1,5 @@
-use polars::export::arrow::legacy::utils::CustomIterTools;
-use polars::prelude::*;
+use tea_deps::polars::export::arrow::legacy::utils::CustomIterTools;
+use tea_deps::polars::prelude::*;
 #[cfg(feature = "time")]
 use tea_dtype::{unit, DateTime};
 
@@ -217,7 +217,7 @@ impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
     where
         DateTime<unit::Nanosecond>: 'b,
     {
-        use polars::prelude::{DataType, TimeUnit};
+        use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Nanoseconds, _) => {
                 // TODO(Teamon): support timezone in future
@@ -235,7 +235,7 @@ impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
     where
         DateTime<unit::Millisecond>: 'b,
     {
-        use polars::prelude::{DataType, TimeUnit};
+        use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
                 // TODO(Teamon): support timezone in future
@@ -253,7 +253,7 @@ impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
     where
         DateTime<unit::Microsecond>: 'b,
     {
-        use polars::prelude::{DataType, TimeUnit};
+        use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
                 // TODO(Teamon): support timezone in future

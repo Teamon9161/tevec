@@ -1,5 +1,3 @@
-#[cfg(feature = "polars")]
-use polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
 use tea_dtype::{Cast, Number};
 
 use super::vec_core::TrustedLen;
@@ -108,5 +106,5 @@ where
 }
 
 #[cfg(feature = "polars")]
-unsafe impl<T: Number> PlTrustedLen for Linspace<T> where usize: Cast<T> {}
+unsafe impl<T: Number> crate::vec_core::trusted::PlTrustedLen for Linspace<T> where usize: Cast<T> {}
 unsafe impl<T: Number> TrustedLen for Linspace<T> where usize: Cast<T> {}

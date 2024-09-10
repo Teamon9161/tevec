@@ -11,10 +11,12 @@ description = "A library to provide datatype and useful traits for datatype"
 [features]
 default = ["time"]
 
-time = ["tea-time"]
+time = ["tea-time", "tea-deps/time"]
 serde = ["tea-time?/serde"]
-# dyn = []
+polars = ["tea-time?/polars", "tea-deps/polars"]
+polars-lazy = ["polars", "tea-time?/polars-lazy", "tea-deps/polars-lazy"]
 
 [dependencies]
+tea-deps = { workspace = true, default-features = false }
 tea-time = { workspace = true, optional = true }
 num-traits = { workspace = true }

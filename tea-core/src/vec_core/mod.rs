@@ -2,8 +2,8 @@ mod cores;
 mod getlen;
 mod iter;
 mod iter_traits;
-mod trusted;
-mod uninit;
+pub(crate) mod trusted;
+pub mod uninit;
 
 pub use cores::*;
 pub use getlen::GetLen;

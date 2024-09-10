@@ -20,6 +20,7 @@ fdiff = ["stat", "rolling"]
 
 # backends
 polars = ["tea-core/polars"]
+polars-lazy = ["polars", "tea-core/polars-lazy"]
 ndarray = ["tea-core/ndarray"]
 vecdeque = ["tea-core/vecdeque"]
 

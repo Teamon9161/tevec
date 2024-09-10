@@ -21,13 +21,35 @@ impl From<Duration> for TimeDelta {
     }
 }
 
+impl From<Option<Duration>> for TimeDelta {
+    #[inline]
+    fn from(duration: Option<Duration>) -> Self {
+        if let Some(duration) = duration {
+            Self::from(duration)
+        } else {
+            Self::nat()
+        }
+    }
+}
+
 impl From<i64> for TimeDelta {
     #[inline]
     fn from(dt: i64) -> Self {
         if dt == i64::MIN {
             return TimeDelta::nat();
         }
-        Duration::microseconds(dt).into()
+        Duration::nanoseconds(dt).into()
+    }
+}
+
+impl From<Option<i64>> for TimeDelta {
+    #[inline]
+    fn from(dt: Option<i64>) -> Self {
+        if let Some(dt) = dt {
+            Self::from(dt)
+        } else {
+            Self::nat()
+        }
     }
 }
 

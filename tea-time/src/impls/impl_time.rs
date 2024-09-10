@@ -27,6 +27,17 @@ impl From<i64> for Time {
     }
 }
 
+impl From<Option<i64>> for Time {
+    #[inline]
+    fn from(value: Option<i64>) -> Self {
+        if let Some(value) = value {
+            Self::from(value)
+        } else {
+            Self::nat()
+        }
+    }
+}
+
 impl Timelike for Time {
     #[inline]
     fn hour(&self) -> u32 {

@@ -2,9 +2,9 @@ use std::iter::Scan;
 use std::slice::Iter;
 
 #[cfg(feature = "polars")]
-use polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
+pub(crate) use tea_deps::polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
 #[cfg(feature = "polars")]
-use polars::prelude::PolarsIterator;
+use tea_deps::polars::prelude::PolarsIterator;
 use tea_error::TResult;
 
 /// An iterator of known, fixed size.
@@ -106,9 +106,15 @@ where
 }
 
 #[cfg(feature = "ndarray")]
-unsafe impl<'a, A, D: ndarray::Dimension> TrustedLen for ndarray::iter::Iter<'a, A, D> {}
+unsafe impl<'a, A, D: tea_deps::ndarray::Dimension> TrustedLen
+    for tea_deps::ndarray::iter::Iter<'a, A, D>
+{
+}
 #[cfg(feature = "ndarray")]
-unsafe impl<'a, A, D: ndarray::Dimension> TrustedLen for ndarray::iter::IterMut<'a, A, D> {}
+unsafe impl<'a, A, D: tea_deps::ndarray::Dimension> TrustedLen
+    for tea_deps::ndarray::iter::IterMut<'a, A, D>
+{
+}
 
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoIter<K, V> {}
 // unsafe impl<K, V> TrustedLen for std::collections::hash_map::IntoValues<K, V> {}
