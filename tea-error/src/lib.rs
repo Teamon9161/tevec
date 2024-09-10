@@ -119,12 +119,12 @@ macro_rules! tensure {
     };
 }
 
-// #[cfg(feature = "polars")]
-// impl From<TError> for PolarsError {
-//     fn from(e: TError) -> Self {
-//         PolarsError::ComputeError(format!("{}", e).into())
-//     }
-// }
+#[cfg(feature = "polars")]
+impl From<TError> for tea_deps::polars::prelude::PolarsError {
+    fn from(e: TError) -> Self {
+        tea_deps::polars::prelude::PolarsError::ComputeError(format!("{}", e).into())
+    }
+}
 
 // Not public, referenced by macros only.
 #[doc(hidden)]
