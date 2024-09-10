@@ -9,7 +9,7 @@ description = "A crate to provide quantitative analysis functions for vec | ndar
 
 [features]
 default = ["time", "agg", "map", "rolling"]
-# default = ["time", "rolling", "agg", "map", "stat", "ndarray", "polars"]
+# default = ["time", "rolling", "agg", "map", "stat", "ndarray", "polars-lazy"]
 
 # ops
 rolling = ["tea-rolling"]

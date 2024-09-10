@@ -3,6 +3,8 @@ mod cast;
 mod datatype;
 mod isnone;
 mod number;
+#[cfg(feature = "polars")]
+mod polars_cast;
 
 pub use bool_type::BoolType;
 pub use cast::Cast;

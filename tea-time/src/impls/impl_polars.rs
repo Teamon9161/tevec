@@ -115,3 +115,88 @@ impl<'a> From<AnyValue<'a>> for TimeDelta {
         }
     }
 }
+
+impl From<DateTime<Nanosecond>> for AnyValue<'_> {
+    #[inline]
+    fn from(value: DateTime<Nanosecond>) -> Self {
+        if value.is_nat() {
+            AnyValue::Null
+        } else {
+            AnyValue::Datetime(value.0, TimeUnit::Nanoseconds, &None)
+        }
+    }
+}
+
+impl From<DateTime<Microsecond>> for AnyValue<'_> {
+    #[inline]
+    fn from(value: DateTime<Microsecond>) -> Self {
+        if value.is_nat() {
+            AnyValue::Null
+        } else {
+            AnyValue::Datetime(value.0, TimeUnit::Microseconds, &None)
+        }
+    }
+}
+
+impl From<DateTime<Millisecond>> for AnyValue<'_> {
+    #[inline]
+    fn from(value: DateTime<Millisecond>) -> Self {
+        if value.is_nat() {
+            AnyValue::Null
+        } else {
+            AnyValue::Datetime(value.0, TimeUnit::Milliseconds, &None)
+        }
+    }
+}
+
+impl From<Time> for AnyValue<'_> {
+    #[inline]
+    fn from(value: Time) -> Self {
+        if value.is_nat() {
+            AnyValue::Null
+        } else {
+            AnyValue::Time(value.0)
+        }
+    }
+}
+
+impl From<TimeDelta> for AnyValue<'_> {
+    #[inline]
+    #[allow(clippy::collapsible_else_if)]
+    fn from(value: TimeDelta) -> Self {
+        use crate::convert::*;
+        // if nanoseconds part is 0, we convert to microseconds unit
+        if value.is_nat() {
+            AnyValue::Null
+        } else {
+            let sub_sec_nanos = value.inner.subsec_nanos();
+            let remain_nanos = sub_sec_nanos % NANOS_PER_MICRO as i32;
+            if remain_nanos != 0 {
+                if value.months == 0 {
+                    AnyValue::Duration(
+                        value.inner.num_nanoseconds().unwrap(),
+                        TimeUnit::Nanoseconds,
+                    )
+                } else {
+                    // follow `polars_time::windows::duration::Duration::duration_ns` implementation
+                    let month_nanos = value.months as i64 * 28 * 24 * 3600 * NANOS_PER_SEC;
+                    let nanos = value.inner.num_nanoseconds().unwrap();
+
+                    AnyValue::Duration(month_nanos + nanos, TimeUnit::Nanoseconds)
+                }
+            } else {
+                if value.months == 0 {
+                    AnyValue::Duration(
+                        value.inner.num_microseconds().unwrap(),
+                        TimeUnit::Microseconds,
+                    )
+                } else {
+                    let month_micros = value.months as i64 * 28 * 24 * 3600 * MICROS_PER_SEC;
+                    let micros = value.inner.num_microseconds().unwrap();
+
+                    AnyValue::Duration(month_micros + micros, TimeUnit::Microseconds)
+                }
+            }
+        }
+    }
+}
