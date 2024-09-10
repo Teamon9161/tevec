@@ -15,6 +15,7 @@ vecdeque = []
 ndarray = ["tea-deps/ndarray"]
 polars = ["tea-deps/polars", "tea-dtype/polars"]
 polars-lazy = ["tea-deps/polars-lazy", "tea-dtype/polars-lazy"]
+polars-struct = ["polars", "tea-deps/polars-struct"]
 time = ["tea-dtype/time", "tea-deps/time"]
 serde = ["tea-dtype/serde"]
 

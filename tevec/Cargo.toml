@@ -21,6 +21,7 @@ fdiff = ["stat", "rolling"]
 # backends
 polars = ["tea-core/polars"]
 polars-lazy = ["polars", "tea-core/polars-lazy"]
+polars-struct = ["polars", "tea-core/polars-struct"] # polars with dtype-struct
 ndarray = ["tea-core/ndarray"]
 vecdeque = ["tea-core/vecdeque"]
 

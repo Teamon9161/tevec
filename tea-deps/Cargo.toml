@@ -12,6 +12,7 @@ default = []
 ndarray = ["dep:ndarray"]
 polars = ["dep:polars"]
 polars-lazy = ["polars", "polars/lazy"]
+polars-struct = ["polars", "polars/dtype-struct"]
 time = [
     "polars?/dtype-datetime",
     "polars?/dtype-duration",
