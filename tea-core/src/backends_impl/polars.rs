@@ -84,7 +84,7 @@ macro_rules! impl_for_ca {
             #[inline]
             fn uninit(len: usize) -> Self::Uninit
             {
-                ChunkedArray::full_null("", len)
+                ChunkedArray::full_null("".into(), len)
             }
 
             #[inline]
@@ -104,7 +104,7 @@ macro_rules! impl_for_ca {
             ) -> TResult<Self>
             {
                 let len = iter.len();
-                unsafe{iter.trust_my_length(len)}.try_collect_ca_trusted("")
+                unsafe{iter.trust_my_length(len)}.try_collect_ca_trusted("".into())
             }
         })*
     };
