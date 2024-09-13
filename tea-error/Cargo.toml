@@ -8,10 +8,10 @@ repository.workspace = true
 license.workspace = true
 
 [features]
-default = ["polars"]
+default = []
 polars = ["tea-deps/polars"]
 
 [dependencies]
 tea-deps = { workspace = true, default-features = false }
-anyhow = { workspace = true }
-thiserror = { workspace = true }
+# anyhow = { workspace = true }
+thiserror = { version = "1", default-features = false }

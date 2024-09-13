@@ -622,7 +622,7 @@ mod test {
     }
 
     #[test]
-    fn test_vcut() -> Result<()> {
+    fn test_vcut() -> TResult<()> {
         let v = vec![1, 3, 5, 1, 5, 6, 7, 32, 1];
         let bins = vec![2, 5, 8];
         let labels = vec![1, 2, 3, 4];

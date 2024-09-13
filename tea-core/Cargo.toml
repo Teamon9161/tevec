@@ -13,18 +13,18 @@ default = []
 
 vecdeque = []
 ndarray = ["tea-deps/ndarray"]
-polars = ["tea-deps/polars", "tea-dtype/polars"]
+polars = ["tea-deps/polars", "tea-dtype/polars", "tea-error/polars"]
 polars-lazy = ["tea-deps/polars-lazy", "tea-dtype/polars-lazy"]
 polars-struct = ["polars", "tea-deps/polars-struct"]
 time = ["tea-dtype/time", "tea-deps/time"]
-serde = ["tea-dtype/serde"]
+serde = ["tea-dtype/serde", "dep:serde"]
 
 [dependencies]
 num-traits = { workspace = true }
 tea-error = { workspace = true }
 tea-dtype = { workspace = true, default-features = false }
 tea-deps = { workspace = true, default-features = false }
-serde = "1.0"
+serde = { version = "1.0", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
