@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::iter::Scan;
 use std::slice::Iter;
 
@@ -5,7 +6,6 @@ use std::slice::Iter;
 pub(crate) use tea_deps::polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
 #[cfg(feature = "polars")]
 use tea_deps::polars::prelude::PolarsIterator;
-use tea_error::TResult;
 
 /// An iterator of known, fixed size.
 ///
@@ -243,9 +243,9 @@ pub trait CollectTrusted<T> {
     /// # Returns
     ///
     /// A `TResult` containing either the successfully collected items or an error.
-    fn try_collect_from_trusted<I>(i: I) -> TResult<Self>
+    fn try_collect_from_trusted<I, E: Error>(iter: I) -> Result<Self, E>
     where
-        I: IntoIterator<Item = TResult<T>>,
+        I: IntoIterator<Item = Result<T, E>>,
         I::IntoIter: TrustedLen,
         Self: Sized;
 }
@@ -275,9 +275,9 @@ impl<T> CollectTrusted<T> for Vec<T> {
     }
 
     /// safety: upper bound on the remaining length of the iterator must be correct.
-    fn try_collect_from_trusted<I>(iter: I) -> TResult<Self>
+    fn try_collect_from_trusted<I, E: Error>(iter: I) -> Result<Self, E>
     where
-        I: IntoIterator<Item = TResult<T>>,
+        I: IntoIterator<Item = Result<T, E>>,
         I::IntoIter: TrustedLen,
         Self: Sized,
     {
@@ -326,7 +326,9 @@ pub trait CollectTrustedToVec: Iterator + TrustedLen + Sized {
 /// This trait is implemented for all iterators that implement `TrustedLen` and
 /// yield `Result` items, allowing for efficient collection into a `Vec` while
 /// propagating any errors encountered during iteration.
-pub trait TryCollectTrustedToVec<T>: Iterator<Item = TResult<T>> + TrustedLen + Sized {
+pub trait TryCollectTrustedToVec<T, E: Error>:
+    Iterator<Item = Result<T, E>> + TrustedLen + Sized
+{
     /// Attempts to collect the iterator into a `Vec` using the trusted length information.
     ///
     /// This method is more efficient than the standard `collect()` method for
@@ -340,10 +342,10 @@ pub trait TryCollectTrustedToVec<T>: Iterator<Item = TResult<T>> + TrustedLen + 
     /// - `Ok(Vec<T>)`: A `Vec` containing all the successfully collected items.
     /// - `Err(E)`: The first error encountered during iteration.
     #[inline(always)]
-    fn try_collect_trusted_to_vec(self) -> TResult<Vec<T>> {
+    fn try_collect_trusted_to_vec(self) -> Result<Vec<T>, E> {
         CollectTrusted::<T>::try_collect_from_trusted(self)
     }
 }
 
 impl<T: TrustedLen> CollectTrustedToVec for T {}
-impl<I: TrustedLen<Item = TResult<T>> + Sized, T> TryCollectTrustedToVec<T> for I {}
+impl<I: TrustedLen<Item = Result<T, E>> + Sized, T, E: Error> TryCollectTrustedToVec<T, E> for I {}
