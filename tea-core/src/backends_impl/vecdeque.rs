@@ -12,10 +12,7 @@ impl<T> GetLen for VecDeque<T> {
 
 impl<T: Clone> TIter<T> for VecDeque<T> {
     #[inline]
-    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-    where
-        T: 'a,
-    {
+    fn titer(&self) -> impl TIterator<Item = T> + '_ {
         self.iter().cloned()
     }
 }

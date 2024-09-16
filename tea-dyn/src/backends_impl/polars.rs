@@ -30,12 +30,14 @@ impl DynVec1 for Series {
     type F64Item = Option<f64>;
     type I32Item = Option<i32>;
     type I64Item = Option<i64>;
+    type StrItem<'a> = Option<&'a str>;
 
     type BoolVec = BooleanChunked;
     type F32Vec = Float32Chunked;
     type F64Vec = Float64Chunked;
     type I32Vec = Int32Chunked;
     type I64Vec = Int64Chunked;
+    // type StrVec<'a> = StringChunked;
 
     #[inline]
     fn get_dtype(&self) -> DataType {

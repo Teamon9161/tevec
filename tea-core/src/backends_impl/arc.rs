@@ -2,10 +2,7 @@ use crate::prelude::*;
 
 impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
     #[inline]
-    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-    where
-        T: 'a,
-    {
+    fn titer(&self) -> impl TIterator<Item = T> + '_ {
         (**self).titer()
     }
 }

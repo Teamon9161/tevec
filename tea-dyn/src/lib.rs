@@ -25,6 +25,7 @@ pub trait DynVec1 {
     type I64Item: IsNone<Inner = i64>;
     /// The type used for 32-bit integer items in the vector.
     type I32Item: IsNone<Inner = i32>;
+    type StrItem<'a>: IsNone<Inner = &'a str>;
 
     /// The vector type for boolean items.
     type BoolVec: Vec1<Self::BoolItem> + IntoDyn<Dyn = Self>;
@@ -36,7 +37,7 @@ pub trait DynVec1 {
     type I64Vec: Vec1<Self::I64Item> + IntoDyn<Dyn = Self>;
     /// The vector type for 32-bit integer items.
     type I32Vec: Vec1<Self::I32Item> + IntoDyn<Dyn = Self>;
-
+    // type StrVec<'a>: Vec1<Self::StrItem<'a>> + IntoDyn<Dyn = Self>;
     /// Returns the data type of the vector.
     fn get_dtype(&self) -> DataType;
     /// Casts the vector to a new data type.

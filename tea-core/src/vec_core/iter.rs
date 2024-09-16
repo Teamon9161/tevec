@@ -17,10 +17,7 @@ pub trait TIter<T>: GetLen {
     /// # Returns
     ///
     /// An iterator that implements the `TIterator` trait, yielding items of type `T`.
-    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-    where
-        Self: 'a,
-        T: 'a;
+    fn titer(&self) -> impl TIterator<Item = T> + '_;
 
     /// Maps each item in the collection using the provided function.
     ///
@@ -99,10 +96,7 @@ impl<V: Vec1View<T>, T> GetLen for OptIter<'_, V, T> {
 
 impl<V: Vec1View<T>, T: IsNone> TIter<Option<<T as IsNone>::Inner>> for OptIter<'_, V, T> {
     #[inline]
-    fn titer<'a>(&'a self) -> impl TIterator<Item = Option<<T as IsNone>::Inner>>
-    where
-        Self: 'a,
-    {
+    fn titer(&self) -> impl TIterator<Item = Option<<T as IsNone>::Inner>> {
         self.view.titer().map(|v| v.to_opt())
     }
 }
@@ -116,7 +110,6 @@ where
     #[inline]
     fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Self::SliceOutput<'b>>
     where
-        Self: 'b,
         T: 'b,
     {
         Ok(self

@@ -8,8 +8,8 @@ license.workspace = true
 description = "Core data structures and traits for tevec."
 
 [features]
-default = []
-# default = ["ndarray", "time", "polars"]
+# default = []
+default = ["ndarray", "time", "polars", "vecdeque"]
 
 vecdeque = []
 ndarray = ["tea-deps/ndarray"]

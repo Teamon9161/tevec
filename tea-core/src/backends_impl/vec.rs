@@ -14,9 +14,7 @@ macro_rules! impl_vec1 {
 
             impl<T: Clone> TIter<T> for $ty {
                 #[inline]
-                fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-                where
-                    T: 'a,
+                fn titer(&self) -> impl TIterator<Item = T>
                 {
                     self.iter().cloned()
                 }
@@ -196,9 +194,9 @@ impl<T, const N: usize> GetLen for [T; N] {
 
 impl<T: Clone, const N: usize> TIter<T> for [T; N] {
     #[inline]
-    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-    where
-        T: 'a,
+    fn titer(&self) -> impl TIterator<Item = T>
+// where
+    //     T: 'a,
     {
         self.iter().cloned()
     }
@@ -220,9 +218,9 @@ impl<T> GetLen for &mut [T] {
 
 impl<T: Clone> TIter<T> for &mut [T] {
     #[inline]
-    fn titer<'a>(&'a self) -> impl TIterator<Item = T>
-    where
-        T: 'a,
+    fn titer(&self) -> impl TIterator<Item = T>
+// where
+    //     T: 'a,
     {
         self.iter().cloned()
     }
