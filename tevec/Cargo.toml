@@ -19,7 +19,7 @@ stat = ["statrs", "ffi"]
 fdiff = ["stat", "rolling"]
 
 # backends
-polars = ["tea-core/polars"]
+polars = ["tea-core/polars", "tea-dyn?/polars"]
 polars-lazy = ["polars", "tea-core/polars-lazy"]
 polars-struct = ["polars", "tea-core/polars-struct"] # polars with dtype-struct
 ndarray = ["tea-core/ndarray"]
@@ -31,6 +31,9 @@ time = ["tea-dtype/time", "tea-core/time"]
 # serde
 serde = ["tea-core/serde"]
 
+# dynamic
+dyn = ["tea-dyn", "tea-rolling?/dyn"]
+
 [dependencies]
 statrs = { version = "0.17", optional = true }
 tea-dtype = { workspace = true, default-features = false }
@@ -39,6 +42,7 @@ tea-macros = { workspace = true }
 tea-rolling = { workspace = true, optional = true }
 tea-map = { workspace = true, optional = true }
 tea-agg = { workspace = true, optional = true }
+tea-dyn = { workspace = true, optional = true }
 ffi = { version = "0.1", default-features = false, optional = true, package = "tea-ffi" }
 derive_more = { version = "1", default-features = false, features = ["from"] }
 

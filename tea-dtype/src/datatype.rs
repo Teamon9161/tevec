@@ -2,6 +2,7 @@
 use tea_time::TimeUnitTrait;
 #[cfg(feature = "time")]
 use tea_time::{DateTime, TimeDelta, TimeUnit};
+
 /// Represents the various data types supported by the system.
 ///
 /// This enum encapsulates both primitive and complex data types, including
@@ -50,6 +51,8 @@ pub enum DataType {
     /// TimeDelta type (only available with "time" feature)
     #[cfg(feature = "time")]
     TimeDelta,
+    /// Unknown type
+    Unknown,
 }
 
 /// A trait for types that can provide their corresponding DataType.
@@ -194,5 +197,125 @@ impl<'a> GetDataType for &'a str {
     #[inline(always)]
     fn dtype() -> DataType {
         DataType::Str
+    }
+}
+
+#[cfg(feature = "polars")]
+const fn into_pl_dtype(dt: &DataType) -> tea_deps::polars::prelude::DataType {
+    use tea_deps::polars::prelude::{DataType as PlDataType, UnknownKind};
+    match dt {
+        DataType::Bool => PlDataType::Boolean,
+        DataType::F32 => PlDataType::Float32,
+        DataType::F64 => PlDataType::Float64,
+        DataType::I32 => PlDataType::Int32,
+        DataType::I64 => PlDataType::Int64,
+        DataType::U8 => PlDataType::UInt8,
+        DataType::U64 => PlDataType::UInt64,
+        DataType::Usize => PlDataType::UInt64,
+        DataType::String => PlDataType::String,
+        _ => PlDataType::Unknown(UnknownKind::Any),
+    }
+}
+
+#[cfg(feature = "polars")]
+const fn from_pl_dtype(dt: &tea_deps::polars::prelude::DataType) -> DataType {
+    use tea_deps::polars::prelude::DataType as PlDataType;
+    match dt {
+        PlDataType::Boolean => DataType::Bool,
+        PlDataType::Float32 => DataType::F32,
+        PlDataType::Float64 => DataType::F64,
+        PlDataType::Int32 => DataType::I32,
+        PlDataType::Int64 => DataType::I64,
+        PlDataType::UInt8 => DataType::U8,
+        PlDataType::UInt64 => DataType::U64,
+        PlDataType::String => DataType::String,
+        _ => DataType::Unknown,
+    }
+}
+
+#[cfg(feature = "polars")]
+impl From<DataType> for tea_deps::polars::prelude::DataType {
+    #[inline(always)]
+    fn from(dt: DataType) -> Self {
+        into_pl_dtype(&dt)
+    }
+}
+
+#[cfg(feature = "polars")]
+impl From<&DataType> for tea_deps::polars::prelude::DataType {
+    #[inline(always)]
+    fn from(dt: &DataType) -> Self {
+        into_pl_dtype(dt)
+    }
+}
+
+#[cfg(feature = "polars")]
+impl From<tea_deps::polars::prelude::DataType> for DataType {
+    #[inline(always)]
+    fn from(dt: tea_deps::polars::prelude::DataType) -> Self {
+        from_pl_dtype(&dt)
+    }
+}
+
+#[cfg(feature = "polars")]
+impl From<&tea_deps::polars::prelude::DataType> for DataType {
+    #[inline(always)]
+    fn from(dt: &tea_deps::polars::prelude::DataType) -> Self {
+        from_pl_dtype(dt)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[cfg(feature = "polars")]
+    fn test_from_datatype() {
+        use tea_deps::polars::prelude::DataType as PlDataType;
+        let dt: PlDataType = DataType::Bool.into();
+        assert_eq!(dt, PlDataType::Boolean);
+        let dt: PlDataType = DataType::F32.into();
+        assert_eq!(dt, PlDataType::Float32);
+        let dt: PlDataType = DataType::F64.into();
+        assert_eq!(dt, PlDataType::Float64);
+        let dt: PlDataType = DataType::I32.into();
+        assert_eq!(dt, PlDataType::Int32);
+        let dt: PlDataType = DataType::I64.into();
+        assert_eq!(dt, PlDataType::Int64);
+        let dt: PlDataType = DataType::U8.into();
+        assert_eq!(dt, PlDataType::UInt8);
+        let dt: PlDataType = DataType::U64.into();
+        assert_eq!(dt, PlDataType::UInt64);
+        let dt: PlDataType = DataType::Usize.into();
+        assert_eq!(dt, PlDataType::UInt64);
+        let dt: PlDataType = DataType::String.into();
+        assert_eq!(dt, PlDataType::String);
+        let dt: PlDataType = DataType::Object.into();
+        assert!(matches!(dt, PlDataType::Unknown(_)));
+    }
+    #[test]
+    #[cfg(feature = "polars")]
+    fn test_from_pldatatype() {
+        use tea_deps::polars::prelude::{DataType as PlDataType, UnknownKind};
+
+        assert_eq!(DataType::from(PlDataType::Boolean), DataType::Bool);
+        assert_eq!(DataType::from(PlDataType::Float32), DataType::F32);
+        assert_eq!(DataType::from(PlDataType::Float64), DataType::F64);
+        assert_eq!(DataType::from(PlDataType::Int32), DataType::I32);
+        assert_eq!(DataType::from(PlDataType::Int64), DataType::I64);
+        assert_eq!(DataType::from(PlDataType::UInt8), DataType::U8);
+        assert_eq!(DataType::from(PlDataType::UInt64), DataType::U64);
+        assert_eq!(DataType::from(PlDataType::String), DataType::String);
+
+        // For Unknown type, we expect it to be mapped to Unknown
+        if let DataType::Unknown = DataType::from(PlDataType::Unknown(UnknownKind::Any)) {
+            // Test passes
+        } else {
+            panic!("Expected Unknown DataType for PlDataType::Object");
+        }
+
+        // Test with reference
+        assert_eq!(DataType::from(&PlDataType::Boolean), DataType::Bool);
     }
 }

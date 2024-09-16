@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use tea_deps::polars::prelude::{DataType as PlDataType, *};
 
+#[allow(unused_imports)]
 use crate::*;
 
 #[cfg(feature = "time")]

@@ -10,14 +10,17 @@ description = "Rolling functions for tevec"
 [features]
 default = []
 ndarray = ["tea-core/ndarray"]
+dyn = ["tea-dyn"]
 
 [dependencies]
 tea-core = { workspace = true, default-features = false }
+tea-dyn = { workspace = true, optional = true }
 tea-macros = { workspace = true }
 num-traits = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.5"
+tea-deps = { workspace = true }
 
 
 [[bench]]

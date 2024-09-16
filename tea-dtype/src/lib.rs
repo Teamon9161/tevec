@@ -16,4 +16,6 @@ pub use number::Number;
 #[cfg(feature = "time")]
 pub use tea_deps::chrono::{DateTime as CrDateTime, Utc};
 #[cfg(feature = "time")]
-pub use tea_time::{unit, DateTime, Time, TimeDelta, TimeUnit, TimeUnitTrait, Timelike};
+pub use tea_time::{
+    self as time, unit, DateTime, Time, TimeDelta, TimeUnit, TimeUnitTrait, Timelike,
+};

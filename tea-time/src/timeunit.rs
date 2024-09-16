@@ -33,6 +33,7 @@ macro_rules! define_timeunit {
 /// such as years, months, days, hours, etc. It provides a common interface
 /// for these types and ensures they have certain properties and behaviors.
 
+// TODO: should be a const trait once `const trait impl` is stabilized
 pub trait TimeUnitTrait: Copy + Clone + Debug + PartialEq + Eq + Hash + PartialOrd + Ord {
     /// Returns the corresponding `TimeUnit` enum variant for this time unit.
     ///

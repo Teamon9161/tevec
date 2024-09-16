@@ -10,6 +10,7 @@ members = [
     "tea-macros",
     "tea-error",
     "tea-deps",
+    "tea-dyn",
 ]
 exclude = ["tea-ffi"]
 
@@ -35,6 +36,8 @@ tea-macros = { version = "0.4.4", path = "./tea-macros" }
 tea-agg = { version = "0.4.4", path = "./tea-agg" }
 tea-map = { version = "0.4.4", path = "./tea-map" }
 tea-rolling = { version = "0.4.4", path = "./tea-rolling" }
+tea-dyn = { version = "0.4.4", path = "./tea-dyn" }
+tevec = { version = "0.4.4", path = "./tevec" }
 
 [profile.dev]
 incremental = true

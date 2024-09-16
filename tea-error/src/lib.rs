@@ -44,7 +44,9 @@ pub enum TError {
     #[error("Index out of bounds: index: {idx}, length: {len}")]
     IdxOut { idx: usize, len: usize },
     #[error(transparent)]
-    Other(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
+    #[cfg_attr(feature = "polars", error("Polars error: {0}"))]
+    Polars(#[from] tea_deps::polars::prelude::PolarsError),
     #[error("Parse error: {0}")]
     ParseError(ErrInfo),
     #[error("{0}")]

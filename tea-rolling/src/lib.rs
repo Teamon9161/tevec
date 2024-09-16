@@ -4,6 +4,12 @@ mod features;
 mod norm;
 mod reg;
 
+#[cfg(feature = "dyn")]
+mod dynamic;
+
+#[cfg(feature = "dyn")]
+pub use dynamic::*;
+
 #[macro_use]
 extern crate tea_macros;
 

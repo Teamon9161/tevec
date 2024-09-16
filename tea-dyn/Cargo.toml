@@ -1,0 +1,27 @@
+[package]
+name = "tea-dyn"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "A Rust crate that primarily defines traits for dynamic vector operations, enabling flexible data processing across various types and backends."
+
+
+[features]
+default = ["polars"]
+polars = [
+    "tea-deps/polars",
+    "tea-dtype/polars",
+    "tea-error/polars",
+    "tea-core/polars",
+]
+
+
+[dependencies]
+tea-deps = { workspace = true, default-features = false }
+tea-dtype = { workspace = true, default-features = false }
+tea-error = { workspace = true }
+tea-core = { workspace = true, default-features = false }
+# tea-map = { workspace = true, optional = true }
+# tea-rolling = { workspace = true, optional = true }
