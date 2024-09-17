@@ -31,12 +31,12 @@ use crate::prelude::{ToTrustIter, TrustedLen, WriteTrustIter};
 ///
 /// Implementations of this trait might include views into contiguous memory arrays,
 /// database columns, or other data structures that can be logically viewed as a vector.
-pub trait Vec1View<T>: TIter<T> {
-    type SliceOutput<'a>: ToOwned
+pub trait Vec1View<'a, T>: TIter<'a, T> {
+    type SliceOutput<'s>: ToOwned
     where
-        Self: 'a,
+        Self: 's,
         // this constraint is needed for ndarray backend
-        T: 'a;
+        T: 's;
 
     /// Returns the name of the backend implementation.
     ///
@@ -69,10 +69,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// This default implementation returns an error, indicating that slicing is not supported.
     /// Backends that support slicing should override this method.
     #[inline]
-    fn slice<'a>(&'a self, _start: usize, _end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
+    fn slice(&self, _start: usize, _end: usize) -> TResult<Self::SliceOutput<'_>> {
         tbail!("slice is not supported for this backend")
     }
 
@@ -95,10 +92,7 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// Returns a `TResult<Self::SliceOutput<'a>>` representing the portion of the array from `start` to `end`.
     /// The actual type returned depends on the specific implementation of `Vec1View`.
-    unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
+    unsafe fn uslice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
         self.slice(start, end)
     }
 
@@ -140,9 +134,9 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// This method relies on the `Cast` trait being implemented for the conversion from `T` to `U`.
     #[inline]
-    fn iter_cast<'a, U>(&'a self) -> impl TIterator<Item = U>
+    fn iter_cast<U>(&'a self) -> impl TIterator<Item = U>
     where
-        T: 'a + Cast<U>,
+        T: Cast<U>,
     {
         self.titer().map(|v| v.cast())
     }
@@ -162,9 +156,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is useful when dealing with vectors that may contain null or invalid values.
     /// It uses the `IsNone` trait to determine if an element should be considered as `None`.
     #[inline]
-    fn opt_iter_cast<'a, U>(&'a self) -> impl TIterator<Item = Option<U>>
+    fn opt_iter_cast<U>(&'a self) -> impl TIterator<Item = Option<U>>
     where
-        T: IsNone + 'a,
+        T: IsNone,
         <T as IsNone>::Inner: Cast<U>,
     {
         self.titer().map(|v| v.to_opt().map(Cast::<U>::cast))
@@ -181,13 +175,13 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is useful for treating the vector's elements as optional values,
     /// which is particularly helpful when dealing with data that may contain null or invalid entries.
     #[inline]
-    fn opt(&self) -> OptIter<Self, T>
+    fn opt(self) -> OptIter<'a, Self, T>
     where
-        T: IsNone,
         Self: Sized,
     {
         OptIter {
             view: self,
+            life: PhantomData,
             item: PhantomData,
         }
     }
@@ -203,9 +197,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is useful for explicitly handling potential null or invalid values in the vector.
     /// It relies on the `IsNone` trait to determine how to convert each element to an `Option`.
     #[inline]
-    fn to_opt_iter<'a>(&'a self) -> impl TIterator<Item = Option<T::Inner>>
+    fn to_opt_iter(&'a self) -> impl TIterator<Item = Option<T::Inner>>
     where
-        T: IsNone + 'a,
+        T: IsNone,
     {
         self.titer().map(|v| v.to_opt())
     }
@@ -307,9 +301,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method creates an iterator that doesn't collect results, making it memory-efficient
     /// for large datasets or when further processing of the results is needed.
     #[inline]
-    fn rolling_custom_iter<'a, U, F>(&'a self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
+    fn rolling_custom_iter<U, F>(&'a self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
     where
-        F: FnMut(Self::SliceOutput<'a>) -> U,
+        F: FnMut(Self::SliceOutput<'_>) -> U,
         T: 'a,
     {
         (1..self.len() + 1)
@@ -341,15 +335,14 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// This method allows for efficient in-place computation when an output buffer is provided.
     #[inline]
-    fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
+    fn rolling_custom<O: Vec1<OT>, OT: Clone, F>(
         &'a self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        F: FnMut(Self::SliceOutput<'a>) -> OT,
-        Self: 'a,
+        F: FnMut(Self::SliceOutput<'_>) -> OT,
         T: 'a,
     {
         let iter = self.rolling_custom_iter(window, f);
@@ -380,14 +373,13 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is more efficient than `rolling_custom` when you have a pre-allocated buffer,
     /// but it may panic with certain backends (e.g., Polars). Use `rolling_custom` for a safer alternative.
     #[inline]
-    fn rolling_custom_to<'a, O: Vec1<OT>, OT, F>(
+    fn rolling_custom_to<O: Vec1<OT>, OT, F>(
         &'a self,
         window: usize,
         mut f: F,
         mut out: O::UninitRefMut<'_>,
     ) where
-        F: FnMut(Self::SliceOutput<'a>) -> OT,
-        Self: 'a,
+        F: FnMut(Self::SliceOutput<'_>) -> OT,
         T: 'a,
     {
         let len = self.len();
@@ -438,16 +430,18 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is useful for operations that need to consider two vectors simultaneously,
     /// such as computing rolling correlations or differences between two time series.
     #[inline]
-    fn rolling2_custom<O: Vec1<OT>, OT: Clone, V2, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_custom<'b, O: Vec1<OT>, OT: Clone, V2, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         mut f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        V2: Vec1View<T2>,
+        V2: Vec1View<'b, T2>,
         F: FnMut(Self::SliceOutput<'_>, V2::SliceOutput<'_>) -> OT,
+        T: 'a,
+        T2: 'b,
     {
         let iter = (1..self.len() + 1)
             .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
@@ -493,7 +487,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// rather than recomputing from scratch for each window.
     #[inline]
     fn rolling_apply<O: Vec1<OT>, OT, F>(
-        &self,
+        &'a self,
         window: usize,
         mut f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -613,9 +607,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is particularly useful for implementing efficient rolling calculations
     /// that depend on two input vectors simultaneously.
     #[inline]
-    fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_apply<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         mut f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -673,9 +667,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// buffer. However, it may not be supported by all backends (e.g., it will panic
     /// in the Polars backend). For broader compatibility, use `rolling2_apply` instead.
     #[inline]
-    fn rolling2_apply_to<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_apply_to<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         mut f: F,
         mut out: O::UninitRefMut<'_>,
@@ -731,7 +725,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// position of elements within the vector.
     #[inline]
     fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
-        &self,
+        &'a self,
         window: usize,
         mut f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -841,9 +835,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is useful when the rolling calculation needs to consider both
     /// the position of elements and values from two input vectors simultaneously.
     #[inline]
-    fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_apply_idx<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         mut f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -909,9 +903,9 @@ pub trait Vec1View<T>: TIter<T> {
     /// buffer. However, it may not be supported by all backends (e.g., it will panic
     /// in the Polars backend). For broader compatibility, use `rolling2_apply_idx` instead.
     #[inline]
-    fn rolling2_apply_idx_to<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_apply_idx_to<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         mut f: F,
         mut out: O::UninitRefMut<'_>,

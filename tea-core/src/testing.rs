@@ -28,9 +28,15 @@ use crate::prelude::{Vec1View, EPS};
 /// - One vector has a None value where the other doesn't
 /// - The absolute difference between corresponding non-NaN elements exceeds epsilon
 /// - One element is NaN while the other isn't
-pub fn assert_vec1d_equal_numeric<T: IsNone + Debug, V1: Vec1View<T>, V2: Vec1View<T>>(
-    v1: &V1,
-    v2: &V2,
+pub fn assert_vec1d_equal_numeric<
+    'a,
+    'b,
+    T: IsNone + Debug,
+    V1: Vec1View<'a, T>,
+    V2: Vec1View<'b, T>,
+>(
+    v1: &'a V1,
+    v2: &'b V2,
     epsilon: Option<f64>,
 ) where
     T::Inner: Number,

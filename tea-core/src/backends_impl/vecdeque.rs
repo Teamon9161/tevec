@@ -10,21 +10,18 @@ impl<T> GetLen for VecDeque<T> {
     }
 }
 
-impl<T: Clone> TIter<T> for VecDeque<T> {
+impl<'a, T: Clone> TIter<'a, T> for VecDeque<T> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T> + '_ {
+    fn titer(&'a self) -> impl TIterator<Item = T> + 'a {
         self.iter().cloned()
     }
 }
 
-impl<T: Clone> Vec1View<T> for VecDeque<T> {
-    type SliceOutput<'a> = std::collections::vec_deque::Iter<'a, T> where Self: 'a;
+impl<'a, T: Clone + 'a> Vec1View<'a, T> for VecDeque<T> {
+    type SliceOutput = std::collections::vec_deque::Iter<'a, T>;
 
     #[inline]
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
+    fn slice(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput> {
         Ok(self.range(start..end))
     }
 
@@ -49,7 +46,7 @@ impl<T: Clone> Vec1View<T> for VecDeque<T> {
     }
 }
 
-impl<'a, T: Clone> Vec1Mut<'a, T> for VecDeque<T> {
+impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for VecDeque<T> {
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.get_mut(index).unwrap()

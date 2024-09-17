@@ -8,10 +8,9 @@ use crate::prelude::*;
 macro_rules! impl_for_ca {
     (to_iter, $real: ty => $($ForType: ty),*) => {
         $(
-            impl TIter<Option<$real>> for $ForType {
+            impl<'a> TIter<'a, Option<$real>> for $ForType {
                 #[inline]
-                fn titer(&self) -> impl TIterator<Item=Option<$real>>
-                // where Option<$real>: 'a
+                fn titer(&'a self) -> impl TIterator<Item=Option<$real>>
                 {
                     self.into_iter()
                 }
@@ -21,18 +20,12 @@ macro_rules! impl_for_ca {
 
     (view $type: ty, $real: ty => $($ForType: ty),*) => {
         $(
-            impl Vec1View<Option<$real>> for $ForType
+            impl<'a> Vec1View<'a, Option<$real>> for $ForType
             {
-                type SliceOutput<'a> = ChunkedArray<$type>
-                where
-                    Self: 'a,
-                    Option<$real>: 'a;
+                type SliceOutput<'b> = ChunkedArray<$type> where Self: 'b;
 
                 #[inline]
-                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-                where
-                    Self: 'a,
-                    Option<$real>: 'a,
+                fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>>
                 {
                     if end < start {
                         tbail!("end index: {} should be large than start index: {} in slice", end, start);
@@ -158,36 +151,25 @@ impl_for_ca!(
     BooleanType: bool
 );
 
-impl<'a> TIter<Option<&'a str>> for &'a ChunkedArray<StringType> {
+impl<'a> TIter<'a, Option<&'a str>> for &'a ChunkedArray<StringType> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = Option<&'a str>> {
+    fn titer(&'a self) -> impl TIterator<Item = Option<&'a str>> {
         self.into_iter()
     }
 }
 
-// impl<'s> TIter<Option<&'s str>> for ChunkedArray<StringType> {
-//     #[inline]
-//     fn titer<'a>(&'a self) -> impl TIterator<Item = Self::Item> + 'a {
-//         // let iter = self.into_iter();
-//         // let i: Box<dyn PolarsIterator<Item = Option<&'s str>> + 'a> =
-//         //     unsafe { std::mem::transmute(iter) };
-//         // unsafe { std::mem::transmute(iter) }
-//         self.into_iter().cloned()
-//     }
-// }
+impl<'a> TIter<'a, Option<&'a str>> for ChunkedArray<StringType> {
+    #[inline]
+    fn titer(&'a self) -> impl TIterator<Item = Option<&'a str>> {
+        self.into_iter()
+    }
+}
 
-impl<'a> Vec1View<Option<&'a str>> for &'a ChunkedArray<StringType> {
-    type SliceOutput<'b> = ChunkedArray<StringType>
-    where
-        Self: 'b,
-        Option<&'a str>: 'b;
+impl<'a> Vec1View<'a, Option<&'a str>> for &'a ChunkedArray<StringType> {
+    type SliceOutput<'b> = ChunkedArray<StringType> where Self: 'b;
 
     #[inline]
-    fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Self::SliceOutput<'b>>
-    where
-        Self: 'b,
-        Option<&'a str>: 'b,
-    {
+    fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
         if end < start {
             tbail!(
                 "end index: {} should be large than start index: {} in slice",
@@ -219,12 +201,9 @@ impl GetLen for DatetimeChunked {
 }
 
 #[cfg(feature = "time")]
-impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
+impl<'a> TIter<'a, DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Nanosecond>>
-// where
-    //     DateTime<unit::Nanosecond>: 'b,
-    {
+    fn titer(&'a self) -> impl TIterator<Item = DateTime<unit::Nanosecond>> {
         use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Nanoseconds, _) => {
@@ -237,12 +216,9 @@ impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
 }
 
 #[cfg(feature = "time")]
-impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
+impl<'a> TIter<'a, DateTime<unit::Millisecond>> for &'a DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Millisecond>>
-// where
-    //     DateTime<unit::Millisecond>: 'b,
-    {
+    fn titer(&'a self) -> impl TIterator<Item = DateTime<unit::Millisecond>> {
         use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
@@ -255,12 +231,9 @@ impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
 }
 
 #[cfg(feature = "time")]
-impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
+impl<'a> TIter<'a, DateTime<unit::Microsecond>> for &'a DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Microsecond>>
-// where
-    //     DateTime<unit::Microsecond>: 'b,
-    {
+    fn titer(&'a self) -> impl TIterator<Item = DateTime<unit::Microsecond>> {
         use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {

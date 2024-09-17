@@ -1,31 +1,22 @@
 use crate::prelude::*;
 
-impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
+impl<'a, I: TIter<'a, T>, T> TIter<'a, T> for std::sync::Arc<I> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T> + '_ {
+    fn titer(&'a self) -> impl TIterator<Item = T> + 'a {
         (**self).titer()
     }
 }
 
-impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
-    type SliceOutput<'a> = V::SliceOutput<'a>
-    where
-        Self: 'a,
-        T: 'a;
+impl<'a, V: Vec1View<'a, T>, T> Vec1View<'a, T> for std::sync::Arc<V> {
+    type SliceOutput<'b> = V::SliceOutput<'b> where Self: 'b, T: 'b;
 
     #[inline]
-    fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
+    fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
         (**self).slice(start, end)
     }
 
     #[inline]
-    unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-    where
-        T: 'a,
-    {
+    unsafe fn uslice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
         (**self).uslice(start, end)
     }
 
@@ -45,22 +36,21 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     }
 
     #[inline]
-    fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
-        &'a self,
+    fn rolling_custom<O: Vec1<OT>, OT: Clone, F>(
+        &self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        F: FnMut(Self::SliceOutput<'a>) -> OT,
-        T: 'a,
+        F: FnMut(V::SliceOutput<'_>) -> OT,
     {
         (**self).rolling_custom(window, f, out)
     }
 
     #[inline]
     fn rolling_apply<O: Vec1<OT>, OT, F>(
-        &self,
+        &'a self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -73,9 +63,9 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     }
 
     #[inline]
-    fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_apply<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -89,7 +79,7 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     }
     #[inline]
     fn rolling_apply_idx<O: Vec1<OT>, OT, F>(
-        &self,
+        &'a self,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,
@@ -102,9 +92,9 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     }
 
     #[inline]
-    fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-        &self,
-        other: &V2,
+    fn rolling2_apply_idx<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+        &'a self,
+        other: &'b V2,
         window: usize,
         f: F,
         out: Option<O::UninitRefMut<'_>>,

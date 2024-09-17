@@ -11,36 +11,34 @@ impl<S: Data<Elem = T>, T> GetLen for ArrayBase<S, Ix1> {
     }
 }
 
-impl<T: Clone> TIter<T> for Array1<T> {
+impl<'a, T: Clone> TIter<'a, T> for Array1<T> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T> + '_ {
+    fn titer(&'a self) -> impl TIterator<Item = T> + 'a {
         self.iter().cloned()
     }
 }
 
-impl<'a, T: Clone> TIter<T> for ArrayView1<'a, T> {
+impl<'a, T: Clone> TIter<'a, T> for ArrayView1<'a, T> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T> {
+    fn titer(&'a self) -> impl TIterator<Item = T> + 'a {
         self.iter().cloned()
     }
 }
 
-impl<'a, T: Clone> TIter<T> for ArrayViewMut1<'a, T> {
+impl<'a, T: Clone> TIter<'a, T> for ArrayViewMut1<'a, T> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T> {
+    fn titer(&'a self) -> impl TIterator<Item = T> + 'a {
         self.iter().cloned()
     }
 }
 
 macro_rules! impl_vec1view_for_ndarray {
     ($t:ty $(, $lt:lifetime)?) => {
-        impl<$($lt,)? T: Clone> Vec1View<T> for $t {
-            type SliceOutput<'a> = ArrayView1<'a, T> where Self: 'a;
+        impl<'a, $($lt: 'a,)? T: Clone> Vec1View<'a, T> for $t {
+            type SliceOutput = ArrayView1<'a, T>;
 
             #[inline]
-            fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-            where
-                T: 'a,
+            fn slice(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput>
             {
                 use tea_deps::ndarray::s;
                 let view = self.slice(s![start..end]);
@@ -63,14 +61,14 @@ macro_rules! impl_vec1view_for_ndarray {
             }
 
             #[inline]
-            fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
-                &'a self,
+            fn rolling_custom<O: Vec1<OT>, OT: Clone, F>(
+                &self,
                 window: usize,
                 f: F,
                 out: Option<O::UninitRefMut<'_>>,
             ) -> Option<O>
             where
-                F: FnMut(Self::SliceOutput<'a>) -> OT,
+                F: FnMut(Self::SliceOutput) -> OT,
                 T: 'a,
             {
                 let len = self.len();
@@ -107,9 +105,9 @@ macro_rules! impl_vec1view_for_ndarray {
             }
 
             #[inline]
-            fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-                &self,
-                other: &V2,
+            fn rolling2_apply<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+                &'a self,
+                other: &'b V2,
                 window: usize,
                 f: F,
                 out: Option<O::UninitRefMut<'_>>,
@@ -150,9 +148,9 @@ macro_rules! impl_vec1view_for_ndarray {
             }
 
             #[inline]
-            fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-                &self,
-                other: &V2,
+            fn rolling2_apply_idx<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+                &'a self,
+                other: &'b V2,
                 window: usize,
                 f: F,
                 out: Option<O::UninitRefMut<'_>>,

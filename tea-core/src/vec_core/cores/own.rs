@@ -6,7 +6,7 @@ use super::super::uninit::{UninitRefMut, UninitVec};
 use super::{Vec1Mut, Vec1View};
 
 /// a vector owns its data is not necessarily mutable
-pub trait Vec1<T>: Vec1View<T> + Sized {
+pub trait Vec1<T>: for<'a> Vec1View<'a, T> + Sized {
     type Uninit: UninitVec<T, Vec = Self>;
     type UninitRefMut<'a>: UninitRefMut<T>
     where
@@ -65,9 +65,9 @@ pub trait Vec1<T>: Vec1View<T> + Sized {
     }
 
     /// sort 1d array using a compare function, but might not preserve the order of equal elements.
-    fn sort_unstable_by<'a, F>(&'a mut self, compare: F) -> TResult<()>
+    fn sort_unstable_by<F>(&mut self, compare: F) -> TResult<()>
     where
-        Self: Vec1Mut<'a, T>,
+        Self: for<'a> Vec1Mut<'a, T>,
         T: Clone,
         F: FnMut(&T, &T) -> std::cmp::Ordering,
     {

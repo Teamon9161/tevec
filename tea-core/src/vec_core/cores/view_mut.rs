@@ -6,7 +6,7 @@ use super::view::Vec1View;
 /// This trait extends `Vec1View<T>` to provide mutable access to elements.
 /// It defines methods for safely and unsafely accessing and modifying individual elements,
 /// as well as applying functions to pairs of elements from two vectors.
-pub trait Vec1Mut<'a, T>: Vec1View<T> {
+pub trait Vec1Mut<'a, T>: Vec1View<'a, T> {
     /// Unsafely gets a mutable reference to the element at the specified index.
     ///
     /// # Safety
@@ -68,7 +68,7 @@ pub trait Vec1Mut<'a, T>: Vec1View<T> {
     /// * `OT`: The type of elements in the other vector.
     /// * `F`: The type of the function to apply.
     #[inline]
-    fn apply_mut_with<O: Vec1View<OT>, OT, F>(&mut self, other: &O, mut f: F) -> TResult<()>
+    fn apply_mut_with<O: Vec1View<'a, OT>, OT, F>(&mut self, other: &O, mut f: F) -> TResult<()>
     where
         F: FnMut(&mut T, OT),
     {

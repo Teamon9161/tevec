@@ -12,9 +12,9 @@ macro_rules! impl_vec1 {
                 }
             }
 
-            impl<T: Clone> TIter<T> for $ty {
+            impl<'a, T: Clone> TIter<'a, T> for $ty {
                 #[inline]
-                fn titer(&self) -> impl TIterator<Item = T>
+                fn titer(&'a self) -> impl TIterator<Item = T>
                 {
                     self.iter().cloned()
                 }
@@ -24,22 +24,18 @@ macro_rules! impl_vec1 {
 
     (view $($({$N: ident})? $(--$slice: ident)? $ty: ty),* $(,)?) => {
         $(
-            impl<T: Clone $(, const $N: usize)?> Vec1View<T> for $ty {
-                type SliceOutput<'a> = &'a <Self as std::ops::Index<std::ops::Range<usize>>>::Output where Self: 'a;
+            impl<'a, T: Clone + 'a $(, const $N: usize)?> Vec1View<'a, T> for $ty {
+                type SliceOutput<'s> = &'s <Self as std::ops::Index<std::ops::Range<usize>>>::Output where T: 's;
 
                 #[inline]
-                fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-                where
-                    T: 'a,
+                fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>>
                 {
                     use std::ops::Index;
                     Ok(self.index(start..end))
                 }
 
                 #[inline]
-                unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
-                where
-                    T: 'a,
+                unsafe fn uslice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>>
                 {
                     Ok(self.get_unchecked(start..end))
                 }
@@ -63,14 +59,14 @@ macro_rules! impl_vec1 {
                 // this should be a faster implemention than default as
                 // we read value directly by ptr
                 #[inline]
-                fn rolling_custom<'a, O: Vec1<OT>, OT: Clone, F>(
+                fn rolling_custom<O: Vec1<OT>, OT: Clone, F>(
                     &'a self,
                     window: usize,
                     f: F,
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                    F: FnMut(Self::SliceOutput<'a>) -> OT,
+                    F: for<'b> FnMut(Self::SliceOutput<'b>) -> OT,
                     T: 'a,
                 {
                     let len = self.len();
@@ -111,9 +107,9 @@ macro_rules! impl_vec1 {
                 #[inline]
                 // this should be a faster implemention than default as
                 // we read value directly by ptr
-                fn rolling2_apply<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-                    &self,
-                    other: &V2,
+                fn rolling2_apply<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+                    &'a self,
+                    other: &'b V2,
                     window: usize,
                     f: F,
                     out: Option<O::UninitRefMut<'_>>,
@@ -160,9 +156,9 @@ macro_rules! impl_vec1 {
                 // this should be a faster implemention than default as
                 // we read value directly by ptr
                 #[inline]
-                fn rolling2_apply_idx<O: Vec1<OT>, OT, V2: Vec1View<T2>, T2, F>(
-                    &self,
-                    other: &V2,
+                fn rolling2_apply_idx<'b, O: Vec1<OT>, OT, V2: Vec1View<'b, T2>, T2, F>(
+                    &'a self,
+                    other: &'b V2,
                     window: usize,
                     f: F,
                     out: Option<O::UninitRefMut<'_>>,
@@ -192,12 +188,9 @@ impl<T, const N: usize> GetLen for [T; N] {
     }
 }
 
-impl<T: Clone, const N: usize> TIter<T> for [T; N] {
+impl<'a, T: Clone, const N: usize> TIter<'a, T> for [T; N] {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T>
-// where
-    //     T: 'a,
-    {
+    fn titer(&'a self) -> impl TIterator<Item = T> {
         self.iter().cloned()
     }
 }
@@ -216,12 +209,9 @@ impl<T> GetLen for &mut [T] {
     }
 }
 
-impl<T: Clone> TIter<T> for &mut [T] {
+impl<'a, T: Clone> TIter<'a, T> for &mut [T] {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T>
-// where
-    //     T: 'a,
-    {
+    fn titer(&'a self) -> impl TIterator<Item = T> {
         self.iter().cloned()
     }
 }

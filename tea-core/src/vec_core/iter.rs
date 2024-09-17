@@ -11,13 +11,13 @@ use crate::prelude::*;
 /// # Type Parameters
 ///
 /// * `T`: The type of items yielded by the iterator.
-pub trait TIter<T>: GetLen {
+pub trait TIter<'a, T>: GetLen {
     /// Creates a trusted iterator over the items of this collection.
     ///
     /// # Returns
     ///
     /// An iterator that implements the `TIterator` trait, yielding items of type `T`.
-    fn titer(&self) -> impl TIterator<Item = T> + '_;
+    fn titer(&'a self) -> impl TIterator<Item = T> + 'a;
 
     /// Maps each item in the collection using the provided function.
     ///
@@ -34,14 +34,12 @@ pub trait TIter<T>: GetLen {
     ///
     /// # Type Parameters
     ///
-    /// * `'a`: The lifetime of the reference to `self`.
     /// * `U`: The type of items yielded by the new iterator.
     /// * `F`: The type of the mapping function.
     #[inline]
-    fn map<'a, U, F>(&'a self, f: F) -> impl TIterator<Item = U>
+    fn map<U, F>(&'a self, f: F) -> impl TIterator<Item = U>
     where
         F: FnMut(T) -> U,
-        T: 'a,
     {
         self.titer().map(f)
     }
@@ -82,42 +80,39 @@ where
 ///
 /// * `view`: A reference to the underlying `Vec1View`.
 /// * `item`: A `PhantomData` to carry the item type `T`.
-pub struct OptIter<'a, V: Vec1View<T>, T> {
-    pub view: &'a V,
+pub struct OptIter<'a, V: Vec1View<'a, T>, T> {
+    pub view: V,
+    pub life: PhantomData<&'a ()>,
     pub item: PhantomData<T>,
 }
 
-impl<V: Vec1View<T>, T> GetLen for OptIter<'_, V, T> {
+impl<'a, V: Vec1View<'a, T>, T> GetLen for OptIter<'a, V, T> {
     #[inline]
     fn len(&self) -> usize {
         self.view.len()
     }
 }
 
-impl<V: Vec1View<T>, T: IsNone> TIter<Option<<T as IsNone>::Inner>> for OptIter<'_, V, T> {
+impl<'a, V: Vec1View<'a, T>, T: IsNone> TIter<'a, Option<<T as IsNone>::Inner>>
+    for OptIter<'a, V, T>
+{
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = Option<<T as IsNone>::Inner>> {
+    fn titer(&'a self) -> impl TIterator<Item = Option<<T as IsNone>::Inner>> {
         self.view.titer().map(|v| v.to_opt())
     }
 }
 
-impl<'a, T: IsNone + 'a, V: Vec1View<T>> Vec1View<Option<T::Inner>> for OptIter<'a, V, T>
+impl<'a, T: IsNone + 'a, V: Vec1View<'a, T>> Vec1View<'a, Option<T::Inner>> for OptIter<'a, V, T>
 where
-    for<'b> V::SliceOutput<'b>: TIter<T>,
+    for<'b, 'c> V::SliceOutput<'b>: TIter<'c, T>,
 {
     type SliceOutput<'b> = Vec<Option<T::Inner>> where Self: 'b;
 
     #[inline]
-    fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Self::SliceOutput<'b>>
-    where
-        T: 'b,
-    {
-        Ok(self
-            .view
-            .slice(start, end)?
-            .titer()
-            .map(|v| v.to_opt())
-            .collect_trusted_to_vec())
+    fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
+        let slice = self.view.slice(start, end)?;
+        let out = slice.titer().map(|v| v.to_opt()).collect_trusted_to_vec();
+        Ok(out)
     }
 
     #[inline]
@@ -131,9 +126,9 @@ where
     }
 }
 
-impl<'a, 'b, V: Vec1View<T>, T: IsNone> IntoIterator for &'b OptIter<'a, V, T> {
+impl<'a, V: Vec1View<'a, T>, T: IsNone> IntoIterator for &'a OptIter<'a, V, T> {
     type Item = Option<T::Inner>;
-    type IntoIter = Box<dyn TrustedLen<Item = Option<T::Inner>> + 'b>;
+    type IntoIter = Box<dyn TIterator<Item = Option<T::Inner>> + 'a>;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         Box::new(self.titer())
