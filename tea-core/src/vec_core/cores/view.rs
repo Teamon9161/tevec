@@ -303,7 +303,7 @@ pub trait Vec1View<'a, T>: TIter<'a, T> {
     #[inline]
     fn rolling_custom_iter<U, F>(&'a self, window: usize, mut f: F) -> impl TrustedLen<Item = U>
     where
-        F: FnMut(Self::SliceOutput<'_>) -> U,
+        F: FnMut(Self::SliceOutput<'a>) -> U,
         T: 'a,
     {
         (1..self.len() + 1)
@@ -342,7 +342,7 @@ pub trait Vec1View<'a, T>: TIter<'a, T> {
         out: Option<O::UninitRefMut<'_>>,
     ) -> Option<O>
     where
-        F: FnMut(Self::SliceOutput<'_>) -> OT,
+        F: FnMut(Self::SliceOutput<'a>) -> OT,
         T: 'a,
     {
         let iter = self.rolling_custom_iter(window, f);
@@ -379,7 +379,7 @@ pub trait Vec1View<'a, T>: TIter<'a, T> {
         mut f: F,
         mut out: O::UninitRefMut<'_>,
     ) where
-        F: FnMut(Self::SliceOutput<'_>) -> OT,
+        F: FnMut(Self::SliceOutput<'a>) -> OT,
         T: 'a,
     {
         let len = self.len();
@@ -439,7 +439,7 @@ pub trait Vec1View<'a, T>: TIter<'a, T> {
     ) -> Option<O>
     where
         V2: Vec1View<'b, T2>,
-        F: FnMut(Self::SliceOutput<'_>, V2::SliceOutput<'_>) -> OT,
+        F: FnMut(Self::SliceOutput<'a>, V2::SliceOutput<'b>) -> OT,
         T: 'a,
         T2: 'b,
     {

@@ -66,7 +66,7 @@ macro_rules! impl_vec1 {
                     out: Option<O::UninitRefMut<'_>>,
                 ) -> Option<O>
                 where
-                    F: for<'b> FnMut(Self::SliceOutput<'b>) -> OT,
+                    F: FnMut(Self::SliceOutput<'a>) -> OT,
                     T: 'a,
                 {
                     let len = self.len();
