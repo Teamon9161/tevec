@@ -50,8 +50,9 @@ impl DynVec1 for Series {
     }
 
     #[inline]
+    #[allow(clippy::useless_conversion)]
     fn rename(&mut self, name: impl AsRef<str>) -> &mut Self {
-        Series::rename(self, name.as_ref());
+        Series::rename(self, name.as_ref().into());
         self
     }
 
