@@ -122,7 +122,7 @@ impl From<DateTime<Nanosecond>> for AnyValue<'_> {
         if value.is_nat() {
             AnyValue::Null
         } else {
-            AnyValue::Datetime(value.0, TimeUnit::Nanoseconds, &None)
+            AnyValue::Datetime(value.0, TimeUnit::Nanoseconds, None)
         }
     }
 }
@@ -133,7 +133,7 @@ impl From<DateTime<Microsecond>> for AnyValue<'_> {
         if value.is_nat() {
             AnyValue::Null
         } else {
-            AnyValue::Datetime(value.0, TimeUnit::Microseconds, &None)
+            AnyValue::Datetime(value.0, TimeUnit::Microseconds, None)
         }
     }
 }
@@ -144,7 +144,7 @@ impl From<DateTime<Millisecond>> for AnyValue<'_> {
         if value.is_nat() {
             AnyValue::Null
         } else {
-            AnyValue::Datetime(value.0, TimeUnit::Milliseconds, &None)
+            AnyValue::Datetime(value.0, TimeUnit::Milliseconds, None)
         }
     }
 }

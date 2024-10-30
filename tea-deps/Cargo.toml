@@ -23,5 +23,5 @@ time = [
 
 [dependencies]
 ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
-polars = { version = ">=0.37, <0.44", optional = true, default-features = false }
+polars = { version = "0.44", optional = true, default-features = false }
 chrono = { version = "0.4", optional = true }

@@ -9,7 +9,7 @@ description = "A Rust crate that primarily defines traits for dynamic vector ope
 
 
 [features]
-default = ["polars"]
+default = []
 polars = [
     "tea-deps/polars",
     "tea-dtype/polars",

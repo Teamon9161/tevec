@@ -45,7 +45,9 @@ pub enum TError {
     IdxOut { idx: usize, len: usize },
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    #[cfg_attr(feature = "polars", error("Polars error: {0}"))]
+    #[cfg(feature = "polars")]
+    #[error("Polars error: {0}")]
+    // #[cfg_attr(feature = "polars", error("Polars error: {0}"))]
     Polars(#[from] tea_deps::polars::prelude::PolarsError),
     #[error("Parse error: {0}")]
     ParseError(ErrInfo),
