@@ -68,11 +68,11 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
         T: Clone,
         T::Inner: Number,
     {
-        let mut n: usize;
+        let mut n: usize = 0;
         let mut last_n = 0;
         let mut i = 0;
         let min_periods = min_periods.unwrap_or(self.len() / 2);
-        loop {
+        while n < self.len() {
             n = 2usize.pow(i);
             let s_shift = self.titer().vshift(n as i32, None);
             let corr: f64 = self.titer().vcorr_pearson(s_shift, min_periods);
@@ -83,6 +83,7 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
             }
             i += 1;
         }
+        n = n.min(self.len() - 1);
         let mut life: usize;
         while n - last_n > 1 {
             life = (n + last_n) / 2;

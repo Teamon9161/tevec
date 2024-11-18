@@ -13,4 +13,4 @@ polars = ["tea-deps/polars"]
 
 [dependencies]
 tea-deps = { workspace = true, default-features = false }
-thiserror = { version = "1", default-features = false }
+thiserror = { version = "2", default-features = false }
