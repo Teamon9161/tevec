@@ -2,6 +2,15 @@ mod vec_valid;
 
 use tea_core::prelude::*;
 pub use vec_valid::*;
+
+#[derive(Default, Clone, Copy)]
+pub enum PercentileOfMethod {
+    #[default]
+    Rank,
+    Weak,
+    Strict,
+}
+
 /// Extension trait providing additional aggregation methods for iterables with potentially invalid (None) values.
 pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// Computes the sum of valid values filtered by a mask, along with the count of valid elements.
@@ -136,6 +145,85 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
         }
         res
     }
+
+    /// Computes the percentile rank of a given score relative to a list of scores.
+    ///
+    /// # Arguments
+    ///
+    /// * `score` - The score for which the percentile rank is computed.
+    /// * `method` - The method used for the percentile calculation:
+    ///     - [`PercentileOfMethod::Rank`]: Average percentage ranking of the score. In case of multiple matches, averages the percentage rankings of all matching scores.
+    ///     - [`PercentileOfMethod::Weak`]: Corresponds to the definition of a cumulative distribution function (CDF), including the score itself.
+    ///     - [`PercentileOfMethod::Strict`]: Similar to [`PercentileOfMethod::Weak`], but only counts values strictly less than the score.
+    ///
+    /// # Returns
+    ///
+    /// The percentile rank of the given score as a `f64`. Returns `NaN` if the score is `None`.
+    fn vpercentile_of(self, score: T, method: PercentileOfMethod) -> f64
+    where
+        T::Inner: Number + PartialOrd,
+        T: IsNone,
+    {
+        let (mut less_than_count, mut exact_match_count, mut total_count) = (0, 0, 0);
+        let score = if score.is_none() {
+            return f64::NAN;
+        } else {
+            score.unwrap()
+        };
+        self.into_iter().for_each(|v| {
+            if let Some(value) = v.to_opt() {
+                total_count += 1;
+                if value < score {
+                    less_than_count += 1;
+                } else if value == score {
+                    exact_match_count += 1;
+                }
+            }
+        });
+
+        if total_count == 0 {
+            return f64::NAN;
+        }
+
+        let less_equal_count = less_than_count + exact_match_count;
+
+        match method {
+            PercentileOfMethod::Rank => {
+                if exact_match_count > 1 {
+                    let rank_start = less_than_count + 1;
+                    let rank_end = rank_start + (exact_match_count - 1);
+                    ((rank_start + rank_end).f64() * 0.5) / total_count.f64()
+                } else {
+                    (less_than_count + exact_match_count).f64() / total_count.f64()
+                }
+            },
+            PercentileOfMethod::Weak => less_equal_count.f64() / total_count.f64(),
+            PercentileOfMethod::Strict => less_than_count.f64() / total_count.f64(),
+        }
+    }
 }
 
 impl<I: IntoIterator<Item = T>, T: IsNone> AggValidExt<T> for I {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_vpercentile_of() {
+        assert!([].vpercentile_of(2, Default::default()).is_nan());
+        assert_eq!(vec![1, 2, 3, 4].vpercentile_of(3, Default::default()), 0.75);
+        assert_eq!([1, 2, 3, 3, 4].vpercentile_of(3, Default::default()), 0.7);
+        assert_eq!(
+            [1, 2, 3, 3, 4].vpercentile_of(3, PercentileOfMethod::Strict),
+            0.4
+        );
+        assert_eq!(
+            [1, 2, 3, 3, 4].vpercentile_of(3, PercentileOfMethod::Weak),
+            0.8
+        );
+        assert_eq!(
+            [1., f64::NAN, 2., f64::NAN, 3., 3., 3., 4., 5.].vpercentile_of(3., Default::default()),
+            4. / 7.
+        )
+    }
+}
