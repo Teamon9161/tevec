@@ -15,7 +15,7 @@ members = [
 exclude = ["tea-ffi"]
 
 [workspace.package]
-version = "0.4.5"
+version = "0.5.0"
 authors = ["Teamon"]
 edition = "2021"
 repository = "https://github.com/Teamon9161/tevec"
@@ -27,17 +27,17 @@ lto = true
 [workspace.dependencies]
 num-traits = "0.2"
 
-tea-deps = { version = "0.4.5", path = "./tea-deps", default-features = false }
-tea-core = { version = "0.4.5", path = "./tea-core", default-features = false }
-tea-dtype = { version = "0.4.5", path = "./tea-dtype", default-features = false }
-tea-error = { version = "0.4.5", path = "./tea-error" }
-tea-time = { version = "0.4.5", path = "./tea-time" }
-tea-macros = { version = "0.4.5", path = "./tea-macros" }
-tea-agg = { version = "0.4.5", path = "./tea-agg" }
-tea-map = { version = "0.4.5", path = "./tea-map" }
-tea-rolling = { version = "0.4.5", path = "./tea-rolling" }
-tea-dyn = { version = "0.4.5", path = "./tea-dyn" }
-tevec = { version = "0.4.5", path = "./tevec" }
+tea-deps = { version = "0.5.0", path = "./tea-deps", default-features = false }
+tea-core = { version = "0.5.0", path = "./tea-core", default-features = false }
+tea-dtype = { version = "0.5.0", path = "./tea-dtype", default-features = false }
+tea-error = { version = "0.5.0", path = "./tea-error" }
+tea-time = { version = "0.5.0", path = "./tea-time" }
+tea-macros = { version = "0.5.0", path = "./tea-macros" }
+tea-agg = { version = "0.5.0", path = "./tea-agg" }
+tea-map = { version = "0.5.0", path = "./tea-map" }
+tea-rolling = { version = "0.5.0", path = "./tea-rolling" }
+tea-dyn = { version = "0.5.0", path = "./tea-dyn" }
+# tevec = { version = "0.5.0", path = "./tevec" }
 
 [profile.dev]
 incremental = true
