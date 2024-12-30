@@ -29,7 +29,6 @@ pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 impl<U: TimeUnitTrait> std::fmt::Debug for DateTime<U>
 where
     Self: TryInto<CrDateTime<Utc>>,
-    <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.is_nat() {
@@ -218,7 +217,6 @@ impl<U: TimeUnitTrait> DateTime<U> {
     pub fn strftime(&self, fmt: Option<&str>) -> String
     where
         Self: TryInto<CrDateTime<Utc>>,
-        <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
     {
         if self.is_nat() {
             "NaT".to_string()
@@ -240,7 +238,6 @@ impl<U: TimeUnitTrait> DateTime<U> {
     pub fn duration_trunc(self, duration: TimeDelta) -> Self
     where
         Self: TryInto<CrDateTime<Utc>> + From<CrDateTime<Utc>>,
-        <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
     {
         if self.is_nat() {
             return self;
