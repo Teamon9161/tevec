@@ -105,7 +105,10 @@ impl<'a, T: IsNone + 'a, V: Vec1View<T>> Vec1View<Option<T::Inner>> for OptIter<
 where
     for<'b> V::SliceOutput<'b>: TIter<T>,
 {
-    type SliceOutput<'b> = Vec<Option<T::Inner>> where Self: 'b;
+    type SliceOutput<'b>
+        = Vec<Option<T::Inner>>
+    where
+        Self: 'b;
 
     #[inline]
     fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Self::SliceOutput<'b>>
@@ -131,9 +134,9 @@ where
     }
 }
 
-impl<'a, 'b, V: Vec1View<T>, T: IsNone> IntoIterator for &'b OptIter<'a, V, T> {
+impl<'a, V: Vec1View<T>, T: IsNone> IntoIterator for &'a OptIter<'_, V, T> {
     type Item = Option<T::Inner>;
-    type IntoIter = Box<dyn TrustedLen<Item = Option<T::Inner>> + 'b>;
+    type IntoIter = Box<dyn TrustedLen<Item = Option<T::Inner>> + 'a>;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         Box::new(self.titer())

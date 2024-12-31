@@ -177,7 +177,8 @@ impl<'a> TIter<Option<&'a str>> for &'a ChunkedArray<StringType> {
 // }
 
 impl<'a> Vec1View<Option<&'a str>> for &'a ChunkedArray<StringType> {
-    type SliceOutput<'b> = ChunkedArray<StringType>
+    type SliceOutput<'b>
+        = ChunkedArray<StringType>
     where
         Self: 'b,
         Option<&'a str>: 'b;
@@ -219,12 +220,9 @@ impl GetLen for DatetimeChunked {
 }
 
 #[cfg(feature = "time")]
-impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
+impl TIter<DateTime<unit::Nanosecond>> for &DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Nanosecond>>
-// where
-    //     DateTime<unit::Nanosecond>: 'b,
-    {
+    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Nanosecond>> {
         use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Nanoseconds, _) => {
@@ -237,12 +235,9 @@ impl<'a> TIter<DateTime<unit::Nanosecond>> for &'a DatetimeChunked {
 }
 
 #[cfg(feature = "time")]
-impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
+impl TIter<DateTime<unit::Millisecond>> for &DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Millisecond>>
-// where
-    //     DateTime<unit::Millisecond>: 'b,
-    {
+    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Millisecond>> {
         use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {
@@ -255,12 +250,9 @@ impl<'a> TIter<DateTime<unit::Millisecond>> for &'a DatetimeChunked {
 }
 
 #[cfg(feature = "time")]
-impl<'a> TIter<DateTime<unit::Microsecond>> for &'a DatetimeChunked {
+impl TIter<DateTime<unit::Microsecond>> for &DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Microsecond>>
-// where
-    //     DateTime<unit::Microsecond>: 'b,
-    {
+    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Microsecond>> {
         use tea_deps::polars::prelude::{DataType, TimeUnit};
         match self.dtype() {
             DataType::Datetime(TimeUnit::Microseconds, _) => {

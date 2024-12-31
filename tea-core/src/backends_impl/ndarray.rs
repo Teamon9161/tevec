@@ -18,14 +18,14 @@ impl<T: Clone> TIter<T> for Array1<T> {
     }
 }
 
-impl<'a, T: Clone> TIter<T> for ArrayView1<'a, T> {
+impl<T: Clone> TIter<T> for ArrayView1<'_, T> {
     #[inline]
     fn titer(&self) -> impl TIterator<Item = T> {
         self.iter().cloned()
     }
 }
 
-impl<'a, T: Clone> TIter<T> for ArrayViewMut1<'a, T> {
+impl<T: Clone> TIter<T> for ArrayViewMut1<'_, T> {
     #[inline]
     fn titer(&self) -> impl TIterator<Item = T> {
         self.iter().cloned()
@@ -209,7 +209,10 @@ impl<T: Clone> Vec1Mut<'_, T> for Array1<T> {
 
 impl<T: Clone> Vec1<T> for Array1<T> {
     type Uninit = Array1<MaybeUninit<T>>;
-    type UninitRefMut<'a> = ArrayViewMut1<'a, MaybeUninit<T>> where T: 'a;
+    type UninitRefMut<'a>
+        = ArrayViewMut1<'a, MaybeUninit<T>>
+    where
+        T: 'a;
 
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
@@ -261,7 +264,7 @@ impl<T: Clone> UninitVec<T> for Array1<MaybeUninit<T>> {
     }
 }
 
-impl<'a, T> UninitRefMut<T> for ArrayViewMut1<'a, MaybeUninit<T>> {
+impl<T> UninitRefMut<T> for ArrayViewMut1<'_, MaybeUninit<T>> {
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
         let ele = self.uget_mut(idx);

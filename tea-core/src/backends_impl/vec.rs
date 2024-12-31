@@ -242,7 +242,10 @@ impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for Vec<T> {
 
 impl<T: Clone> Vec1<T> for Vec<T> {
     type Uninit = Vec<MaybeUninit<T>>;
-    type UninitRefMut<'a> = &'a mut [MaybeUninit<T>] where T: 'a;
+    type UninitRefMut<'a>
+        = &'a mut [MaybeUninit<T>]
+    where
+        T: 'a;
 
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {

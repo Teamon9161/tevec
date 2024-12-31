@@ -8,7 +8,8 @@ impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
 }
 
 impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
-    type SliceOutput<'a> = V::SliceOutput<'a>
+    type SliceOutput<'a>
+        = V::SliceOutput<'a>
     where
         Self: 'a,
         T: 'a;

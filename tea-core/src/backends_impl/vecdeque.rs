@@ -18,7 +18,10 @@ impl<T: Clone> TIter<T> for VecDeque<T> {
 }
 
 impl<T: Clone> Vec1View<T> for VecDeque<T> {
-    type SliceOutput<'a> = std::collections::vec_deque::Iter<'a, T> where Self: 'a;
+    type SliceOutput<'a>
+        = std::collections::vec_deque::Iter<'a, T>
+    where
+        Self: 'a;
 
     #[inline]
     fn slice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
@@ -49,7 +52,7 @@ impl<T: Clone> Vec1View<T> for VecDeque<T> {
     }
 }
 
-impl<'a, T: Clone> Vec1Mut<'a, T> for VecDeque<T> {
+impl<T: Clone> Vec1Mut<'_, T> for VecDeque<T> {
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
         self.get_mut(index).unwrap()
@@ -68,7 +71,10 @@ impl<'a, T: Clone> Vec1Mut<'a, T> for VecDeque<T> {
 
 impl<T: Clone> Vec1<T> for VecDeque<T> {
     type Uninit = VecDeque<MaybeUninit<T>>;
-    type UninitRefMut<'a> = &'a mut VecDeque<MaybeUninit<T>> where T: 'a;
+    type UninitRefMut<'a>
+        = &'a mut VecDeque<MaybeUninit<T>>
+    where
+        T: 'a;
 
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {

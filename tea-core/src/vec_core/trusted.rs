@@ -76,15 +76,15 @@ unsafe impl<A: TrustedLen> TrustedLen for std::iter::Take<A> {}
 #[cfg(feature = "polars")]
 unsafe impl<T> PlTrustedLen for &mut dyn TrustedLen<Item = T> {}
 #[cfg(feature = "polars")]
-unsafe impl<'a, T> PlTrustedLen for Box<dyn TrustedLen<Item = T> + 'a> {}
+unsafe impl<T> PlTrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
 #[cfg(feature = "polars")]
 unsafe impl<T> TrustedLen for &mut dyn PlTrustedLen<Item = T> {}
 #[cfg(feature = "polars")]
-unsafe impl<'a, T> TrustedLen for Box<dyn PlTrustedLen<Item = T> + 'a> {}
+unsafe impl<T> TrustedLen for Box<dyn PlTrustedLen<Item = T> + '_> {}
 #[cfg(feature = "polars")]
 unsafe impl<T> TrustedLen for dyn PolarsIterator<Item = T> {}
 #[cfg(feature = "polars")]
-unsafe impl<'a, T> TrustedLen for Box<dyn PolarsIterator<Item = T> + 'a> {}
+unsafe impl<T> TrustedLen for Box<dyn PolarsIterator<Item = T> + '_> {}
 
 unsafe impl<T> TrustedLen for &mut dyn TrustedLen<Item = T> {}
 unsafe impl<T> TrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
@@ -106,13 +106,13 @@ where
 }
 
 #[cfg(feature = "ndarray")]
-unsafe impl<'a, A, D: tea_deps::ndarray::Dimension> TrustedLen
-    for tea_deps::ndarray::iter::Iter<'a, A, D>
+unsafe impl<A, D: tea_deps::ndarray::Dimension> TrustedLen
+    for tea_deps::ndarray::iter::Iter<'_, A, D>
 {
 }
 #[cfg(feature = "ndarray")]
-unsafe impl<'a, A, D: tea_deps::ndarray::Dimension> TrustedLen
-    for tea_deps::ndarray::iter::IterMut<'a, A, D>
+unsafe impl<A, D: tea_deps::ndarray::Dimension> TrustedLen
+    for tea_deps::ndarray::iter::IterMut<'_, A, D>
 {
 }
 
@@ -122,7 +122,7 @@ unsafe impl<'a, A, D: tea_deps::ndarray::Dimension> TrustedLen
 #[cfg(feature = "vecdeque")]
 unsafe impl<T> TrustedLen for std::collections::vec_deque::IntoIter<T> {}
 #[cfg(feature = "vecdeque")]
-unsafe impl<'a, T> TrustedLen for std::collections::vec_deque::Iter<'a, T> {}
+unsafe impl<T> TrustedLen for std::collections::vec_deque::Iter<'_, T> {}
 
 /// A wrapper struct for an iterator with a known length.
 ///
