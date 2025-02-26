@@ -3,7 +3,7 @@ use std::iter::Scan;
 use std::slice::Iter;
 
 #[cfg(feature = "polars")]
-pub(crate) use tea_deps::polars::export::arrow::trusted_len::TrustedLen as PlTrustedLen;
+pub(crate) use tea_deps::polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
 #[cfg(feature = "polars")]
 use tea_deps::polars::prelude::PolarsIterator;
 

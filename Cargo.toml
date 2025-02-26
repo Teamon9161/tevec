@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "tevec",
     "tea-core",
@@ -17,7 +17,7 @@ exclude = ["tea-ffi"]
 [workspace.package]
 version = "0.5.0"
 authors = ["Teamon"]
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/Teamon9161/tevec"
 license = "MIT"
 
@@ -37,7 +37,6 @@ tea-agg = { version = "0.5.0", path = "./tea-agg" }
 tea-map = { version = "0.5.0", path = "./tea-map" }
 tea-rolling = { version = "0.5.0", path = "./tea-rolling" }
 tea-dyn = { version = "0.5.0", path = "./tea-dyn" }
-# tevec = { version = "0.5.0", path = "./tevec" }
 
 [profile.dev]
 incremental = true

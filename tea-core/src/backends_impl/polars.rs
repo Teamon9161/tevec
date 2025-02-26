@@ -1,4 +1,4 @@
-use tea_deps::polars::export::arrow::legacy::utils::CustomIterTools;
+use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
 use tea_deps::polars::prelude::*;
 #[cfg(feature = "time")]
 use tea_dtype::{unit, DateTime};
@@ -47,9 +47,9 @@ macro_rules! impl_for_ca {
                 }
 
                 #[inline]
-                unsafe fn uget(&self, index: usize) -> Option<$real> {
+                unsafe fn uget(&self, index: usize) -> Option<$real> { unsafe {
                     self.get_unchecked(index)
-                }
+                }}
             }
 
         )*
@@ -206,9 +206,9 @@ impl<'a> Vec1View<Option<&'a str>> for &'a ChunkedArray<StringType> {
     }
 
     #[inline]
-    unsafe fn uget(&self, index: usize) -> Option<&'a str> {
+    unsafe fn uget(&self, index: usize) -> Option<&'a str> { unsafe {
         self.get_unchecked(index)
-    }
+    }}
 }
 
 #[cfg(feature = "time")]

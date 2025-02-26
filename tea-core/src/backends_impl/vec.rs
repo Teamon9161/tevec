@@ -40,9 +40,9 @@ macro_rules! impl_vec1 {
                 unsafe fn uslice<'a>(&'a self, start: usize, end: usize) -> TResult<Self::SliceOutput<'a>>
                 where
                     T: 'a,
-                {
+                { unsafe {
                     Ok(self.get_unchecked(start..end))
-                }
+                }}
 
                 #[inline]
                 fn get_backend_name(&self) -> &'static str {
@@ -50,9 +50,9 @@ macro_rules! impl_vec1 {
                 }
 
                 #[inline]
-                unsafe fn uget(&self, index: usize) -> T {
+                unsafe fn uget(&self, index: usize) -> T { unsafe {
                     self.get_unchecked(index).clone()
-                }
+                }}
 
                 $(#[inline]
                 fn $slice(&self) -> Option<&[T]> {
@@ -230,9 +230,9 @@ impl_vec1!(
 
 impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for Vec<T> {
     #[inline]
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
+    unsafe fn uget_mut(&mut self, index: usize) -> &mut T { unsafe {
         self.get_unchecked_mut(index)
-    }
+    }}
 
     #[inline]
     fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
@@ -293,23 +293,23 @@ impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
     type Vec = Vec<T>;
 
     #[inline]
-    unsafe fn assume_init(self) -> Self::Vec {
+    unsafe fn assume_init(self) -> Self::Vec { unsafe {
         std::mem::transmute::<Vec<MaybeUninit<T>>, Vec<T>>(self)
-    }
+    }}
 
     #[inline]
-    unsafe fn uset(&mut self, idx: usize, v: T) {
+    unsafe fn uset(&mut self, idx: usize, v: T) { unsafe {
         let ele = self.get_unchecked_mut(idx);
         ele.write(v);
-    }
+    }}
 }
 
 impl<T> UninitRefMut<T> for &mut [MaybeUninit<T>] {
     #[inline]
-    unsafe fn uset(&mut self, idx: usize, v: T) {
+    unsafe fn uset(&mut self, idx: usize, v: T) { unsafe {
         let ele = self.get_unchecked_mut(idx);
         ele.write(v);
-    }
+    }}
 }
 
 #[cfg(test)]

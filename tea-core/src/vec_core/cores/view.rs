@@ -233,9 +233,9 @@ pub trait Vec1View<T>: TIter<T> {
     unsafe fn uvget(&self, index: usize) -> Option<T::Inner>
     where
         T: IsNone,
-    {
+    { unsafe {
         self.uget(index).to_opt()
-    }
+    }}
 
     /// Safely retrieves the value at the specified index.
     ///

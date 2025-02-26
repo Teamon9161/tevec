@@ -44,11 +44,7 @@ impl<T: Clone> Vec1View<T> for VecDeque<T> {
     #[inline]
     fn try_as_slice(&self) -> Option<&[T]> {
         let slc = self.as_slices();
-        if slc.1.is_empty() {
-            Some(slc.0)
-        } else {
-            None
-        }
+        if slc.1.is_empty() { Some(slc.0) } else { None }
     }
 }
 
@@ -61,11 +57,7 @@ impl<T: Clone> Vec1Mut<'_, T> for VecDeque<T> {
     #[inline]
     fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
         let slc = self.as_mut_slices();
-        if slc.1.is_empty() {
-            Some(slc.0)
-        } else {
-            None
-        }
+        if slc.1.is_empty() { Some(slc.0) } else { None }
     }
 }
 
@@ -121,7 +113,9 @@ impl<T: Clone> UninitVec<T> for VecDeque<MaybeUninit<T>> {
 
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
-        self.into_iter().map(|x| x.assume_init()).collect()
+        self.into_iter()
+            .map(|x| unsafe { x.assume_init() })
+            .collect()
     }
 
     #[inline]
