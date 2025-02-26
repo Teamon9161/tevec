@@ -25,11 +25,7 @@ pub trait Cast<T> {
 impl<T: IsNone> Cast<Option<T>> for T {
     #[inline]
     fn cast(self) -> Option<T> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 }
 
@@ -367,11 +363,7 @@ impl Cast<i64> for Time {
 impl Cast<Option<i64>> for Time {
     #[inline]
     fn cast(self) -> Option<i64> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self.0)
-        }
+        if self.is_none() { None } else { Some(self.0) }
     }
 }
 
@@ -425,7 +417,9 @@ macro_rules! impl_cast_from_string {
     };
 }
 
-impl_cast_from_string!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize, f32, f64, char, bool);
+impl_cast_from_string!(
+    u8, u16, u32, u64, usize, i8, i16, i32, i64, isize, f32, f64, char, bool
+);
 
 impl Cast<String> for &str {
     #[inline]

@@ -36,9 +36,9 @@ impl<V: Vec1View<T>, T> Vec1View<T> for std::sync::Arc<V> {
     }
 
     #[inline]
-    unsafe fn uget(&self, index: usize) -> T { unsafe {
-        (**self).uget(index)
-    }}
+    unsafe fn uget(&self, index: usize) -> T {
+        unsafe { (**self).uget(index) }
+    }
 
     #[inline]
     fn try_as_slice(&self) -> Option<&[T]> {

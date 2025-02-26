@@ -314,18 +314,17 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         let n_abs = n.unsigned_abs() as usize;
         let value = value.unwrap_or_else(|| T::none());
         if len <= n_abs {
-            return Box::new(std::iter::repeat(value).take(len));
+            return Box::new(std::iter::repeat_n(value, len));
         }
         match n {
             n if n > 0 => Box::new(
-                std::iter::repeat(value)
-                    .take(n_abs)
+                std::iter::repeat_n(value, n_abs)
                     .chain(self.take(len - n_abs))
                     .to_trust(len),
             ),
             n if n < 0 => Box::new(
                 self.skip(n_abs)
-                    .chain(std::iter::repeat(value).take(n_abs))
+                    .chain(std::iter::repeat_n(value, n_abs))
                     .to_trust(len),
             ),
             _ => Box::new(self),
@@ -400,7 +399,12 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
         use itertools::Itertools;
         let bins: Vec<T::Inner> = if add_bounds {
             if labels.len() != bins.len() + 1 {
-                tbail!(func=cut, "Number of labels must be one more than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+                tbail!(
+                    func = cut,
+                    "Number of labels must be one more than the number of bin edges, label: {}, bins: {}",
+                    labels.len(),
+                    bins.len()
+                )
             }
             vec![T::Inner::min_()]
                 .into_iter()
@@ -409,7 +413,12 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                 .collect()
         } else {
             if labels.len() + 1 != bins.len() {
-                tbail!(func=cut, "Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}", labels.len(), bins.len())
+                tbail!(
+                    func = cut,
+                    "Number of labels must be one fewer than the number of bin edges, label: {}, bins: {}",
+                    labels.len(),
+                    bins.len()
+                )
             }
             bins.titer().map(IsNone::unwrap).collect_trusted_vec1()
         };
@@ -506,11 +515,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
                 let mut iter = self.into_iter();
                 let first_element = iter.next();
                 let mut last_value = if let Some(v) = first_element {
-                    if v.not_none() {
-                        Some(v.unwrap())
-                    } else {
-                        None
-                    }
+                    if v.not_none() { Some(v.unwrap()) } else { None }
                 } else {
                     None
                 };

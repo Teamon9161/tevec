@@ -185,9 +185,9 @@ impl_vec1view_for_ndarray!(ArrayViewMut1<'t, T>, 't);
 
 impl<'a, T: 'a + Clone> Vec1Mut<'a, T> for ArrayViewMut1<'a, T> {
     #[inline]
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut T { unsafe {
-        self.uget_mut(index)
-    }}
+    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
+        unsafe { self.uget_mut(index) }
+    }
 
     #[inline]
     fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
@@ -197,9 +197,9 @@ impl<'a, T: 'a + Clone> Vec1Mut<'a, T> for ArrayViewMut1<'a, T> {
 
 impl<T: Clone> Vec1Mut<'_, T> for Array1<T> {
     #[inline]
-    unsafe fn uget_mut(&mut self, index: usize) -> &mut T { unsafe {
-        self.uget_mut(index)
-    }}
+    unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
+        unsafe { self.uget_mut(index) }
+    }
 
     #[inline]
     fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
@@ -253,23 +253,27 @@ impl<T: Clone> Vec1<T> for Array1<T> {
 impl<T: Clone> UninitVec<T> for Array1<MaybeUninit<T>> {
     type Vec = Array1<T>;
     #[inline]
-    unsafe fn assume_init(self) -> Self::Vec { unsafe {
-        self.assume_init()
-    }}
+    unsafe fn assume_init(self) -> Self::Vec {
+        unsafe { self.assume_init() }
+    }
 
     #[inline]
-    unsafe fn uset(&mut self, idx: usize, v: T) { unsafe {
-        let ele = self.uget_mut(idx);
-        ele.write(v);
-    }}
+    unsafe fn uset(&mut self, idx: usize, v: T) {
+        unsafe {
+            let ele = self.uget_mut(idx);
+            ele.write(v);
+        }
+    }
 }
 
 impl<T> UninitRefMut<T> for ArrayViewMut1<'_, MaybeUninit<T>> {
     #[inline]
-    unsafe fn uset(&mut self, idx: usize, v: T) { unsafe {
-        let ele = self.uget_mut(idx);
-        ele.write(v);
-    }}
+    unsafe fn uset(&mut self, idx: usize, v: T) {
+        unsafe {
+            let ele = self.uget_mut(idx);
+            ele.write(v);
+        }
+    }
 }
 
 #[cfg(test)]

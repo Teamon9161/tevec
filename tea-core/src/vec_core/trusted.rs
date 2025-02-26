@@ -3,9 +3,9 @@ use std::iter::Scan;
 use std::slice::Iter;
 
 #[cfg(feature = "polars")]
-pub(crate) use tea_deps::polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
-#[cfg(feature = "polars")]
 use tea_deps::polars::prelude::PolarsIterator;
+#[cfg(feature = "polars")]
+pub(crate) use tea_deps::polars_arrow::trusted_len::TrustedLen as PlTrustedLen;
 
 /// An iterator of known, fixed size.
 ///
@@ -70,6 +70,7 @@ unsafe impl<T> TrustedLen for std::iter::Once<T> {}
 unsafe impl<T> TrustedLen for std::vec::IntoIter<T> {}
 
 unsafe impl<A: Clone> TrustedLen for std::iter::Repeat<A> {}
+unsafe impl<A: Clone> TrustedLen for std::iter::RepeatN<A> {}
 unsafe impl<A, F: FnMut() -> A> TrustedLen for std::iter::RepeatWith<F> {}
 unsafe impl<A: TrustedLen> TrustedLen for std::iter::Take<A> {}
 

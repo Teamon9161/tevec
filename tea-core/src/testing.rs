@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use tea_dtype::{IsNone, Number};
 
-use crate::prelude::{Vec1View, EPS};
+use crate::prelude::{EPS, Vec1View};
 
 /// Asserts that two 1-dimensional vectors are approximately equal within a specified epsilon.
 ///
@@ -14,7 +14,7 @@ use crate::prelude::{Vec1View, EPS};
 /// * `v1` - A reference to the first vector implementing `Vec1View<T>`
 /// * `v2` - A reference to the second vector implementing `Vec1View<T>`
 /// * `epsilon` - An optional f64 value specifying the maximum allowed difference between elements.
-///               If None, the default `EPS` value is used.
+///   If None, the default `EPS` value is used.
 ///
 /// # Type Parameters
 ///

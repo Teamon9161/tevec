@@ -34,11 +34,7 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
             .zip(mask)
             .filter_map(|(v, flag)| {
                 if flag.not_none() {
-                    if flag.unwrap().cast() {
-                        Some(v)
-                    } else {
-                        None
-                    }
+                    if flag.unwrap().cast() { Some(v) } else { None }
                 } else {
                     None
                 }
@@ -64,11 +60,7 @@ pub trait AggValidExt<T: IsNone>: IntoIterator<Item = T> + Sized {
         T::Inner: Number,
     {
         let (n, sum) = self.n_vsum_filter(mask);
-        if n > 0 {
-            Some(sum)
-        } else {
-            None
-        }
+        if n > 0 { Some(sum) } else { None }
     }
 
     /// Computes the mean of valid values filtered by a mask.

@@ -129,9 +129,9 @@ where
     }
 
     #[inline]
-    unsafe fn uget(&self, index: usize) -> Option<T::Inner> { unsafe {
-        self.view.uget(index).to_opt()
-    }}
+    unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
+        unsafe { self.view.uget(index).to_opt() }
+    }
 }
 
 impl<'a, V: Vec1View<T>, T: IsNone> IntoIterator for &'a OptIter<'_, V, T> {

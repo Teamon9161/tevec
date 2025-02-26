@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use tea_dtype::{Cast, IsNone};
-use tea_error::{tbail, TResult};
+use tea_error::{TResult, tbail};
 
 use super::super::iter::{OptIter, TIter};
 use super::super::iter_traits::TIterator;
@@ -233,9 +233,9 @@ pub trait Vec1View<T>: TIter<T> {
     unsafe fn uvget(&self, index: usize) -> Option<T::Inner>
     where
         T: IsNone,
-    { unsafe {
-        self.uget(index).to_opt()
-    }}
+    {
+        unsafe { self.uget(index).to_opt() }
+    }
 
     /// Safely retrieves the value at the specified index.
     ///
@@ -313,7 +313,7 @@ pub trait Vec1View<T>: TIter<T> {
         T: 'a,
     {
         (1..self.len() + 1)
-            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+            .zip(std::iter::repeat_n(0, window - 1).chain(0..self.len()))
             .map(move |(end, start)| f(self.slice(start, end).unwrap()))
             .to_trust(self.len())
     }
@@ -450,7 +450,7 @@ pub trait Vec1View<T>: TIter<T> {
         F: FnMut(Self::SliceOutput<'_>, V2::SliceOutput<'_>) -> OT,
     {
         let iter = (1..self.len() + 1)
-            .zip(std::iter::repeat(0).take(window - 1).chain(0..self.len()))
+            .zip(std::iter::repeat_n(0, window - 1).chain(0..self.len()))
             .map(|(end, start)| unsafe {
                 f(
                     self.uslice(start, end).unwrap(),
@@ -478,7 +478,7 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes an `Option<T>` (the element being removed, if any)
-    ///        and a `T` (the element being added).
+    ///   and a `T` (the element being added).
     /// * `out`: An optional pre-allocated output buffer.
     ///
     /// # Returns
@@ -507,8 +507,7 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let remove_value_iter = std::iter::repeat(None)
-                .take(window - 1)
+            let remove_value_iter = std::iter::repeat_n(None, window - 1)
                 .chain(self.titer().map(Some));
             Some(
                 remove_value_iter
@@ -532,7 +531,7 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes an `Option<T>` (the element being removed, if any)
-    ///        and a `T` (the element being added).
+    ///   and a `T` (the element being added).
     /// * `out`: A mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Behavior
@@ -600,7 +599,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// * `other`: A reference to the second input vector.
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes an `Option<(T, T2)>` (the elements being removed, if any)
-    ///        and a `(T, T2)` (the elements being added).
+    ///   and a `(T, T2)` (the elements being added).
     /// * `out`: An optional mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Returns
@@ -630,8 +629,7 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let remove_value_iter = std::iter::repeat(None)
-                .take(window - 1)
+            let remove_value_iter = std::iter::repeat_n(None, window - 1)
                 .chain(self.titer().zip(other.titer()).map(Some));
             Some(
                 remove_value_iter
@@ -657,7 +655,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// * `other`: A reference to the second input vector.
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes an `Option<(T, T2)>` (the elements being removed, if any)
-    ///        and a `(T, T2)` (the elements being added).
+    ///   and a `(T, T2)` (the elements being added).
     /// * `out`: A mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Safety
@@ -717,7 +715,7 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes `Option<usize>` (the start index),
-    ///        `usize` (the end index), and `T` (the current element).
+    ///   `usize` (the end index), and `T` (the current element).
     /// * `out`: An optional mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Returns
@@ -745,8 +743,7 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let start_iter = std::iter::repeat(None)
-                .take(window - 1)
+            let start_iter = std::iter::repeat_n(None, window - 1)
                 .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
             Some(
                 self.titer()
@@ -771,7 +768,7 @@ pub trait Vec1View<T>: TIter<T> {
     ///
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes `Option<usize>` (the start index),
-    ///        `usize` (the end index), and `T` (the current element).
+    ///   `usize` (the end index), and `T` (the current element).
     /// * `out`: A mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Safety
@@ -828,7 +825,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// * `other`: A reference to the second input vector.
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes `Option<usize>` (the start index),
-    ///        `usize` (the end index), and `(T, T2)` (the current elements from both vectors).
+    ///   `usize` (the end index), and `(T, T2)` (the current elements from both vectors).
     /// * `out`: An optional mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Returns
@@ -857,8 +854,7 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let start_iter = std::iter::repeat(None)
-                .take(window - 1)
+            let start_iter = std::iter::repeat_n(None, window - 1)
                 .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
             Some(
                 self.titer()
@@ -887,7 +883,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// * `other`: A reference to the second input vector.
     /// * `window`: The size of the rolling window.
     /// * `f`: The function to apply. It takes `Option<usize>` (the start index of the window),
-    ///        `usize` (the end index of the window), and `(T, T2)` (the current elements from both vectors).
+    ///   `usize` (the end index of the window), and `(T, T2)` (the current elements from both vectors).
     /// * `out`: A mutable reference to an uninitialized buffer to store the results.
     ///
     /// # Behavior

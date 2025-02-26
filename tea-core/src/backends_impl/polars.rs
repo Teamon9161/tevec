@@ -1,7 +1,7 @@
-use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
 use tea_deps::polars::prelude::*;
+use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
 #[cfg(feature = "time")]
-use tea_dtype::{unit, DateTime};
+use tea_dtype::{DateTime, unit};
 
 use crate::prelude::*;
 
@@ -206,9 +206,9 @@ impl<'a> Vec1View<Option<&'a str>> for &'a ChunkedArray<StringType> {
     }
 
     #[inline]
-    unsafe fn uget(&self, index: usize) -> Option<&'a str> { unsafe {
-        self.get_unchecked(index)
-    }}
+    unsafe fn uget(&self, index: usize) -> Option<&'a str> {
+        unsafe { self.get_unchecked(index) }
+    }
 }
 
 #[cfg(feature = "time")]

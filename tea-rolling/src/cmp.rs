@@ -1,4 +1,4 @@
-use std::cmp::{min, Ordering};
+use std::cmp::{Ordering, min};
 
 use tea_core::prelude::*;
 /// Trait for performing rolling comparison operations on valid elements in vectors.

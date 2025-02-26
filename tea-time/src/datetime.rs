@@ -6,7 +6,7 @@ use chrono::{
     DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveDate, NaiveDateTime, NaiveTime,
     Timelike, Utc,
 };
-use tea_error::{tbail, TResult};
+use tea_error::{TResult, tbail};
 
 use super::timeunit::*;
 use crate::TimeDelta;
@@ -136,11 +136,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     /// `Some(i64)` if the instance is not NaT, `None` otherwise.
     #[inline]
     pub const fn into_opt_i64(self) -> Option<i64> {
-        if self.is_nat() {
-            None
-        } else {
-            Some(self.0)
-        }
+        if self.is_nat() { None } else { Some(self.0) }
     }
 
     /// Converts the `DateTime` instance to a `chrono::DateTime<Utc>`.

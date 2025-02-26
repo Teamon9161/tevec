@@ -3,7 +3,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, FnArg, ItemFn, ReturnType};
+use syn::{Data, DeriveInput, FnArg, ItemFn, ReturnType, parse_macro_input, parse_quote};
 
 /// Parses the parameters of a function signature.
 ///

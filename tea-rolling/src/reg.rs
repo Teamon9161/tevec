@@ -40,7 +40,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     let slope = (n_f64 * sum_xt - sum_t * sum) / divisor;
                     let intercept = sum_t.mul_add(-slope, sum) / n_f64;
@@ -100,7 +100,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     let slope = (n_f64 * sum_xt - sum_t * sum) / divisor;
                     let intercept = sum_t.mul_add(-slope, sum) / n_f64;
@@ -160,7 +160,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     (n_f64 * sum_xt - sum_t * sum) / divisor
                 } else {
@@ -218,7 +218,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     let slope = (n_f64 * sum_xt - sum_t * sum) / divisor;
                     sum_t.mul_add(-slope, sum) / n_f64
@@ -279,7 +279,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let sum_tt = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6.;
                     let divisor = sum_tt - sum_t.powi(2);
                     let beta = (n_f64 * sum_xt - sum_t * sum) / divisor;
