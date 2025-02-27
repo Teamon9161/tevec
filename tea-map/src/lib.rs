@@ -60,8 +60,7 @@ where
         let n_abs = n.unsigned_abs() as usize;
         match n {
             n if n > 0 => Box::new(TrustIter::new(
-                std::iter::repeat_n(value, n_abs)
-                    .chain(self.take(len - n_abs)),
+                std::iter::repeat_n(value, n_abs).chain(self.take(len - n_abs)),
                 len,
             )),
             n if n < 0 => Box::new(TrustIter::new(

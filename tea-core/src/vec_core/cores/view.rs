@@ -507,8 +507,8 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let remove_value_iter = std::iter::repeat_n(None, window - 1)
-                .chain(self.titer().map(Some));
+            let remove_value_iter =
+                std::iter::repeat_n(None, window - 1).chain(self.titer().map(Some));
             Some(
                 remove_value_iter
                     .zip(self.titer())
@@ -743,8 +743,7 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let start_iter = std::iter::repeat_n(None, window - 1)
-                .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
+            let start_iter = std::iter::repeat_n(None, window - 1).chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
             Some(
                 self.titer()
                     .zip(start_iter)
@@ -854,8 +853,7 @@ pub trait Vec1View<T>: TIter<T> {
             None
         } else {
             assert!(window > 0, "window must be greater than 0");
-            let start_iter = std::iter::repeat_n(None, window - 1)
-                .chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
+            let start_iter = std::iter::repeat_n(None, window - 1).chain((0..self.len()).map(Some)); // this is longer than expect, but start_iter will stop earlier
             Some(
                 self.titer()
                     .zip(other.titer())
