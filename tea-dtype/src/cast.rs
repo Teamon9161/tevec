@@ -231,7 +231,7 @@ impl Cast<Time> for bool {
 impl Cast<String> for Option<bool> {
     #[inline]
     fn cast(self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
@@ -434,7 +434,7 @@ where
     CrDateTime<Utc>: From<DateTime<U>>,
 {
     fn cast(self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
@@ -464,7 +464,7 @@ where
 impl Cast<String> for TimeDelta {
     #[inline]
     fn cast(self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 

@@ -126,7 +126,7 @@ macro_rules! tensure {
 #[cfg(feature = "polars")]
 impl From<TError> for tea_deps::polars::prelude::PolarsError {
     fn from(e: TError) -> Self {
-        tea_deps::polars::prelude::PolarsError::ComputeError(format!("{}", e).into())
+        tea_deps::polars::prelude::PolarsError::ComputeError(format!("{e}").into())
     }
 }
 

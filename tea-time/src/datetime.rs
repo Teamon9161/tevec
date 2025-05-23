@@ -256,10 +256,10 @@ impl<U: TimeUnitTrait> DateTime<U> {
                 Ordering::Greater => dt - Months::new(delta_down as u32),
                 Ordering::Less => dt - Months::new((dm - delta_down.abs()) as u32),
             };
-            if let Some(nd) = duration.inner.num_nanoseconds() {
-                if nd == 0 {
-                    return dt.into();
-                }
+            if let Some(nd) = duration.inner.num_nanoseconds()
+                && nd == 0
+            {
+                return dt.into();
             }
         }
         dt.duration_trunc(duration.inner)

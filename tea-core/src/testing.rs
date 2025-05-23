@@ -41,27 +41,19 @@ pub fn assert_vec1d_equal_numeric<T: IsNone + Debug, V1: Vec1View<T>, V2: Vec1Vi
         if x.is_none() && y.is_none() {
             continue;
         } else if x.is_none() || y.is_none() {
-            panic!(
-                "Vectors are not approximately equal, x: {:?}, y: {:?}",
-                x, y
-            );
+            panic!("Vectors are not approximately equal, x: {x:?}, y: {y:?}");
         } else {
             let x = x.unwrap().f64();
             let y = y.unwrap().f64();
             if !(x.is_nan() && y.is_nan()) {
                 assert!(
                     (x - y).abs() < epsilon,
-                    "Vectors are not approximately equal, x: {}, y: {}",
-                    x,
-                    y
+                    "Vectors are not approximately equal, x: {x}, y: {y}",
                 );
             } else if x.is_nan() && y.is_nan() {
                 continue;
             } else {
-                panic!(
-                    "Vectors are not approximately equal, x: {:?}, y: {:?}",
-                    x, y
-                );
+                panic!("Vectors are not approximately equal, x: {x:?}, y: {y:?}",);
             }
         }
     }

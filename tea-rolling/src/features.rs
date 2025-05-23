@@ -43,11 +43,11 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN.cast()
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum -= v_rm.unwrap();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum -= v_rm.unwrap();
                 }
                 res
             },
@@ -96,11 +96,11 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN.cast()
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res
             },
@@ -153,12 +153,12 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        // 本应是window-1，不过本身window就要自然减一，调整一下顺序
-                        q_x -= v_rm.unwrap().f64() * oma.powi(n as i32);
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    // 本应是window-1，不过本身window就要自然减一，调整一下顺序
+                    q_x -= v_rm.unwrap().f64() * oma.powi(n as i32);
                 }
                 res.cast()
             },
@@ -211,12 +211,12 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -277,13 +277,13 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v) = v_rm {
-                    if v.not_none() {
-                        let v = v.unwrap().f64();
-                        n -= 1;
-                        sum -= v;
-                        sum2 -= v * v
-                    }
+                if let Some(v) = v_rm
+                    && v.not_none()
+                {
+                    let v = v.unwrap().f64();
+                    n -= 1;
+                    sum -= v;
+                    sum2 -= v * v
                 }
                 res.cast()
             },
@@ -344,13 +344,13 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v) = v_rm {
-                    if v.not_none() {
-                        let v = v.unwrap().f64();
-                        n -= 1;
-                        sum -= v;
-                        sum2 -= v * v
-                    }
+                if let Some(v) = v_rm
+                    && v.not_none()
+                {
+                    let v = v.unwrap().f64();
+                    n -= 1;
+                    sum -= v;
+                    sum2 -= v * v
                 }
                 res.cast()
             },
@@ -418,15 +418,15 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v) = v_rm {
-                    if v.not_none() {
-                        let v = v.unwrap().f64();
-                        n -= 1;
-                        sum -= v;
-                        let v2 = v * v;
-                        sum2 -= v2;
-                        sum3 -= v2 * v;
-                    }
+                if let Some(v) = v_rm
+                    && v.not_none()
+                {
+                    let v = v.unwrap().f64();
+                    n -= 1;
+                    sum -= v;
+                    let v2 = v * v;
+                    sum2 -= v2;
+                    sum3 -= v2 * v;
                 }
                 res.cast()
             },
@@ -501,16 +501,16 @@ pub trait RollingValidFeature<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v) = v_rm {
-                    if v.not_none() {
-                        let v = v.unwrap().f64();
-                        n -= 1;
-                        sum -= v;
-                        let v2 = v * v;
-                        sum2 -= v2;
-                        sum3 -= v2 * v;
-                        sum4 -= v2 * v2;
-                    }
+                if let Some(v) = v_rm
+                    && v.not_none()
+                {
+                    let v = v.unwrap().f64();
+                    n -= 1;
+                    sum -= v;
+                    let v2 = v * v;
+                    sum2 -= v2;
+                    sum3 -= v2 * v;
+                    sum4 -= v2 * v2;
                 }
                 res.cast()
             },

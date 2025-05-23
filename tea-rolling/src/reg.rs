@@ -48,12 +48,12 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -108,12 +108,12 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -166,12 +166,12 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -225,12 +225,12 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -292,14 +292,14 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        let v_rm = v_rm.unwrap().f64();
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm;
-                        sum_xx -= v_rm * v_rm;
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    let v_rm = v_rm.unwrap().f64();
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm;
+                    sum_xx -= v_rm * v_rm;
                 }
                 res.cast()
             },
@@ -362,15 +362,16 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_b -= vb;
-                        sum_b2 -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_b -= vb;
+                    sum_b2 -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 res.cast()
             },
@@ -427,15 +428,16 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_b -= vb;
-                        sum_b2 -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_b -= vb;
+                    sum_b2 -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 res.cast()
             },
@@ -748,16 +750,17 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     (f64::NAN, f64::NAN, f64::NAN)
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_a2 -= va * va;
-                        sum_b -= vb;
-                        sum_b2 -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_a2 -= va * va;
+                    sum_b -= vb;
+                    sum_b2 -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 (alpha.cast(), beta.cast(), sse.cast())
             },

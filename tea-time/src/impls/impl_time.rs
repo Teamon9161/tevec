@@ -61,40 +61,40 @@ impl Timelike for Time {
 
     #[inline]
     fn with_hour(&self, hour: u32) -> Option<Self> {
-        if let Some(time) = self.as_cr() {
-            if let Some(time) = time.with_hour(hour) {
-                return Some(Self::from_cr(&time));
-            }
+        if let Some(time) = self.as_cr()
+            && let Some(time) = time.with_hour(hour)
+        {
+            return Some(Self::from_cr(&time));
         }
         None
     }
 
     #[inline]
     fn with_minute(&self, min: u32) -> Option<Self> {
-        if let Some(time) = self.as_cr() {
-            if let Some(time) = time.with_minute(min) {
-                return Some(Self::from_cr(&time));
-            }
+        if let Some(time) = self.as_cr()
+            && let Some(time) = time.with_minute(min)
+        {
+            return Some(Self::from_cr(&time));
         }
         None
     }
 
     #[inline]
     fn with_second(&self, sec: u32) -> Option<Self> {
-        if let Some(time) = self.as_cr() {
-            if let Some(time) = time.with_second(sec) {
-                return Some(Self::from_cr(&time));
-            }
+        if let Some(time) = self.as_cr()
+            && let Some(time) = time.with_second(sec)
+        {
+            return Some(Self::from_cr(&time));
         }
         None
     }
 
     #[inline]
     fn with_nanosecond(&self, nano: u32) -> Option<Self> {
-        if let Some(time) = self.as_cr() {
-            if let Some(time) = time.with_nanosecond(nano) {
-                return Some(Self::from_cr(&time));
-            }
+        if let Some(time) = self.as_cr()
+            && let Some(time) = time.with_nanosecond(nano)
+        {
+            return Some(Self::from_cr(&time));
         }
         None
     }

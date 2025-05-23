@@ -38,11 +38,11 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
             |start, end, v| {
                 let v = v.to_opt();
                 unsafe {
-                    if v.is_some() {
+                    if let Some(v) = v {
                         n += 1;
                         if min_idx.is_none() {
                             min_idx = Some(end);
-                            min = Some(v.unwrap());
+                            min = Some(v);
                         }
                     }
                     if min_idx < start {
@@ -190,11 +190,11 @@ pub trait RollingValidCmp<T: IsNone>: Vec1View<T> {
             |start, end, v| {
                 let v = v.to_opt();
                 unsafe {
-                    if v.is_some() {
+                    if let Some(v) = v {
                         n += 1;
                         if max_idx.is_none() {
                             max_idx = Some(end);
-                            max = Some(v.unwrap());
+                            max = Some(v);
                         }
                     }
                     if max_idx < start {
