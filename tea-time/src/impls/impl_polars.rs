@@ -8,7 +8,7 @@ use crate::{DateTime, Microsecond, Millisecond, Nanosecond, Time, TimeDelta};
 impl Literal for Time {
     #[inline]
     fn lit(self) -> Expr {
-        LiteralValue::Time(self.0).lit()
+        Scalar::new(DataType::Time, AnyValue::Time(self.0)).lit()
     }
 }
 
@@ -16,7 +16,11 @@ impl Literal for Time {
 impl Literal for DateTime<Nanosecond> {
     #[inline]
     fn lit(self) -> Expr {
-        LiteralValue::DateTime(self.0, TimeUnit::Nanoseconds, None).lit()
+        Scalar::new(
+            DataType::Datetime(TimeUnit::Nanoseconds, None),
+            AnyValue::DatetimeOwned(self.0, TimeUnit::Nanoseconds, None),
+        )
+        .lit()
     }
 }
 
@@ -24,7 +28,11 @@ impl Literal for DateTime<Nanosecond> {
 impl Literal for DateTime<Microsecond> {
     #[inline]
     fn lit(self) -> Expr {
-        LiteralValue::DateTime(self.0, TimeUnit::Microseconds, None).lit()
+        Scalar::new(
+            DataType::Datetime(TimeUnit::Microseconds, None),
+            AnyValue::DatetimeOwned(self.0, TimeUnit::Microseconds, None),
+        )
+        .lit()
     }
 }
 
@@ -32,7 +40,11 @@ impl Literal for DateTime<Microsecond> {
 impl Literal for DateTime<Millisecond> {
     #[inline]
     fn lit(self) -> Expr {
-        LiteralValue::DateTime(self.0, TimeUnit::Milliseconds, None).lit()
+        Scalar::new(
+            DataType::Datetime(TimeUnit::Milliseconds, None),
+            AnyValue::DatetimeOwned(self.0, TimeUnit::Milliseconds, None),
+        )
+        .lit()
     }
 }
 
