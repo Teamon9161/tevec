@@ -239,10 +239,10 @@ mod tests {
 
     #[test]
     fn test_ts_mean() {
-        let series = Series::from_vec("abc", vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+        let series = Series::from_vec("abc".into(), vec![1.0, 2.0, 3.0, 4.0, 5.0]);
         let result = series.ts_mean(3, None).unwrap();
 
-        let expected = Series::from_vec("abc", vec![1., 1.5, 2.0, 3.0, 4.0]);
+        let expected = Series::from_vec("abc".into(), vec![1., 1.5, 2.0, 3.0, 4.0]);
 
         assert_eq!(result, expected);
 

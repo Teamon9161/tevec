@@ -1,7 +1,7 @@
-use tea_deps::polars::export::arrow::legacy::utils::CustomIterTools;
 use tea_deps::polars::prelude::*;
+use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
 #[cfg(feature = "time")]
-use tea_dtype::{unit, DateTime};
+use tea_dtype::{DateTime, unit};
 
 use crate::prelude::*;
 
@@ -40,9 +40,9 @@ macro_rules! impl_for_ca {
                 }
 
                 #[inline]
-                unsafe fn uget(&self, index: usize) -> Option<$real> {
+                unsafe fn uget(&self, index: usize) -> Option<$real> { unsafe {
                     self.get_unchecked(index)
-                }
+                }}
             }
 
         )*
@@ -166,7 +166,10 @@ impl<'a> TIter<'a, Option<&'a str>> for ChunkedArray<StringType> {
 }
 
 impl<'a> Vec1View<'a, Option<&'a str>> for &'a ChunkedArray<StringType> {
-    type SliceOutput<'b> = ChunkedArray<StringType> where Self: 'b;
+    type SliceOutput<'b>
+        = ChunkedArray<StringType>
+    where
+        Self: 'b;
 
     #[inline]
     fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
@@ -188,7 +191,7 @@ impl<'a> Vec1View<'a, Option<&'a str>> for &'a ChunkedArray<StringType> {
 
     #[inline]
     unsafe fn uget(&self, index: usize) -> Option<&'a str> {
-        self.get_unchecked(index)
+        unsafe { self.get_unchecked(index) }
     }
 }
 

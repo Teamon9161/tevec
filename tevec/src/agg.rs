@@ -68,11 +68,15 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
         T: Clone,
         T::Inner: Number,
     {
-        let mut n: usize;
+        let mut n: usize = 0;
         let mut last_n = 0;
         let mut i = 0;
-        let min_periods = min_periods.unwrap_or(self.len() / 2);
-        loop {
+        let len = self.len();
+        if len == 0 {
+            return 0;
+        }
+        let min_periods = min_periods.unwrap_or(len / 2);
+        while n < len {
             n = 2usize.pow(i);
             let s_shift = self.titer().vshift(n as i32, None);
             let corr: f64 = self.titer().vcorr_pearson(s_shift, min_periods);
@@ -83,6 +87,7 @@ pub trait AggValidFinal<T: IsNone>: Vec1View<T> {
             }
             i += 1;
         }
+        n = n.min(self.len() - 1);
         let mut life: usize;
         while n - last_n > 1 {
             life = (n + last_n) / 2;
@@ -113,7 +118,11 @@ mod tests {
     fn test_half_life() {
         let s = vec![10., 12., 13., 14., 15., 12., 11., 14., 15., 16.];
         assert_eq!(s.ts_vmean::<Vec<f64>, _>(4, Some(1)).half_life(Some(1)), 3);
+        // test empty vec
         let s: Vec<f64> = vec![];
+        assert_eq!(s.ts_vmean::<Vec<f64>, _>(4, Some(1)).half_life(Some(1)), 0);
+        // test all nan
+        let s = vec![f64::NAN; 10];
         assert_eq!(s.ts_vmean::<Vec<f64>, _>(4, Some(1)).half_life(Some(1)), 1);
     }
 }

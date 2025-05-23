@@ -60,7 +60,7 @@ pub trait Vec1<T>: for<'a> Vec1View<'a, T> + Sized {
     where
         T: Clone,
     {
-        let iter = std::iter::repeat(v).take(len);
+        let iter = std::iter::repeat_n(v, len);
         Self::collect_from_trusted(iter)
     }
 

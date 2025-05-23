@@ -10,7 +10,7 @@ description = "Dependencies for the tevec ecosystem"
 [features]
 default = []
 ndarray = ["dep:ndarray"]
-polars = ["dep:polars"]
+polars = ["dep:polars", "dep:polars-arrow"]
 polars-lazy = ["polars", "polars/lazy"]
 polars-struct = ["polars", "polars/dtype-struct"]
 time = [
@@ -23,5 +23,6 @@ time = [
 
 [dependencies]
 ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
-polars = { version = ">=0.37, <0.44", optional = true, default-features = false }
+polars = { version = ">=0.44, <0.49", optional = true, default-features = false }
+polars-arrow = { version = ">=0.44, <0.49", optional = true, default-features = false }
 chrono = { version = "0.4", optional = true }

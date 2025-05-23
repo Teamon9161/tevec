@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use tea_rolling::*;
 
 const LENGTH: i32 = 10_000_000;

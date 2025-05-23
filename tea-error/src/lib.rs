@@ -46,7 +46,8 @@ pub enum TError {
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[cfg(feature = "polars")]
-    #[cfg_attr(feature = "polars", error("Polars error: {0}"))]
+    #[error("Polars error: {0}")]
+    // #[cfg_attr(feature = "polars", error("Polars error: {0}"))]
     Polars(#[from] tea_deps::polars::prelude::PolarsError),
     #[error("Parse error: {0}")]
     ParseError(ErrInfo),
@@ -125,7 +126,7 @@ macro_rules! tensure {
 #[cfg(feature = "polars")]
 impl From<TError> for tea_deps::polars::prelude::PolarsError {
     fn from(e: TError) -> Self {
-        tea_deps::polars::prelude::PolarsError::ComputeError(format!("{}", e).into())
+        tea_deps::polars::prelude::PolarsError::ComputeError(format!("{e}").into())
     }
 }
 

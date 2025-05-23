@@ -1,7 +1,7 @@
 use num_traits::Zero;
 use tea_dtype::{BoolType, Cast, IntoCast, IsNone, Number};
 
-use crate::prelude::{IterBasic, EPS};
+use crate::prelude::{EPS, IterBasic};
 
 pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     #[inline]
@@ -238,11 +238,7 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
         T::Inner: Zero,
     {
         let (n, sum) = self.vfold_n(T::Inner::zero(), |acc, x| acc + x);
-        if n >= 1 {
-            Some(sum)
-        } else {
-            None
-        }
+        if n >= 1 { Some(sum) } else { None }
     }
 
     #[inline]
@@ -355,7 +351,7 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Arguments
     ///
     /// * `min_periods` - The minimum number of non-null values required to calculate the variance.
-    ///                   If the number of non-null values is less than `min_periods`, the method returns `f64::NAN`.
+    ///   If the number of non-null values is less than `min_periods`, the method returns `f64::NAN`.
     ///
     /// # Returns
     ///
@@ -390,7 +386,7 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Arguments
     ///
     /// * `min_periods` - The minimum number of non-null values required to calculate the standard deviation.
-    ///                   If the number of non-null values is less than `min_periods`, the method returns `f64::NAN`.
+    ///   If the number of non-null values is less than `min_periods`, the method returns `f64::NAN`.
     ///
     /// # Returns
     ///
@@ -425,7 +421,7 @@ pub trait AggValidBasic<T: IsNone>: IntoIterator<Item = T> + Sized {
     /// # Arguments
     ///
     /// * `min_periods` - The minimum number of non-null values required to calculate the skewness.
-    ///                   If the number of non-null values is less than `min_periods`, the method returns `f64::NAN`.
+    ///   If the number of non-null values is less than `min_periods`, the method returns `f64::NAN`.
     ///
     /// # Returns
     ///
@@ -880,11 +876,7 @@ pub trait AggBasic: IntoIterator + Sized {
             n += 1;
             acc + x
         });
-        if n >= 1 {
-            (n, Some(sum))
-        } else {
-            (n, None)
-        }
+        if n >= 1 { (n, Some(sum)) } else { (n, None) }
     }
 
     #[inline]
@@ -1159,21 +1151,21 @@ mod tests {
     #[test]
     fn test_bool() {
         let data = vec![true, false, false, false];
-        assert_eq!(data.titer().any(), true);
-        assert_eq!(data.titer().vany(), true);
-        assert_eq!(data.opt().vany(), true);
+        assert!(data.titer().any());
+        assert!(data.titer().vany());
+        assert!(data.opt().vany());
         let data = vec![false, false, false, false];
-        assert_eq!(data.titer().any(), false);
-        assert_eq!(data.titer().vany(), false);
-        assert_eq!(data.opt().vany(), false);
+        assert!(!data.titer().any());
+        assert!(!data.titer().vany());
+        assert!(!data.opt().vany());
         let data = vec![true, true, true, true];
-        assert_eq!(data.titer().all(), true);
-        assert_eq!(data.titer().vall(), true);
-        assert_eq!(data.opt().vall(), true);
+        assert!(data.titer().all());
+        assert!(data.titer().vall());
+        assert!(data.opt().vall());
         let data = vec![true, false, true, true];
-        assert_eq!(data.titer().all(), false);
-        assert_eq!(data.titer().vall(), false);
-        assert_eq!(data.opt().vall(), false);
+        assert!(!data.titer().all());
+        assert!(!data.titer().vall());
+        assert!(!data.opt().vall());
     }
 
     #[test]

@@ -58,14 +58,14 @@ pub trait RollingValidNorm<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v) = v_rm {
-                    if v.not_none() {
-                        let v = v.unwrap().f64();
-                        n -= 1;
-                        sum -= v;
-                        sum2 -= v * v
-                    };
-                }
+                if let Some(v) = v_rm
+                    && v.not_none()
+                {
+                    let v = v.unwrap().f64();
+                    n -= 1;
+                    sum -= v;
+                    sum2 -= v * v
+                };
                 res.cast()
             },
             out,

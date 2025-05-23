@@ -106,7 +106,10 @@ impl<'a, T: IsNone + 'a, V: Vec1View<'a, T>> Vec1View<'a, Option<T::Inner>> for 
 where
     for<'b, 'c> V::SliceOutput<'b>: TIter<'c, T>,
 {
-    type SliceOutput<'b> = Vec<Option<T::Inner>> where Self: 'b;
+    type SliceOutput<'b>
+        = Vec<Option<T::Inner>>
+    where
+        Self: 'b;
 
     #[inline]
     fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
@@ -122,7 +125,7 @@ where
 
     #[inline]
     unsafe fn uget(&self, index: usize) -> Option<T::Inner> {
-        self.view.uget(index).to_opt()
+        unsafe { self.view.uget(index).to_opt() }
     }
 }
 

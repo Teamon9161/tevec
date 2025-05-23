@@ -3,7 +3,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, FnArg, ItemFn, ReturnType};
+use syn::{Data, DeriveInput, FnArg, ItemFn, ReturnType, parse_macro_input, parse_quote};
 
 /// Parses the parameters of a function signature.
 ///
@@ -67,10 +67,10 @@ fn no_output_transform(_attr: TokenStream, func: ItemFn) -> TokenStream2 {
         .inputs
         .into_iter()
         .filter(|arg| {
-            if let FnArg::Typed(pat_type) = arg {
-                if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
-                    return pat_ident.ident != "out";
-                }
+            if let FnArg::Typed(pat_type) = arg
+                && let syn::Pat::Ident(pat_ident) = &*pat_type.pat
+            {
+                return pat_ident.ident != "out";
             }
             true
         })

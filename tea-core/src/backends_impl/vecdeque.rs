@@ -38,11 +38,7 @@ impl<'a, T: Clone + 'a> Vec1View<'a, T> for VecDeque<T> {
     #[inline]
     fn try_as_slice(&self) -> Option<&[T]> {
         let slc = self.as_slices();
-        if slc.1.is_empty() {
-            Some(slc.0)
-        } else {
-            None
-        }
+        if slc.1.is_empty() { Some(slc.0) } else { None }
     }
 }
 
@@ -55,17 +51,16 @@ impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for VecDeque<T> {
     #[inline]
     fn try_as_slice_mut(&mut self) -> Option<&mut [T]> {
         let slc = self.as_mut_slices();
-        if slc.1.is_empty() {
-            Some(slc.0)
-        } else {
-            None
-        }
+        if slc.1.is_empty() { Some(slc.0) } else { None }
     }
 }
 
 impl<T: Clone> Vec1<T> for VecDeque<T> {
     type Uninit = VecDeque<MaybeUninit<T>>;
-    type UninitRefMut<'a> = &'a mut VecDeque<MaybeUninit<T>> where T: 'a;
+    type UninitRefMut<'a>
+        = &'a mut VecDeque<MaybeUninit<T>>
+    where
+        T: 'a;
 
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
@@ -112,7 +107,9 @@ impl<T: Clone> UninitVec<T> for VecDeque<MaybeUninit<T>> {
 
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
-        self.into_iter().map(|x| x.assume_init()).collect()
+        self.into_iter()
+            .map(|x| unsafe { x.assume_init() })
+            .collect()
     }
 
     #[inline]

@@ -13,7 +13,7 @@ Tevec's functionality is categorized into three main types:
 ## Installation
 To include Tevec in your project, add the following line to your `Cargo.toml`:
 ```toml
-tevec = "0.4"
+tevec = "0.5"
 ```
 
 ## Basic Usage
@@ -41,7 +41,7 @@ use tevec::prelude::*;
 let data = vec![1, 2, 3, 4, 5];
 let mean: Vec<f64> = data.ts_mean(3, Some(1)); // params: window, min_periods
 #[cfg(feature = "ndarray")]
-{   
+{
     use tevec::export::ndarray::Array1;  // reexported from ndarray crate
     let mean2: Array1<f32> = data.ts_vmean(4, None); // rolling_mean function ignore none values
 }

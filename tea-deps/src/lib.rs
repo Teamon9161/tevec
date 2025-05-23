@@ -9,3 +9,5 @@ pub use chrono;
 pub use ndarray;
 #[cfg(feature = "polars")]
 pub use polars;
+#[cfg(feature = "polars")]
+pub use polars_arrow;

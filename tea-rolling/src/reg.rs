@@ -40,7 +40,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     let slope = (n_f64 * sum_xt - sum_t * sum) / divisor;
                     let intercept = sum_t.mul_add(-slope, sum) / n_f64;
@@ -48,12 +48,12 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -100,7 +100,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     let slope = (n_f64 * sum_xt - sum_t * sum) / divisor;
                     let intercept = sum_t.mul_add(-slope, sum) / n_f64;
@@ -108,12 +108,12 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -160,18 +160,18 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     (n_f64 * sum_xt - sum_t * sum) / divisor
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -218,19 +218,19 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let divisor = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6. - sum_t.powi(2);
                     let slope = (n_f64 * sum_xt - sum_t * sum) / divisor;
                     sum_t.mul_add(-slope, sum) / n_f64
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm.unwrap().f64();
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm.unwrap().f64();
                 }
                 res.cast()
             },
@@ -279,7 +279,7 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                     let n_f64 = n.f64();
                     let nn_add_n = n.mul_add(n, n);
                     let sum_t = (nn_add_n >> 1).f64(); // sum of time from 1 to window
-                                                       // denominator of slope
+                    // denominator of slope
                     let sum_tt = (n * nn_add_n * n.mul_add(2, 1)).f64() / 6.;
                     let divisor = sum_tt - sum_t.powi(2);
                     let beta = (n_f64 * sum_xt - sum_t * sum) / divisor;
@@ -292,14 +292,14 @@ pub trait RollingValidReg<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some(v_rm) = v_rm {
-                    if v_rm.not_none() {
-                        let v_rm = v_rm.unwrap().f64();
-                        n -= 1;
-                        sum_xt -= sum;
-                        sum -= v_rm;
-                        sum_xx -= v_rm * v_rm;
-                    }
+                if let Some(v_rm) = v_rm
+                    && v_rm.not_none()
+                {
+                    let v_rm = v_rm.unwrap().f64();
+                    n -= 1;
+                    sum_xt -= sum;
+                    sum -= v_rm;
+                    sum_xx -= v_rm * v_rm;
                 }
                 res.cast()
             },
@@ -362,15 +362,16 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_b -= vb;
-                        sum_b2 -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_b -= vb;
+                    sum_b2 -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 res.cast()
             },
@@ -427,15 +428,16 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_b -= vb;
-                        sum_b2 -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_b -= vb;
+                    sum_b2 -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 res.cast()
             },
@@ -748,16 +750,17 @@ pub trait RollingValidRegBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     (f64::NAN, f64::NAN, f64::NAN)
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_a2 -= va * va;
-                        sum_b -= vb;
-                        sum_b2 -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_a2 -= va * va;
+                    sum_b -= vb;
+                    sum_b2 -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 (alpha.cast(), beta.cast(), sse.cast())
             },

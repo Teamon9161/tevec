@@ -51,15 +51,16 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum_b -= vb;
-                        sum_ab -= va * vb;
-                    };
-                }
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum_b -= vb;
+                    sum_ab -= va * vb;
+                };
                 res.cast()
             },
             out,
@@ -129,16 +130,17 @@ pub trait RollingValidBinary<T: IsNone>: Vec1View<T> {
                 } else {
                     f64::NAN
                 };
-                if let Some((va, vb)) = remove_values {
-                    if va.not_none() && vb.not_none() {
-                        n -= 1;
-                        let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
-                        sum_a -= va;
-                        sum2_a -= va * va;
-                        sum_b -= vb;
-                        sum2_b -= vb * vb;
-                        sum_ab -= va * vb;
-                    };
+                if let Some((va, vb)) = remove_values
+                    && va.not_none()
+                    && vb.not_none()
+                {
+                    n -= 1;
+                    let (va, vb) = (va.unwrap().f64(), vb.unwrap().f64());
+                    sum_a -= va;
+                    sum2_a -= va * va;
+                    sum_b -= vb;
+                    sum2_b -= vb * vb;
+                    sum_ab -= va * vb;
                 }
                 res.cast()
             },

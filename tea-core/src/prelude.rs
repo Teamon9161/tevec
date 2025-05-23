@@ -1,9 +1,9 @@
-#[cfg(feature = "time")]
-pub use tea_dtype::{
-    unit, CrDateTime, DateTime, Time, TimeDelta, TimeUnit, TimeUnitTrait, Timelike, Utc,
-};
 pub use tea_dtype::{
     BoolType, Cast, DataType, GetDataType, IntoCast, IsNone, MulAdd, Number, One, Zero,
+};
+#[cfg(feature = "time")]
+pub use tea_dtype::{
+    CrDateTime, DateTime, Time, TimeDelta, TimeUnit, TimeUnitTrait, Timelike, Utc, unit,
 };
 pub use tea_error::*;
 

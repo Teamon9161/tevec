@@ -1,4 +1,4 @@
-use tea_error::{tbail, TResult};
+use tea_error::{TResult, tbail};
 
 use super::trusted::TrustedLen;
 use super::{GetLen, Vec1};

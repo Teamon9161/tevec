@@ -25,12 +25,11 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         let n_abs = n.unsigned_abs() as usize;
         let value = value.unwrap_or_else(|| T::none());
         if len <= n_abs {
-            return Box::new(std::iter::repeat(value).take(len));
+            return Box::new(std::iter::repeat_n(value, len));
         }
         match n {
             n if n > 0 => Box::new(
-                std::iter::repeat(value)
-                    .take(n_abs)
+                std::iter::repeat_n(value, n_abs)
                     .chain(self.titer().take(len - n_abs))
                     .zip(self.titer())
                     .map(|(a, b)| b - a)
@@ -41,10 +40,10 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
                     .skip(n_abs)
                     .zip(self.titer())
                     .map(|(a, b)| b - a)
-                    .chain(std::iter::repeat(value).take(n_abs))
+                    .chain(std::iter::repeat_n(value, n_abs))
                     .to_trust(len),
             ),
-            _ => Box::new(std::iter::repeat(T::zero()).take(len).to_trust(len)),
+            _ => Box::new(std::iter::repeat_n(T::zero(), len).to_trust(len)),
         }
     }
 
@@ -65,12 +64,11 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
         let len = self.len();
         let n_abs = n.unsigned_abs() as usize;
         if len <= n_abs {
-            return Box::new(std::iter::repeat(f64::NAN).take(len));
+            return Box::new(std::iter::repeat_n(f64::NAN, len));
         }
         match n {
             n if n > 0 => Box::new(
-                std::iter::repeat(f64::NAN)
-                    .take(n_abs)
+                std::iter::repeat_n(f64::NAN, n_abs)
                     .chain(self.titer().take(len - n_abs).map(|v| v.cast()))
                     .zip(self.titer())
                     .map(|(a, b)| {
@@ -89,19 +87,15 @@ pub trait MapValidVec<T: IsNone>: Vec1View<T> {
                     .map(|(a, b)| {
                         if a.not_none() && b.not_none() {
                             let a: f64 = a.cast();
-                            if a != 0. {
-                                b.cast() / a - 1.
-                            } else {
-                                f64::NAN
-                            }
+                            if a != 0. { b.cast() / a - 1. } else { f64::NAN }
                         } else {
                             f64::NAN
                         }
                     })
-                    .chain(std::iter::repeat(f64::NAN).take(n_abs))
+                    .chain(std::iter::repeat_n(f64::NAN, n_abs))
                     .to_trust(len),
             ),
-            _ => Box::new(std::iter::repeat(0.).take(len).to_trust(len)),
+            _ => Box::new(std::iter::repeat_n(0., len).to_trust(len)),
         }
     }
 

@@ -38,7 +38,7 @@ macro_rules! impl_vec1 {
                 unsafe fn uslice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>>
                 {
                     Ok(self.get_unchecked(start..end))
-                }
+                }}
 
                 #[inline]
                 fn get_backend_name(&self) -> &'static str {
@@ -46,9 +46,9 @@ macro_rules! impl_vec1 {
                 }
 
                 #[inline]
-                unsafe fn uget(&self, index: usize) -> T {
+                unsafe fn uget(&self, index: usize) -> T { unsafe {
                     self.get_unchecked(index).clone()
-                }
+                }}
 
                 $(#[inline]
                 fn $slice(&self) -> Option<&[T]> {
@@ -227,7 +227,7 @@ impl_vec1!(
 impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for Vec<T> {
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
-        self.get_unchecked_mut(index)
+        unsafe { self.get_unchecked_mut(index) }
     }
 
     #[inline]
@@ -238,7 +238,10 @@ impl<'a, T: Clone + 'a> Vec1Mut<'a, T> for Vec<T> {
 
 impl<T: Clone> Vec1<T> for Vec<T> {
     type Uninit = Vec<MaybeUninit<T>>;
-    type UninitRefMut<'a> = &'a mut [MaybeUninit<T>] where T: 'a;
+    type UninitRefMut<'a>
+        = &'a mut [MaybeUninit<T>]
+    where
+        T: 'a;
 
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
@@ -287,21 +290,25 @@ impl<T: Clone> UninitVec<T> for Vec<MaybeUninit<T>> {
 
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
-        std::mem::transmute::<Vec<MaybeUninit<T>>, Vec<T>>(self)
+        unsafe { std::mem::transmute::<Vec<MaybeUninit<T>>, Vec<T>>(self) }
     }
 
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
-        let ele = self.get_unchecked_mut(idx);
-        ele.write(v);
+        unsafe {
+            let ele = self.get_unchecked_mut(idx);
+            ele.write(v);
+        }
     }
 }
 
 impl<T> UninitRefMut<T> for &mut [MaybeUninit<T>] {
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
-        let ele = self.get_unchecked_mut(idx);
-        ele.write(v);
+        unsafe {
+            let ele = self.get_unchecked_mut(idx);
+            ele.write(v);
+        }
     }
 }
 

@@ -1,7 +1,10 @@
 /target
 */target
+
 *.lock
 *.json
+
 .vscode/
+.idea/
 teapy-master
 tea-test

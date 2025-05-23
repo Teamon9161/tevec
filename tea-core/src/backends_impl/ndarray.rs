@@ -51,9 +51,9 @@ macro_rules! impl_vec1view_for_ndarray {
             }
 
             #[inline]
-            unsafe fn uget(&self, index: usize) -> T {
+            unsafe fn uget(&self, index: usize) -> T { unsafe {
                 self.uget(index).clone()
-            }
+            }}
 
             #[inline]
             fn try_as_slice(&self) -> Option<&[T]> {
@@ -184,7 +184,7 @@ impl_vec1view_for_ndarray!(ArrayViewMut1<'t, T>, 't);
 impl<'a, T: 'a + Clone> Vec1Mut<'a, T> for ArrayViewMut1<'a, T> {
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
-        self.uget_mut(index)
+        unsafe { self.uget_mut(index) }
     }
 
     #[inline]
@@ -196,7 +196,7 @@ impl<'a, T: 'a + Clone> Vec1Mut<'a, T> for ArrayViewMut1<'a, T> {
 impl<T: Clone> Vec1Mut<'_, T> for Array1<T> {
     #[inline]
     unsafe fn uget_mut(&mut self, index: usize) -> &mut T {
-        self.uget_mut(index)
+        unsafe { self.uget_mut(index) }
     }
 
     #[inline]
@@ -207,7 +207,10 @@ impl<T: Clone> Vec1Mut<'_, T> for Array1<T> {
 
 impl<T: Clone> Vec1<T> for Array1<T> {
     type Uninit = Array1<MaybeUninit<T>>;
-    type UninitRefMut<'a> = ArrayViewMut1<'a, MaybeUninit<T>> where T: 'a;
+    type UninitRefMut<'a>
+        = ArrayViewMut1<'a, MaybeUninit<T>>
+    where
+        T: 'a;
 
     #[inline]
     fn collect_from_iter<I: Iterator<Item = T>>(iter: I) -> Self {
@@ -249,21 +252,25 @@ impl<T: Clone> UninitVec<T> for Array1<MaybeUninit<T>> {
     type Vec = Array1<T>;
     #[inline]
     unsafe fn assume_init(self) -> Self::Vec {
-        self.assume_init()
+        unsafe { self.assume_init() }
     }
 
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
-        let ele = self.uget_mut(idx);
-        ele.write(v);
+        unsafe {
+            let ele = self.uget_mut(idx);
+            ele.write(v);
+        }
     }
 }
 
-impl<'a, T> UninitRefMut<T> for ArrayViewMut1<'a, MaybeUninit<T>> {
+impl<T> UninitRefMut<T> for ArrayViewMut1<'_, MaybeUninit<T>> {
     #[inline]
     unsafe fn uset(&mut self, idx: usize, v: T) {
-        let ele = self.uget_mut(idx);
-        ele.write(v);
+        unsafe {
+            let ele = self.uget_mut(idx);
+            ele.write(v);
+        }
     }
 }
 

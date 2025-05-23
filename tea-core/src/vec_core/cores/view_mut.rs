@@ -1,4 +1,4 @@
-use tea_error::{tensure, TResult};
+use tea_error::{TResult, tensure};
 
 use super::view::Vec1View;
 /// Trait for mutable vector-like data structures.
@@ -55,7 +55,7 @@ pub trait Vec1Mut<'a, T>: Vec1View<'a, T> {
     ///
     /// * `other` - A reference to another vector-like structure implementing `Vec1View<OT>`.
     /// * `f` - A function that takes a mutable reference to an element from this vector
-    ///         and a value from the other vector, and performs some operation.
+    ///   and a value from the other vector, and performs some operation.
     ///
     /// # Returns
     ///

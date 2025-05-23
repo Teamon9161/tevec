@@ -6,7 +6,7 @@ use chrono::{
     DateTime as CrDateTime, Datelike, DurationRound, Months, NaiveDate, NaiveDateTime, NaiveTime,
     Timelike, Utc,
 };
-use tea_error::{tbail, TResult};
+use tea_error::{TResult, tbail};
 
 use super::timeunit::*;
 use crate::TimeDelta;
@@ -29,7 +29,6 @@ pub struct DateTime<U: TimeUnitTrait = Nanosecond>(pub i64, PhantomData<U>);
 impl<U: TimeUnitTrait> std::fmt::Debug for DateTime<U>
 where
     Self: TryInto<CrDateTime<Utc>>,
-    <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.is_nat() {
@@ -137,11 +136,7 @@ impl<U: TimeUnitTrait> DateTime<U> {
     /// `Some(i64)` if the instance is not NaT, `None` otherwise.
     #[inline]
     pub const fn into_opt_i64(self) -> Option<i64> {
-        if self.is_nat() {
-            None
-        } else {
-            Some(self.0)
-        }
+        if self.is_nat() { None } else { Some(self.0) }
     }
 
     /// Converts the `DateTime` instance to a `chrono::DateTime<Utc>`.
@@ -218,7 +213,6 @@ impl<U: TimeUnitTrait> DateTime<U> {
     pub fn strftime(&self, fmt: Option<&str>) -> String
     where
         Self: TryInto<CrDateTime<Utc>>,
-        <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
     {
         if self.is_nat() {
             "NaT".to_string()
@@ -240,7 +234,6 @@ impl<U: TimeUnitTrait> DateTime<U> {
     pub fn duration_trunc(self, duration: TimeDelta) -> Self
     where
         Self: TryInto<CrDateTime<Utc>> + From<CrDateTime<Utc>>,
-        <Self as TryInto<CrDateTime<Utc>>>::Error: std::fmt::Debug,
     {
         if self.is_nat() {
             return self;
@@ -263,10 +256,10 @@ impl<U: TimeUnitTrait> DateTime<U> {
                 Ordering::Greater => dt - Months::new(delta_down as u32),
                 Ordering::Less => dt - Months::new((dm - delta_down.abs()) as u32),
             };
-            if let Some(nd) = duration.inner.num_nanoseconds() {
-                if nd == 0 {
-                    return dt.into();
-                }
+            if let Some(nd) = duration.inner.num_nanoseconds()
+                && nd == 0
+            {
+                return dt.into();
             }
         }
         dt.duration_trunc(duration.inner)

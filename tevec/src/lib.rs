@@ -11,7 +11,7 @@
 //! ## Installation
 //! To include Tevec in your project, add the following line to your `Cargo.toml`:
 //! ```toml
-//! tevec = "0.4"
+//! tevec = "0.5"
 //! ```
 //!
 //! ## Basic Usage

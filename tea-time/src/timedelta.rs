@@ -2,7 +2,7 @@ use std::hash::Hash;
 use std::str::FromStr;
 
 use chrono::Duration;
-use tea_error::{tbail, tensure, TError, TResult};
+use tea_error::{TError, TResult, tbail, tensure};
 
 use crate::convert::*;
 

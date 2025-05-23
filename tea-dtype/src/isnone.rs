@@ -317,20 +317,12 @@ impl IsNone for f32 {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -382,20 +374,12 @@ impl IsNone for f64 {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -455,11 +439,7 @@ impl<T: IsNone<Inner = T>> IsNone for Option<T> {
 
     #[inline]
     fn from_inner(inner: Self::Inner) -> Self {
-        if inner.is_none() {
-            None
-        } else {
-            Some(inner)
-        }
+        if inner.is_none() { None } else { Some(inner) }
     }
 
     #[inline]
@@ -579,20 +559,12 @@ impl IsNone for String {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -637,20 +609,12 @@ impl<'a> IsNone for &'a str {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -696,20 +660,12 @@ impl<Unit: TimeUnitTrait> IsNone for DateTime<Unit> {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_nat() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_nat() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -755,20 +711,12 @@ impl IsNone for TimeDelta {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -814,20 +762,12 @@ impl IsNone for Time {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -872,20 +812,12 @@ impl<T: Clone> IsNone for Vec<T> {
 
     #[inline]
     fn to_opt(self) -> Option<Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline]
     fn as_opt(&self) -> Option<&Self::Inner> {
-        if self.is_none() {
-            None
-        } else {
-            Some(self)
-        }
+        if self.is_none() { None } else { Some(self) }
     }
 
     #[inline(always)]
@@ -955,11 +887,7 @@ mod tests {
         {
             let out = T::inner_cast(0.);
             let v = out.unwrap();
-            if v > 1. {
-                v + 1.
-            } else {
-                v + 2.
-            }
+            if v > 1. { v + 1. } else { v + 2. }
         }
         assert_eq!(2., test3(1_i32));
     }

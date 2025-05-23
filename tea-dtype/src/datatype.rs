@@ -192,8 +192,7 @@ impl<U: TimeUnitTrait> GetDataType for DateTime<U> {
 #[cfg(feature = "time")]
 impl_datatype!(TimeDelta, TimeDelta);
 
-impl<'a> GetDataType for &'a str {
-    // type Physical = &'a str;
+impl GetDataType for &str {
     #[inline(always)]
     fn dtype() -> DataType {
         DataType::Str

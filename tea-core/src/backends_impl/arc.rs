@@ -8,7 +8,11 @@ impl<'a, I: TIter<'a, T>, T> TIter<'a, T> for std::sync::Arc<I> {
 }
 
 impl<'a, V: Vec1View<'a, T>, T> Vec1View<'a, T> for std::sync::Arc<V> {
-    type SliceOutput<'b> = V::SliceOutput<'b> where Self: 'b, T: 'b;
+    type SliceOutput<'b>
+        = V::SliceOutput<'b>
+    where
+        Self: 'b,
+        T: 'b;
 
     #[inline]
     fn slice(&self, start: usize, end: usize) -> TResult<Self::SliceOutput<'_>> {
@@ -27,7 +31,7 @@ impl<'a, V: Vec1View<'a, T>, T> Vec1View<'a, T> for std::sync::Arc<V> {
 
     #[inline]
     unsafe fn uget(&self, index: usize) -> T {
-        (**self).uget(index)
+        unsafe { (**self).uget(index) }
     }
 
     #[inline]
