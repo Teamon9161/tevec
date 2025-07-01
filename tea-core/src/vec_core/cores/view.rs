@@ -181,7 +181,7 @@ pub trait Vec1View<T>: TIter<T> {
     /// This method is useful for treating the vector's elements as optional values,
     /// which is particularly helpful when dealing with data that may contain null or invalid entries.
     #[inline]
-    fn opt(&self) -> OptIter<Self, T>
+    fn opt(&self) -> OptIter<'_, Self, T>
     where
         T: IsNone,
         Self: Sized,

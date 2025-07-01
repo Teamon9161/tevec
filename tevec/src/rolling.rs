@@ -15,7 +15,7 @@ pub use tea_rolling::*;
 /// A vector of coefficients for fractional differencing.
 #[cfg(feature = "fdiff")]
 fn fdiff_coef(d: f64, window: usize) -> Vec<f64> {
-    let mut sign = if window % 2 == 0 { 1. } else { -1. };
+    let mut sign = if window.is_multiple_of(2) { 1. } else { -1. };
     (0..window)
         .rev()
         .map(|v| {
