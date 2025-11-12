@@ -204,7 +204,7 @@ impl<T: Clone, const N: usize> TIter<T> for [T; N] {
     }
 
     #[inline]
-    fn tditer(&self) -> impl TDoubleIterator<Item=T> {
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
         self.iter().cloned()
     }
 }
@@ -230,7 +230,7 @@ impl<T: Clone> TIter<T> for &mut [T] {
     }
 
     #[inline]
-    fn tditer(&self) -> impl TDoubleIterator<Item=T> {
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
         self.iter().cloned()
     }
 }

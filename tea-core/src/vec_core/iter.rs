@@ -2,8 +2,6 @@ use std::marker::PhantomData;
 
 use crate::prelude::*;
 
-
-
 /// A trait indicating that a type can be referenced to a Trusted and DoubleEnded iterator.
 /// A trait for types that can be iterated over with a trusted iterator.
 ///
@@ -22,8 +20,7 @@ pub trait TIter<T>: GetLen {
     fn titer(&self) -> impl TIterator<Item = T>;
 
     #[allow(unreachable_code)]
-    fn tditer(&self) -> impl TDoubleIterator<Item = T>
-    {
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
         unimplemented!("Double End Iterator from this backend is not supported yet");
         std::iter::empty()
     }
@@ -55,7 +52,6 @@ pub trait TIter<T>: GetLen {
         self.titer().map(f)
     }
 }
-
 
 /// A trait indicating that a type can be converted into a Trusted and DoubleEnded iterator.
 pub trait IntoTIter: IntoIterator

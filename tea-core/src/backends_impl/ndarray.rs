@@ -13,12 +13,12 @@ impl<S: Data<Elem = T>, T> GetLen for ArrayBase<S, Ix1> {
 
 impl<T: Clone> TIter<T> for Array1<T> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T>{
+    fn titer(&self) -> impl TIterator<Item = T> {
         self.iter().cloned()
     }
 
     #[inline]
-    fn tditer(&self) -> impl TDoubleIterator<Item = T>{
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
         self.iter().cloned()
     }
 }
@@ -30,7 +30,7 @@ impl<T: Clone> TIter<T> for ArrayView1<'_, T> {
     }
 
     #[inline]
-    fn tditer(&self) -> impl TDoubleIterator<Item = T>{
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
         self.iter().cloned()
     }
 }
@@ -42,7 +42,7 @@ impl<T: Clone> TIter<T> for ArrayViewMut1<'_, T> {
     }
 
     #[inline]
-    fn tditer(&self) -> impl TDoubleIterator<Item = T>{
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
         self.iter().cloned()
     }
 }

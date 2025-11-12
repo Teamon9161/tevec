@@ -5,7 +5,7 @@ use std::slice::Iter;
 #[cfg(feature = "polars")]
 use tea_deps::polars::prelude::PolarsIterator;
 #[cfg(feature = "polars")]
-pub(crate) use tea_deps::polars_arrow::trusted_len::{TrustedLen as PlTrustedLen, TrustMyLength};
+pub(crate) use tea_deps::polars_arrow::trusted_len::{TrustMyLength, TrustedLen as PlTrustedLen};
 
 /// An iterator of known, fixed size.
 ///
@@ -87,7 +87,7 @@ unsafe impl<T> TrustedLen for dyn PolarsIterator<Item = T> {}
 #[cfg(feature = "polars")]
 unsafe impl<T> TrustedLen for Box<dyn PolarsIterator<Item = T> + '_> {}
 #[cfg(feature = "polars")]
-unsafe impl<I: Iterator<Item=T>, T> TrustedLen for TrustMyLength<I, T> {}
+unsafe impl<I: Iterator<Item = T>, T> TrustedLen for TrustMyLength<I, T> {}
 
 unsafe impl<T> TrustedLen for &mut dyn TrustedLen<Item = T> {}
 unsafe impl<T> TrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
