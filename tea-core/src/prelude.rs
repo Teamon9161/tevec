@@ -10,7 +10,7 @@ pub use tea_error::*;
 pub use super::agg::{AggBasic, AggValidBasic};
 pub use super::create::Vec1Create;
 pub use crate::vec_core::{
-    CollectTrustedToVec, GetLen, IntoTIter, IterBasic, OptIter, TIter, TIterator, ToTrustIter,
+    CollectTrustedToVec, GetLen, IntoTIter, IterBasic, OptIter, TIter, TIterator, TDoubleIterator, ToTrustIter,
     TrustIter, TrustedLen, TryCollectTrustedToVec, UninitRefMut, UninitVec, Vec1, Vec1Collect,
     Vec1Mut, Vec1OptCollect, Vec1TryCollect, Vec1View, WriteTrustIter,
 };

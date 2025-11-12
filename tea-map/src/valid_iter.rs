@@ -111,7 +111,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     /// use tea_map::MapValidBasic;
     ///
     /// let v = vec![Some(1), None, Some(2), None, Some(3)];
-    /// let result: Vec<_> = v.titer().bfill_mask(|x| x.is_none(), Some(Some(0))).collect();
+    /// let result: Vec<_> = v.tditer().bfill_mask(|x| x.is_none(), Some(Some(0))).collect();
     /// assert_eq!(result, vec![Some(1), Some(2), Some(2), Some(3), Some(3)]);
     /// ```
     fn bfill_mask<F: Fn(&T) -> bool>(
@@ -158,7 +158,7 @@ pub trait MapValidBasic<T: IsNone>: TrustedLen<Item = T> + Sized {
     /// use tea_map::MapValidBasic;
     ///
     /// let v = vec![Some(1), None, Some(2), None, Some(3)];
-    /// let result: Vec<_> = v.titer().bfill(Some(Some(0))).collect();
+    /// let result: Vec<_> = v.tditer().bfill(Some(Some(0))).collect();
     /// assert_eq!(result, vec![Some(1), Some(2), Some(2), Some(3), Some(3)]);
     /// ```
     #[inline]
@@ -618,9 +618,9 @@ mod test {
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, 1., 2., 2., 3., 3.], None);
         let res: Vec<_> = v.titer().ffill(Some(0.)).collect();
         assert_vec1d_equal_numeric(&res, &vec![0., 1., 2., 2., 3., 3.], None);
-        let res: Vec<_> = v.titer().bfill(None).collect();
+        let res: Vec<_> = v.tditer().bfill(None).collect();
         assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., f64::NAN], None);
-        let res: Vec<_> = v.titer().bfill(Some(0.)).collect();
+        let res: Vec<_> = v.tditer().bfill(Some(0.)).collect();
         assert_vec1d_equal_numeric(&res, &vec![1., 1., 2., 3., 3., 0.], None);
         let res: Vec<_> = v.titer().fill(0.).collect();
         assert_vec1d_equal_numeric(&res, &vec![0., 1., 2., 0., 3., 0.], None);

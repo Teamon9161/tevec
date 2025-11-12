@@ -8,7 +8,7 @@ pub mod uninit;
 pub use cores::*;
 pub use getlen::GetLen;
 pub use iter::{IntoTIter, OptIter, TIter};
-pub use iter_traits::{IterBasic, TIterator};
+pub use iter_traits::{IterBasic, TIterator, TDoubleIterator};
 pub use trusted::{
     CollectTrustedToVec, ToTrustIter, TrustIter, TrustedLen, TryCollectTrustedToVec,
 };

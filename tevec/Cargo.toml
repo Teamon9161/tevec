@@ -8,8 +8,8 @@ license.workspace = true
 description = "A crate to provide quantitative analysis functions for vec | ndarray | polars backend."
 
 [features]
-default = ["time", "agg", "map", "rolling"]
-# default = ["time", "rolling", "agg", "map", "stat", "ndarray", "polars-lazy"]
+# default = ["time", "agg", "map", "rolling"]
+default = ["time", "rolling", "agg", "map", "stat", "ndarray", "vecdeque", "polars-lazy"]
 
 # ops
 rolling = ["tea-rolling"]
@@ -35,7 +35,7 @@ serde = ["tea-core/serde"]
 dyn = ["tea-dyn", "tea-rolling?/dyn"]
 
 [dependencies]
-statrs = { version = "0.17", optional = true }
+statrs = { version = "0.18", optional = true }
 tea-dtype = { workspace = true, default-features = false }
 tea-core = { workspace = true, default-features = false }
 tea-macros = { workspace = true }
@@ -44,7 +44,7 @@ tea-map = { workspace = true, optional = true }
 tea-agg = { workspace = true, optional = true }
 tea-dyn = { workspace = true, optional = true }
 ffi = { version = "0.1", default-features = false, optional = true, package = "tea-ffi" }
-derive_more = { version = "1", default-features = false, features = ["from"] }
+derive_more = { version = "2", default-features = false, features = ["from"] }
 
 
 [dev-dependencies]

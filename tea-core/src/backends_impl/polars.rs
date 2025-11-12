@@ -1,7 +1,9 @@
+#[cfg(feature = "time")]
+use tea_deps::chrono::NaiveDateTime;
 use tea_deps::polars::prelude::*;
 use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
-#[cfg(feature = "time")]
-use tea_dtype::{DateTime, unit};
+// #[cfg(feature = "time")]
+// use tea_dtype::{DateTime, unit};
 
 use crate::prelude::*;
 
@@ -11,8 +13,13 @@ macro_rules! impl_for_ca {
             impl TIter<Option<$real>> for $ForType {
                 #[inline]
                 fn titer(&self) -> impl TIterator<Item=Option<$real>>
-                // where Option<$real>: 'a
                 {
+                    self.into_iter()
+                }
+
+
+                #[inline]
+                fn tditer(&self) -> impl TDoubleIterator<Item=Option<$real>>{
                     self.into_iter()
                 }
             }
@@ -163,6 +170,10 @@ impl<'a> TIter<Option<&'a str>> for &'a ChunkedArray<StringType> {
     fn titer(&self) -> impl TIterator<Item = Option<&'a str>> {
         self.into_iter()
     }
+    #[inline]
+    fn tditer(&self) -> impl TDoubleIterator<Item = Option<&'a str>> {
+        self.into_iter()
+    }
 }
 
 // impl<'s> TIter<Option<&'s str>> for ChunkedArray<StringType> {
@@ -215,51 +226,73 @@ impl<'a> Vec1View<Option<&'a str>> for &'a ChunkedArray<StringType> {
 impl GetLen for DatetimeChunked {
     #[inline]
     fn len(&self) -> usize {
-        (**self).len()
+        Logical::len(self)
     }
 }
 
 #[cfg(feature = "time")]
-impl TIter<DateTime<unit::Nanosecond>> for &DatetimeChunked {
+impl TIter<Option<NaiveDateTime>> for &DatetimeChunked {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Nanosecond>> {
-        use tea_deps::polars::prelude::{DataType, TimeUnit};
-        match self.dtype() {
-            DataType::Datetime(TimeUnit::Nanoseconds, _) => {
-                // TODO(Teamon): support timezone in future
-                self.into_iter().map(|v| v.cast())
-            },
-            _ => unreachable!("datetime chunked should be nanoseconds unit"),
+    fn titer(&self) -> impl TIterator<Item = Option<NaiveDateTime>> {
+        use tea_deps::polars::prelude::*;
+        use tea_deps::polars_arrow::temporal_conversions::{
+            timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
+        };
+        let func = match self.time_unit() {
+            TimeUnit::Nanoseconds => timestamp_ns_to_datetime,
+            TimeUnit::Microseconds => timestamp_us_to_datetime,
+            TimeUnit::Milliseconds => timestamp_ms_to_datetime,
+        };
+        // we know the iterators len
+        unsafe {
+            self.physical()
+                .downcast_iter()
+                .flat_map(move |iter| iter.into_iter().map(move |opt_v| opt_v.copied().map(func)))
+                .trust_my_length(self.len())
         }
     }
 }
 
-#[cfg(feature = "time")]
-impl TIter<DateTime<unit::Millisecond>> for &DatetimeChunked {
-    #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Millisecond>> {
-        use tea_deps::polars::prelude::{DataType, TimeUnit};
-        match self.dtype() {
-            DataType::Datetime(TimeUnit::Microseconds, _) => {
-                // TODO(Teamon): support timezone in future
-                self.into_iter().map(|v| v.cast())
-            },
-            _ => unreachable!("datetime chunked should be milliseconds unit"),
-        }
-    }
-}
+// impl TIter<DateTime<unit::Nanosecond>> for &DatetimeChunked {
+//     #[inline]
+//     fn titer(&self) -> impl TIterator<Item = DateTime<unit::Nanosecond>> {
+//         use tea_deps::polars::prelude::{DataType, TimeUnit};
+//         match self.dtype() {
+//             DataType::Datetime(TimeUnit::Nanoseconds, _) => {
+//                 // TODO(Teamon): support timezone in future
+//                 self.iter().map(|v| v.cast())
+//             },
+//             _ => unreachable!("datetime chunked should be nanoseconds unit"),
+//         }
+//     }
+// }
 
-#[cfg(feature = "time")]
-impl TIter<DateTime<unit::Microsecond>> for &DatetimeChunked {
-    #[inline]
-    fn titer(&self) -> impl TIterator<Item = DateTime<unit::Microsecond>> {
-        use tea_deps::polars::prelude::{DataType, TimeUnit};
-        match self.dtype() {
-            DataType::Datetime(TimeUnit::Microseconds, _) => {
-                // TODO(Teamon): support timezone in future
-                self.into_iter().map(|v| v.cast())
-            },
-            _ => unreachable!("datetime chunked should be microseconds unit"),
-        }
-    }
-}
+// #[cfg(feature = "time")]
+// impl TIter<DateTime<unit::Millisecond>> for &DatetimeChunked {
+//     #[inline]
+//     fn titer(&self) -> impl TIterator<Item = DateTime<unit::Millisecond>> {
+//         use tea_deps::polars::prelude::{DataType, TimeUnit};
+//         match self.dtype() {
+//             DataType::Datetime(TimeUnit::Microseconds, _) => {
+//                 // TODO(Teamon): support timezone in future
+//                 self.into_iter().map(|v| v.cast())
+//             },
+//             _ => unreachable!("datetime chunked should be milliseconds unit"),
+//         }
+//     }
+// }
+
+// #[cfg(feature = "time")]
+// impl TIter<DateTime<unit::Microsecond>> for &DatetimeChunked {
+//     #[inline]
+//     fn titer(&self) -> impl TIterator<Item = DateTime<unit::Microsecond>> {
+//         use tea_deps::polars::prelude::{DataType, TimeUnit};
+//         match self.dtype() {
+//             DataType::Datetime(TimeUnit::Microseconds, _) => {
+//                 // TODO(Teamon): support timezone in future
+//                 self.into_iter().map(|v| v.cast())
+//             },
+//             _ => unreachable!("datetime chunked should be microseconds unit"),
+//         }
+//     }
+// }

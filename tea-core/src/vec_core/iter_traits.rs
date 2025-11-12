@@ -5,8 +5,11 @@ use tea_dtype::IsNone;
 use super::trusted::TrustedLen;
 
 /// A trait combining `Iterator`, `DoubleEndedIterator`, and `TrustedLen` capabilities.
-pub trait TIterator: Iterator + DoubleEndedIterator + TrustedLen {}
-impl<I: Iterator + DoubleEndedIterator + TrustedLen> TIterator for I {}
+pub trait TIterator: Iterator + TrustedLen {}
+impl<I: Iterator + TrustedLen> TIterator for I {}
+
+pub trait TDoubleIterator: TIterator + DoubleEndedIterator {}
+impl<I: TIterator + DoubleEndedIterator> TDoubleIterator for I {}
 
 /// A trait providing additional iterator methods for types that can be converted into an iterator.
 pub trait IterBasic: IntoIterator + Sized {

@@ -2,8 +2,13 @@ use crate::prelude::*;
 
 impl<I: TIter<T>, T> TIter<T> for std::sync::Arc<I> {
     #[inline]
-    fn titer(&self) -> impl TIterator<Item = T> + '_ {
+    fn titer(&self) -> impl TIterator<Item = T> {
         (**self).titer()
+    }
+
+    #[inline]
+    fn tditer(&self) -> impl TDoubleIterator<Item = T> {
+        (**self).tditer()
     }
 }
 

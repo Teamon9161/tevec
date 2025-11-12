@@ -55,7 +55,7 @@ mod tests {
     #[test]
     fn test_full() {
         let v: Vec<_> = Vec1::full(0, 1);
-        assert_eq!(v, vec![]);
+        assert_eq!(v.len(), 0);
         let v: Vec<_> = Vec1::full(5, f64::NAN);
         assert_vec1d_equal_numeric(&v, &vec![f64::NAN; 5], None);
     }
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn test_range() {
         let v: Vec<usize> = Vec1Create::range(None, 0, None);
-        assert_eq!(v, vec![]);
+        assert_eq!(v.len(), 0);
         let v: Vec<usize> = Vec1Create::range(None, 4, Some(2));
         assert_eq!(v, vec![0, 2]);
         let v: Vec<f64> = Vec1Create::range(Some(1.), 6., Some(0.5));
@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn test_linspace() {
         let v: Vec<usize> = Vec1Create::linspace(None, 0, 0);
-        assert_eq!(v, vec![]);
+        assert_eq!(v.len(), 0);
         let v: Vec<usize> = Vec1Create::linspace(None, 0, 2);
         assert_eq!(v, vec![0, 0]);
         let v: Vec<usize> = Vec1Create::linspace(Some(1), 4, 3);

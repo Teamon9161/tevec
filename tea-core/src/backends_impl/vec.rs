@@ -18,6 +18,11 @@ macro_rules! impl_vec1 {
                 {
                     self.iter().cloned()
                 }
+
+                #[inline]
+                fn tditer(&self) -> impl TDoubleIterator<Item=T> {
+                    self.iter().cloned()
+                }
             }
         )*
     };
@@ -197,6 +202,11 @@ impl<T: Clone, const N: usize> TIter<T> for [T; N] {
     fn titer(&self) -> impl TIterator<Item = T> {
         self.iter().cloned()
     }
+
+    #[inline]
+    fn tditer(&self) -> impl TDoubleIterator<Item=T> {
+        self.iter().cloned()
+    }
 }
 
 impl_vec1!(
@@ -216,6 +226,11 @@ impl<T> GetLen for &mut [T] {
 impl<T: Clone> TIter<T> for &mut [T] {
     #[inline]
     fn titer(&self) -> impl TIterator<Item = T> {
+        self.iter().cloned()
+    }
+
+    #[inline]
+    fn tditer(&self) -> impl TDoubleIterator<Item=T> {
         self.iter().cloned()
     }
 }
