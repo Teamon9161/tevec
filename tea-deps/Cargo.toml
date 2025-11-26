@@ -8,11 +8,12 @@ license.workspace = true
 description = "Dependencies for the tevec ecosystem"
 
 [features]
-default = []
+default = ["polars-parquet"]
 ndarray = ["dep:ndarray"]
 polars = ["dep:polars", "dep:polars-arrow"]
 polars-lazy = ["polars", "polars/lazy"]
 polars-struct = ["polars", "polars/dtype-struct"]
+polars-parquet = ["polars", "polars/parquet"]
 time = [
     "polars?/dtype-datetime",
     "polars?/dtype-duration",
