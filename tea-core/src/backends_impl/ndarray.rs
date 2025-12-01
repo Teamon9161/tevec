@@ -246,7 +246,10 @@ impl<T: Clone> Vec1<T> for Array1<T> {
     }
 
     #[inline]
-    fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_> {
+    fn uninit_ref_mut<'a>(uninit_vec: &'a mut Self::Uninit) -> Self::UninitRefMut<'a>
+    where
+        T: 'a,
+    {
         uninit_vec.view_mut()
     }
 

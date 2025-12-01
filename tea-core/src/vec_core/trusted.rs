@@ -89,6 +89,8 @@ unsafe impl<T> TrustedLen for Box<dyn PolarsIterator<Item = T> + '_> {}
 #[cfg(feature = "polars")]
 unsafe impl<I: Iterator<Item = T>, T> TrustedLen for TrustMyLength<I, T> {}
 
+// unsafe impl<T, I: PolarsIterator<Item = T>> TrustedLen for I {}
+
 unsafe impl<T> TrustedLen for &mut dyn TrustedLen<Item = T> {}
 unsafe impl<T> TrustedLen for Box<dyn TrustedLen<Item = T> + '_> {}
 

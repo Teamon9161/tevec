@@ -1,5 +1,7 @@
+mod string;
 #[cfg(feature = "time")]
-use tea_deps::chrono::{NaiveDate, NaiveDateTime};
+mod temporal;
+
 use tea_deps::polars::prelude::*;
 use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
 
@@ -23,6 +25,68 @@ macro_rules! impl_for_ca {
             }
         )*
     };
+
+    (datetime_to_iter => $($ForType: ty),*) => {
+        $(
+            impl TIter<Option<NaiveDateTime>> for $ForType {
+                #[inline]
+                fn titer(&self) -> impl TIterator<Item=Option<NaiveDateTime>>
+                {
+                    self.tditer()
+                }
+
+
+                #[inline]
+                fn tditer(&self) -> impl TDoubleIterator<Item=Option<NaiveDateTime>>{
+                    use tea_deps::polars::prelude::*;
+                    use tea_deps::polars_arrow::temporal_conversions::{
+                        timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
+                    };
+                    let func = match self.time_unit() {
+                        TimeUnit::Nanoseconds => timestamp_ns_to_datetime,
+                        TimeUnit::Microseconds => timestamp_us_to_datetime,
+                        TimeUnit::Milliseconds => timestamp_ms_to_datetime,
+                    };
+                    // we know the iterators len
+                    unsafe {
+                        self.physical()
+                            .downcast_iter()
+                            .flat_map(move |iter| iter.into_iter().map(move |opt_v| opt_v.copied().map(func)))
+                            .trust_my_length(self.len())
+                    }
+                }
+            }
+        )*
+    };
+
+    (date_to_iter => $($ForType: ty),*) => {
+        $(
+            impl TIter<Option<NaiveDate>> for $ForType {
+                #[inline]
+                fn titer(&self) -> impl TIterator<Item=Option<NaiveDate>>
+                {
+                    self.tditer()
+                }
+
+
+                #[inline]
+                fn tditer(&self) -> impl TDoubleIterator<Item=Option<NaiveDate>>{
+                    use tea_deps::polars_arrow::temporal_conversions::date32_to_date;
+                    unsafe {
+                        self.physical()
+                            .downcast_iter()
+                            .flat_map(|iter| {
+                                iter.into_iter()
+                                    .map(|opt_v| opt_v.copied().map(date32_to_date))
+                            })
+                            .trust_my_length(self.len())
+                    }
+                }
+            }
+        )*
+    };
+
+
 
     (view $type: ty, $real: ty => $($ForType: ty),*) => {
         $(
@@ -93,7 +157,10 @@ macro_rules! impl_for_ca {
             }
 
             #[inline]
-            fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_> {
+            fn uninit_ref_mut<'a>(uninit_vec: &'a mut Self::Uninit) -> Self::UninitRefMut<'a>
+            where
+                Option<$real>: 'a
+            {
                 uninit_vec
             }
 
@@ -162,111 +229,3 @@ impl_for_ca!(
     Int64Type: i64,
     BooleanType: bool
 );
-
-impl<'a> TIter<Option<&'a str>> for &'a ChunkedArray<StringType> {
-    #[inline]
-    fn titer(&self) -> impl TIterator<Item = Option<&'a str>> {
-        self.into_iter()
-    }
-    #[inline]
-    fn tditer(&self) -> impl TDoubleIterator<Item = Option<&'a str>> {
-        self.into_iter()
-    }
-}
-
-// impl<'s> TIter<Option<&'s str>> for ChunkedArray<StringType> {
-//     #[inline]
-//     fn titer(&self) -> impl TIterator<Item = Option<&'s str>> {
-//         self.into_iter()
-//     }
-// }
-
-impl<'a> Vec1View<Option<&'a str>> for &'a ChunkedArray<StringType> {
-    type SliceOutput<'b>
-        = ChunkedArray<StringType>
-    where
-        Self: 'b,
-        Option<&'a str>: 'b;
-
-    #[inline]
-    fn slice<'b>(&'b self, start: usize, end: usize) -> TResult<Self::SliceOutput<'b>>
-    where
-        Self: 'b,
-        Option<&'a str>: 'b,
-    {
-        if end < start {
-            tbail!(
-                "end index: {} should be large than start index: {} in slice",
-                end,
-                start
-            );
-        }
-        let len = end - start;
-        Ok((*self).slice(start as i64, len))
-    }
-
-    #[inline]
-    fn get_backend_name(&self) -> &'static str {
-        "polars"
-    }
-
-    #[inline]
-    unsafe fn uget(&self, index: usize) -> Option<&'a str> {
-        unsafe { self.get_unchecked(index) }
-    }
-}
-
-#[cfg(feature = "time")]
-impl GetLen for DatetimeChunked {
-    #[inline]
-    fn len(&self) -> usize {
-        Logical::len(self)
-    }
-}
-
-#[cfg(feature = "time")]
-impl TIter<Option<NaiveDateTime>> for &DatetimeChunked {
-    #[inline]
-    fn titer(&self) -> impl TIterator<Item = Option<NaiveDateTime>> {
-        use tea_deps::polars::prelude::*;
-        use tea_deps::polars_arrow::temporal_conversions::{
-            timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
-        };
-        let func = match self.time_unit() {
-            TimeUnit::Nanoseconds => timestamp_ns_to_datetime,
-            TimeUnit::Microseconds => timestamp_us_to_datetime,
-            TimeUnit::Milliseconds => timestamp_ms_to_datetime,
-        };
-        // we know the iterators len
-        unsafe {
-            self.physical()
-                .downcast_iter()
-                .flat_map(move |iter| iter.into_iter().map(move |opt_v| opt_v.copied().map(func)))
-                .trust_my_length(self.len())
-        }
-    }
-}
-
-#[cfg(feature = "time")]
-impl GetLen for DateChunked {
-    #[inline]
-    fn len(&self) -> usize {
-        Logical::len(self)
-    }
-}
-#[cfg(feature = "time")]
-impl TIter<Option<NaiveDate>> for &DateChunked {
-    #[inline]
-    fn titer(&self) -> impl TIterator<Item = Option<NaiveDate>> {
-        use tea_deps::polars_arrow::temporal_conversions::date32_to_date;
-        unsafe {
-            self.physical()
-                .downcast_iter()
-                .flat_map(|iter| {
-                    iter.into_iter()
-                        .map(|opt_v| opt_v.copied().map(date32_to_date))
-                })
-                .trust_my_length(self.len())
-        }
-    }
-}

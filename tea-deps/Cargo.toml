@@ -24,6 +24,7 @@ time = [
 
 [dependencies]
 ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
-polars = { version = ">=0.50, <0.53", optional = true, default-features = false }
+# polars 0.52 can not compile without timezones feature
+polars = { version = ">=0.50, <0.53", optional = true, default-features = false, features=["timezones"] }
 polars-arrow = { version = ">=0.50, <0.53", optional = true, default-features = false }
 chrono = { version = "0.4", optional = true }

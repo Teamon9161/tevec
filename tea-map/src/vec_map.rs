@@ -417,7 +417,7 @@ mod test {
     fn test_diff() {
         let v: Vec<f64> = vec![];
         let res: Vec<_> = v.vdiff(2, None).collect_trusted_vec1();
-        assert_eq!(res, vec![]);
+        assert_eq!(res, Vec::<f64>::new());
         let v = vec![4., 1., 12., 4.];
         let res: Vec<_> = v.vdiff(1, None).collect_trusted_vec1();
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, -3., 11., -8.], None);
@@ -429,7 +429,7 @@ mod test {
     fn test_pct_change() {
         let v: Vec<f64> = vec![];
         let res: Vec<_> = v.vpct_change(2).collect_trusted_vec1();
-        assert_eq!(res, vec![]);
+        assert_eq!(res, Vec::<f64>::new());
         let v = vec![1., 2., 3., 4.5];
         let res: Vec<_> = v.vpct_change(1).collect_trusted_vec1();
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, 1., 0.5, 0.5], None);

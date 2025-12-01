@@ -94,7 +94,7 @@ mod test {
         // test shift on empty vec
         let v: Vec<f64> = vec![];
         let res: Vec<_> = v.titer().vshift(2, None).collect_trusted_vec1();
-        assert_eq!(res, vec![]);
+        assert_eq!(res, Vec::<f64>::with_capacity(0));
         let v = vec![1., 2., 3., 4., 5.];
         let res: Vec<_> = v.titer().vshift(2, None).collect_trusted_vec1();
         assert_vec1d_equal_numeric(&res, &vec![f64::NAN, f64::NAN, 1., 2., 3.], None);

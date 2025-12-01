@@ -16,7 +16,9 @@ pub trait Vec1<T>: Vec1View<T> + Sized {
 
     fn uninit(len: usize) -> Self::Uninit;
 
-    fn uninit_ref_mut(uninit_vec: &mut Self::Uninit) -> Self::UninitRefMut<'_>;
+    fn uninit_ref_mut<'a>(uninit_vec: &'a mut Self::Uninit) -> Self::UninitRefMut<'a>
+    where
+        T: 'a;
 
     #[inline]
     fn try_collect_from_iter<I: Iterator<Item = TResult<T>>>(iter: I) -> TResult<Self> {
