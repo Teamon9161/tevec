@@ -181,16 +181,11 @@ macro_rules! impl_for_ca {
         })*
     };
 
-    ($($type:ty: $real: ty),*) => {
+    (unnit $real: ty => $($ForType: ty),*) => {
         $(
-            impl_for_ca!(to_iter, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
-            impl_for_ca!(view $type, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
-            impl_for_ca!(view_mut $real=>ChunkedArray<$type>);
-            impl_for_ca!(vec $real=>ChunkedArray<$type>);
-
-            impl UninitVec<Option<$real>> for ChunkedArray<$type>
+            impl UninitVec<Option<$real>> for $ForType
             {
-                type Vec = ChunkedArray<$type>;
+                type Vec = $ForType;
 
                 #[inline(always)]
                 unsafe fn assume_init(self) -> Self::Vec {
@@ -204,13 +199,23 @@ macro_rules! impl_for_ca {
             }
 
 
-            impl UninitRefMut<Option<$real>> for &mut ChunkedArray<$type> {
+            impl UninitRefMut<Option<$real>> for &mut $ForType {
                 #[inline]
                 unsafe fn uset(&mut self, _idx: usize, _v: Option<$real>) {
                     unimplemented!("polars backend do not support set in given index");
                 }
             }
 
+        )*
+    };
+
+    ($($type:ty: $real: ty),*) => {
+        $(
+            impl_for_ca!(to_iter, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
+            impl_for_ca!(view $type, $real=>ChunkedArray<$type>, &ChunkedArray<$type>);
+            impl_for_ca!(view_mut $real=>ChunkedArray<$type>);
+            impl_for_ca!(vec $real=>ChunkedArray<$type>);
+            impl_for_ca!(unnit $real=>ChunkedArray<$type>);
         )*
     };
 }
