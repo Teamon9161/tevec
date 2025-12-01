@@ -13,7 +13,7 @@ Tevec's functionality is categorized into three main types:
 ## Installation
 To include Tevec in your project, add the following line to your `Cargo.toml`:
 ```toml
-tevec = "0.5"
+tevec = "0.6"
 ```
 
 ## Basic Usage
