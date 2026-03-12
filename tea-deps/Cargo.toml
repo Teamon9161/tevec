@@ -14,6 +14,7 @@ polars = ["dep:polars", "dep:polars-arrow"]
 polars-lazy = ["polars", "polars/lazy"]
 polars-struct = ["polars", "polars/dtype-struct"]
 polars-parquet = ["polars", "polars/parquet"]
+polars-decimal = ["polars", "polars/dtype-decimal", "dep:rust_decimal"]
 time = [
     "polars?/dtype-datetime",
     "polars?/dtype-duration",
@@ -28,3 +29,4 @@ ndarray = { version = ">=0.15, <0.17", optional = true, features = ["rayon"] }
 polars = { version = ">=0.50, <0.53", optional = true, default-features = false, features=["timezones"] }
 polars-arrow = { version = ">=0.50, <0.53", optional = true, default-features = false }
 chrono = { version = "0.4", optional = true }
+rust_decimal = { version = "1", optional = true }

@@ -11,3 +11,5 @@ pub use ndarray;
 pub use polars;
 #[cfg(feature = "polars")]
 pub use polars_arrow;
+#[cfg(feature = "polars-decimal")]
+pub use rust_decimal;

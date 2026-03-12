@@ -17,6 +17,7 @@ polars = ["tea-deps/polars", "tea-dtype/polars", "tea-error/polars"]
 polars-lazy = ["tea-deps/polars-lazy", "tea-dtype/polars-lazy"]
 polars-struct = ["polars", "tea-deps/polars-struct"]
 polars-parquet = ["polars", "tea-deps/polars-parquet"]
+polars-decimal = ["polars", "tea-deps/polars-decimal"]
 time = ["tea-dtype/time", "tea-deps/time"]
 serde = ["tea-dtype/serde", "dep:serde"]
 

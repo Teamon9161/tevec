@@ -1,6 +1,8 @@
 mod string;
 #[cfg(feature = "time")]
 mod temporal;
+#[cfg(feature = "polars-decimal")]
+mod decimal;
 
 use tea_deps::polars::prelude::*;
 use tea_deps::polars_arrow::legacy::utils::CustomIterTools;
